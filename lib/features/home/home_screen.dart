@@ -17,7 +17,7 @@ import '../../data/repository.dart';
 import '../capture/capture_screen.dart';
 import '../settings/settings_screen.dart';
 import '../trips/trips_sheet.dart';
-import 'map_painter.dart';
+import '../map/warang_map.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -102,9 +102,6 @@ class _HomeContentState extends State<_HomeContent> {
     final theme = Theme.of(context);
     final dark = theme.brightness == Brightness.dark;
     final moments = widget.repository.moments;
-    final visibleMoments = moments.length > 5
-        ? moments.take(5).toList()
-        : moments;
     final size = MediaQuery.sizeOf(context);
     final selected = _selected;
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -126,10 +123,16 @@ class _HomeContentState extends State<_HomeContent> {
         body: Stack(
           fit: StackFit.expand,
           children: [
-            CustomPaint(
-              painter: WarangMapPainter(
+            Positioned.fill(
+              child: WarangMapSurface(
+                moments: moments,
+                selectedId: selected?.id,
                 palette: theme.extension<MapPalette>()!,
                 dark: dark,
+                onMomentTap: (moment) => setState(() => _selected = moment),
+                onMapTap: selected == null
+                    ? null
+                    : () => setState(() => _selected = null),
               ),
             ),
             const Positioned(
@@ -144,20 +147,6 @@ class _HomeContentState extends State<_HomeContent> {
               child: _HomeMenuButton(onPressed: _openDrawer),
             ),
             if (selected == null) ...[
-              ...visibleMoments.asMap().entries.map(
-                (entry) => _buildPin(entry.value, entry.key, size, false),
-              ),
-              if (moments.length > 5)
-                Positioned(
-                  left: 187,
-                  top: 552,
-                  child: WarangClusterPin(count: moments.length - 5),
-                ),
-              Positioned(
-                left: size.width / 2 - 38,
-                top: size.height / 2 - 38,
-                child: const WarangPositionMarker(),
-              ),
               if (moments.isEmpty)
                 Positioned(
                   left: 0,
@@ -209,13 +198,6 @@ class _HomeContentState extends State<_HomeContent> {
                 child: _RecenterButton(onPressed: () {}),
               ),
             ] else ...[
-              ...moments
-                  .asMap()
-                  .entries
-                  .where((entry) => entry.value.id != selected.id)
-                  .map(
-                    (entry) => _buildPin(entry.value, entry.key, size, false),
-                  ),
               Positioned.fill(
                 child: GestureDetector(
                   onTap: () => setState(() => _selected = null),
@@ -223,12 +205,6 @@ class _HomeContentState extends State<_HomeContent> {
                     color: theme.colorScheme.onSurface.withValues(alpha: .42),
                   ),
                 ),
-              ),
-              _buildPin(
-                selected,
-                moments.indexWhere((item) => item.id == selected.id),
-                size,
-                true,
               ),
               Positioned.fill(
                 child: _MomentCard(
@@ -307,34 +283,6 @@ class _HomeContentState extends State<_HomeContent> {
     );
   }
 
-  Widget _buildPin(Moment moment, int index, Size size, bool selected) {
-    const positions = [
-      Offset(100, 272),
-      Offset(238, 222),
-      Offset(156, 398),
-      Offset(288, 362),
-      Offset(82, 508),
-      Offset(214, 552),
-    ];
-    final position = positions[index % positions.length];
-    final pinSize = selected ? 66.0 : 58.0;
-    final top = position.dy - pinSize - 9;
-    final left = position.dx - pinSize / 2;
-    final future = moment.relPath == null
-        ? Future<File?>.value(null)
-        : _photoStore.resolve(moment.relPath!).then<File?>((file) => file);
-    return Positioned(
-      left: left,
-      top: top,
-      child: FutureBuilder<File?>(
-        future: future,
-        builder: (context, snapshot) => GestureDetector(
-          onTap: () => setState(() => _selected = moment),
-          child: WarangPhotoPin(file: snapshot.data, selected: selected),
-        ),
-      ),
-    );
-  }
 }
 
 class _HomeMenuButton extends StatelessWidget {

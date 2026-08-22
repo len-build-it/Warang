@@ -626,9 +626,9 @@ Adapted for Warang: aqone caches *feed responses* per feed with a per-feed max a
 
 **17b — The map surface**
 
-- [ ] **T17.6** Replace `CustomPaint(painter: WarangMapPainter(...))` with a `FlutterMap`. **Delete `map_painter.dart`** once pins render — do not leave it as a fallback; a fake map that can silently reappear is worse than a blank one.
-- [ ] **T17.7** OSM raster base layer with a correct `userAgentPackageName` and OSM attribution — the tile usage policy requires both, and this is a licence obligation, not a nicety. Attribution goes bottom-left, at `faint`, small.
-- [ ] **T17.8** **Style bridge.** OSM tiles do not look like `DESIGN_SPEC.md` §13. Wrap the tile layer in a `ColorFiltered`/`ColorFilter.matrix` that desaturates and tints toward the Warang palette — a light-theme filter and a dark-theme filter, tuned by eye against the spec swatches. This is an approximation and the spec should say so; the exact §13 style still needs vector or bundled tiles. **Do not ship raw full-colour OSM** — it would break the "photos are the only saturated thing on screen" rule outright.
+- [x] **T17.6** Replace `CustomPaint(painter: WarangMapPainter(...))` with a `FlutterMap`. **Delete `map_painter.dart`** once pins render — do not leave it as a fallback; a fake map that can silently reappear is worse than a blank one.
+- [x] **T17.7** OSM raster base layer with a correct `userAgentPackageName` and OSM attribution — the tile usage policy requires both, and this is a licence obligation, not a nicety. Attribution goes bottom-left, at `faint`, small.
+- [x] **T17.8** **Style bridge.** OSM tiles do not look like `DESIGN_SPEC.md` §13. Wrap the tile layer in a `ColorFiltered`/`ColorFilter.matrix` that desaturates and tints toward the Warang palette — a light-theme filter and a dark-theme filter, tuned by eye against the spec swatches. This is an approximation and the spec should say so; the exact §13 style still needs vector or bundled tiles. **Do not ship raw full-colour OSM** — it would break the "photos are the only saturated thing on screen" rule outright.
 - [ ] **T17.9** Camera: `initialCenter` on the last known position, else the user's most recent moment, else a neutral Philippines-wide view. Persist the last camera position so a relaunch resumes where they left off.
 
 **17c — Real location**
@@ -640,7 +640,7 @@ Adapted for Warang: aqone caches *feed responses* per feed with a per-feed max a
 
 **17d — Pins on real coordinates**
 
-- [ ] **T17.14** Delete the `positions` `Offset` table in `_buildPin`. Pins become `Marker`s at `LatLng(moment.lat, moment.lng)`. **Moments with null coordinates must not render on the map at all** — they surface in the trips sheet with the "Add location" affordance (T5.6), which is exactly why they are allowed to exist.
+- [x] **T17.14** Delete the `positions` `Offset` table in `_buildPin`. Pins become `Marker`s at `LatLng(moment.lat, moment.lng)`. **Moments with null coordinates must not render on the map at all** — they surface in the trips sheet with the "Add location" affordance (T5.6), which is exactly why they are allowed to exist.
 - [ ] **T17.15** Marker factory — one function producing a photo-pin, a cluster pin, or a selected pin from a moment plus a state, so every pin is built one way. (aqone's `divIcon` factory, in Flutter terms.)
 - [ ] **T17.16** Distance-based clustering at the current zoom, replacing the `moments.length > 5` placeholder cluster. Cluster tapping zooms in; it does not open a card.
 - [ ] **T17.17** Layer groups behind a small toggle: **Your moments** / **Clusters** / base map. Structured as a list of toggleable layers even though there are only two now — this is the seam future layers (trip routes, shared books) hang off.
