@@ -4,6 +4,8 @@
 
 Repo: `C:\Users\User\Desktop\Warang` · Branch: `master` · No remote (local commits only).
 
+**Companion file: `DESIGN_SPEC.md`.** It is the visual authority — every screen, component, measurement, and colour, taken from the design canvas. This file stays the authority on architecture, stack, data model, phase order, and the never/always rules. When the two disagree about what a screen *looks like*, the design spec wins; when they disagree about what the app is *allowed to do*, this file wins. **`DESIGN_SPEC.md` §2 replaces §3 "Commits" below** — read it before your first commit. Its `D`-prefixed tasks (spec §15) slot into the phases here and are part of each phase's acceptance.
+
 ---
 
 ## 1. What you are building
@@ -50,6 +52,8 @@ These are settled decisions. If a task seems to require breaking one, **stop and
 ## 3. Working protocol
 
 ### Commits
+
+> **Superseded by `DESIGN_SPEC.md` §2.** The rule below ("commit after every completed task") proved far too coarse on the first build run — when a change went bad there was no nearby good commit to fall back to. The replacement rule is: **commit after every independently revertible change**, and always commit *before* starting anything risky. A single task should produce three to eight commits. Read spec §2 in full; the gates and message format below still apply.
 
 Commit after **every completed task**, not at the end of a phase.
 
@@ -149,6 +153,8 @@ test/
 
 Put these in `lib/app/theme/tokens.dart` as constants. Do not scatter hex literals through widgets.
 
+> `DESIGN_SPEC.md` §3 adds four more tokens the canvas uses (`accentText`, `dotInactive`, `mapLabel`, `mapLabelWater`) and §13 specifies the map style itself. This section is the base; the spec extends it.
+
 **Accent — `#E8A020` (amber).** Anything sitting on the accent is dark `#231F0E`, **never white** — amber cannot carry white text legibly.
 
 | Role | Light | Dark |
@@ -229,7 +235,9 @@ Seeded on first run with `isEveryday = true`. Every capture that has no active t
 - [ ] **T1.5** Text theme: display / body / mono roles, tabular figures on mono.
 - [ ] **T1.6** A debug-only `StyleGalleryScreen` showing every colour, text style, and the capture button in both themes.
 
-**Acceptance:** the style gallery renders correctly in both themes; toggling the OS theme switches it live.
+- [ ] **D1.1–D1.4** — design-spec tasks for this phase: four new tokens, map label colours, the exact type scale, and every §4 component in the gallery. See `DESIGN_SPEC.md` §15.
+
+**Acceptance:** the style gallery renders correctly in both themes; toggling the OS theme switches it live; every component in spec §4 appears in it.
 **Tag:** `phase-1-design-system`
 
 ---
@@ -267,7 +275,7 @@ Seeded on first run with `isEveryday = true`. Every capture that has no active t
 ### Phase 4 — Map surface
 **Goal:** a stylized offline map fills the screen.
 
-- [ ] **T4.1** ⛔ **HUMAN** — a bundled stylized `.mbtiles` basemap. Needs generating from an OSM extract (tilemaker or planetiler) with a Warang style, or sourcing. *Fallback while blocked:* a `TileProvider` that reads a network OSM source behind a `kDevTiles` flag, so map work can proceed. **This fallback must not ship.**
+- [ ] **T4.1** ⛔ **HUMAN** — a bundled stylized `.mbtiles` basemap. Needs generating from an OSM extract (tilemaker or planetiler) with a Warang style, or sourcing. **The style is now fully specified in `DESIGN_SPEC.md` §13** — fills, three road weights, label rules, both palettes; only the asset generation remains. *Fallback while blocked:* a `TileProvider` that reads a network OSM source behind a `kDevTiles` flag, so map work can proceed. **This fallback must not ship.**
 - [ ] **T4.2** `MbTilesTileProvider` — a `flutter_map` `TileProvider` reading tiles from the bundled SQLite MBTiles file. Do **not** add FMTC.
 - [x] **T4.3** Full-bleed map on the home screen, no app bar over it.
 - [ ] **T4.4** Position marker: amber dot, soft halo, heading cone. Not the mascot.
@@ -275,7 +283,9 @@ Seeded on first run with `isEveryday = true`. Every capture that has no active t
 - [x] **T4.6** Capture button, bottom centre, amber with a dark glyph. Wired to nothing yet.
 - [x] **T4.7** Sheet handle peeking from the bottom edge.
 
-**Acceptance:** map renders in both themes with the correct palette, in airplane mode when T4.1 is unblocked.
+- [ ] **D4.1–D4.6** — map style per spec §13, top scrim, position marker, capture button, sheet peek, recenter button. See `DESIGN_SPEC.md` §15.
+
+**Acceptance:** map renders in both themes with the correct palette, in airplane mode when T4.1 is unblocked; roads read lighter than land in both themes.
 **Tag:** `phase-4-map`
 
 ---
@@ -291,6 +301,8 @@ Seeded on first run with `isEveryday = true`. Every capture that has no active t
 - [ ] **T5.6** **No GPS is not an error.** Save with null coordinates and surface a quiet "Add location" affordance on the moment later.
 - [ ] **T5.7** **Tests:** a moment saves with null lat/lng; a moment saves with an empty caption; a capture with no active trip lands in Everyday.
 
+- [ ] **D5.1–D5.2** — the save screen exactly per spec §9, plus the two undrawn meta-line states. See `DESIGN_SPEC.md` §15.
+
 **Acceptance:** on a real device, cold app to saved moment in under five seconds, with no dialog other than the camera.
 **Tag:** `phase-5-capture`
 
@@ -305,7 +317,9 @@ Seeded on first run with `isEveryday = true`. Every capture that has no active t
 - [ ] **T6.4** Thumbnail memory cache; never decode full-size images for pins.
 - [ ] **T6.5** **Tests:** clustering maths — points within the threshold group, points outside do not, counts are correct at each zoom level.
 
-**Acceptance:** 500 seeded moments pan and zoom without dropping frames.
+- [ ] **D6.1–D6.3** — photo pin, cluster pin, and clustering tuned to the spec §7 density target. See `DESIGN_SPEC.md` §15.
+
+**Acceptance:** 500 seeded moments pan and zoom without dropping frames, and no two pins overlap at any zoom.
 **Tag:** `phase-6-pins`
 
 ---
@@ -317,6 +331,8 @@ Seeded on first run with `isEveryday = true`. Every capture that has no active t
 - [ ] **T7.4** Edit sheet: caption, place label, date, manual pin placement for moments with no coordinates.
 - [ ] **T7.5** The map stays visible behind the card at all times.
 
+- [ ] **D7.1–D7.3** — card sheet per spec §10 (note: the actions are three outlined **text** buttons, not icons — the canvas overrules T7.3's wording), page dots, and the empty-caption / no-coordinate variants. See `DESIGN_SPEC.md` §15.
+
 **Tag:** `phase-7-moment-card`
 
 ---
@@ -327,6 +343,8 @@ Seeded on first run with `isEveryday = true`. Every capture that has no active t
 - [ ] **T8.3** Trip detail: grid of moments, edit title/place/dates, set cover.
 - [ ] **T8.4** Create a trip; move moments from Everyday into it (multi-select).
 - [ ] **T8.5** Planned trips (start date in the future) carry a visible "Planned" chip so an empty card does not read as broken.
+
+- [ ] **D8.1–D8.3** — expanded sheet per spec §11, three snap points (the middle one is derived, flag it), planned chip. See `DESIGN_SPEC.md` §15.
 
 **Tag:** `phase-8-trips`
 
@@ -383,6 +401,10 @@ Seeded on first run with `isEveryday = true`. Every capture that has no active t
 - [ ] **T12.4** Storage section shows real space used, with the orphan sweep exposed as "Clean up".
 - [ ] **T12.5** The maya appears only here and on the app icon. Never over a map with photos on it.
 
+- [ ] **D12.1–D12.4** — first run per spec §5, empty map per §6, settings per §12, and the two ⛔ settings questions in §14. See `DESIGN_SPEC.md` §15.
+
+> **Correction to T12.2/T12.5:** the canvas shows **no maya on the empty map**, only the prompt bubble. The mascot is permitted on first run, the app icon, and non-map empty states (an empty trip, an empty search result) — never on the map itself.
+
 **Tag:** `phase-12-onboarding-settings`
 
 ---
@@ -407,6 +429,8 @@ Seeded on first run with `isEveryday = true`. Every capture that has no active t
 - [ ] **T14.4** App icon (maya on amber) and splash.
 - [ ] **T14.5** Release build, signed, installed on a physical device.
 - [ ] **T14.6** Battery check: an hour of normal use should not show unusual drain. GPS must not be running continuously.
+
+- [ ] **D14.1–D14.2** — dark-theme pass over every screen derived rather than designed (01, 05, 06, 07, 08), and a re-run of the spec §14 guardrail audit against the built app. See `DESIGN_SPEC.md` §15.
 
 **Tag:** `phase-14-pilot`
 
