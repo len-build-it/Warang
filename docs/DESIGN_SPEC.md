@@ -26,9 +26,11 @@ Source of truth: the Claude Design canvas, 8 artboards, exported to `design/wara
 
 ---
 
-## 2. Commit protocol — this supersedes IMPLEMENTATION_PLAN.md §3
+## 2. Commit protocol — MOVED to IMPLEMENTATION_PLAN.md §3
 
-The previous run committed far too rarely, which made a bad change expensive to undo. That is the failure this section exists to prevent. Commit frequency here is not bookkeeping — it is the rollback mechanism.
+> **This section no longer holds the rule.** `IMPLEMENTATION_PLAN.md` **§3** is now the single authority on commit cadence. It was moved because keeping the rule in the *design* file meant it was not in front of you at commit time — and it got skipped: Phase 2 shipped as one commit (`5e7a086`) for seven separable things. **Read `IMPLEMENTATION_PLAN.md` §3 before your first commit.** What follows is a reminder only; where it and §3 differ, **§3 wins**, and §3 additionally requires a per-phase commit-log report.
+
+Commit frequency is not bookkeeping — it is the rollback mechanism, and it is the only one this project has.
 
 ### Commit after every independently revertible change
 
