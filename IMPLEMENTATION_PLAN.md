@@ -245,13 +245,13 @@ Seeded on first run with `isEveryday = true`. Every capture that has no active t
 ### Phase 2 — Data layer
 **Goal:** the database exists, is reactive, and cannot lose data.
 
-- [ ] **T2.1** Drift tables per §6, with UUID text primary keys.
-- [ ] **T2.2** Database class, migration strategy, `schemaVersion` in `AppMeta`.
-- [ ] **T2.3** DAOs exposing `Stream` queries (`watch`) for moments, trips, and map pins.
-- [ ] **T2.4** Soft-delete helpers. Every read filters `deletedAt IS NULL`.
-- [ ] **T2.5** First-run seed: a default `Profile` and the `Everyday` trip.
-- [ ] **T2.6** Riverpod providers exposing the DAOs.
-- [ ] **T2.7** **Tests:** insert/read/soft-delete round-trip; deleted rows excluded from every query; Everyday seeded exactly once across repeated launches; UUIDs unique across 10k inserts.
+- [x] **T2.1** Drift tables per §6, with UUID text primary keys.
+- [x] **T2.2** Database class, migration strategy, `schemaVersion` in `AppMeta`.
+- [x] **T2.3** DAOs exposing `Stream` queries (`watch`) for moments, trips, and map pins.
+- [x] **T2.4** Soft-delete helpers. Every read filters `deletedAt IS NULL`.
+- [x] **T2.5** First-run seed: a default `Profile` and the `Everyday` trip.
+- [x] **T2.6** Riverpod providers exposing the DAOs.
+- [x] **T2.7** **Tests:** insert/read/soft-delete round-trip; deleted rows excluded from every query; Everyday seeded exactly once across repeated launches; UUIDs unique across 10k inserts.
 
 **Acceptance:** tests green. No integer primary key anywhere.
 **Tag:** `phase-2-data`

@@ -466,15 +466,25 @@ class MomentSearchDelegate extends SearchDelegate<void> {
   @override
   Widget buildSuggestions(BuildContext context) => _results(context);
 
-  Widget _results(BuildContext context) => ListView(
-    children: repository
-        .search(query)
-        .map(
-          (moment) => ListTile(
-            title: Text(moment.caption ?? moment.placeLabel ?? 'Moment'),
-            subtitle: Text(DateFormat('dd MMM yyyy').format(moment.capturedAt)),
-          ),
-        )
-        .toList(),
+  Widget _results(BuildContext context) => FutureBuilder<List<Moment>>(
+    future: repository.searchAsync(query),
+    builder: (context, snapshot) {
+      final moments = snapshot.data ?? const <Moment>[];
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Center(child: CircularProgressIndicator());
+      }
+      return ListView(
+        children: moments
+            .map(
+              (moment) => ListTile(
+                title: Text(moment.caption ?? moment.placeLabel ?? 'Moment'),
+                subtitle: Text(
+                  DateFormat('dd MMM yyyy').format(moment.capturedAt),
+                ),
+              ),
+            )
+            .toList(),
+      );
+    },
   );
 }
