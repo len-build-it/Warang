@@ -683,7 +683,7 @@ Adapted for Warang: aqone caches *feed responses* per feed with a per-feed max a
 ### Phase 19 — Rebuild, reinstall, re-verify
 **Goal:** one APK that fixes all four reported problems, verified on the actual phone before it is called done.
 
-- [ ] **T19.1** `flutter analyze` clean. `flutter test` green.
+- [x] **T19.1** `flutter analyze` clean. `flutter test` green.
 - [ ] **T19.2** `flutter build apk --release --split-per-abi` — never a debug APK (see the build note: the first APK shipped an x86-only engine and crashed instantly on the Infinix).
 - [ ] **T19.3** **Verify the APK contains `lib/arm64-v8a/libflutter.so` before sending it.** Ship `app-arm64-v8a-release.apk`; expect ~12–20 MB plus whatever the bundled fonts add.
 - [ ] **T19.4** On-device checklist, in this order: launcher icon is the maya · app opens to a real map · marker is on the correct street · capture button is clean amber with no outline · hamburger opens the drawer · profile counts are right · airplane mode still draws the map with an age stamp · capture still completes in under five seconds.
