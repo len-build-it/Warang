@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -35,6 +36,7 @@ class WarangMapSurface extends StatefulWidget {
 class _WarangMapSurfaceState extends State<WarangMapSurface> {
   late final MapTileStore _tileStore = MapTileStore();
   final _photoStore = PhotoStore();
+  final _mapController = MapController();
 
   @override
   void dispose() {
@@ -46,12 +48,19 @@ class _WarangMapSurfaceState extends State<WarangMapSurface> {
   Widget build(BuildContext context) => ColorFiltered(
     colorFilter: _mapFilter(widget.dark),
     child: FlutterMap(
+      mapController: _mapController,
       options: MapOptions(
-        initialCenter: const LatLng(11.55, 122.0),
+        initialCenter: _initialCenter,
         initialZoom: 5.8,
         minZoom: 2,
         maxZoom: 18,
         onTap: (_, _) => widget.onMapTap?.call(),
+        onMapReady: _restoreCamera,
+        onPositionChanged: (camera, hasGesture) {
+          if (hasGesture) {
+            unawaited(_tileStore.saveCamera(camera.center, camera.zoom));
+          }
+        },
       ),
       children: [
         TileLayer(
@@ -82,6 +91,25 @@ class _WarangMapSurfaceState extends State<WarangMapSurface> {
       ],
     ),
   );
+
+  LatLng get _initialCenter {
+    final withCoordinates = widget.moments
+        .where((moment) => moment.latitude != null && moment.longitude != null)
+        .toList()
+      ..sort((a, b) => b.capturedAt.compareTo(a.capturedAt));
+    final latest = withCoordinates.isEmpty ? null : withCoordinates.first;
+    return latest == null
+        ? const LatLng(11.55, 122.0)
+        : LatLng(latest.latitude!, latest.longitude!);
+  }
+
+  void _restoreCamera() => unawaited(_restoreCameraAsync());
+
+  Future<void> _restoreCameraAsync() async {
+    final saved = await _tileStore.loadCamera();
+    if (!mounted || saved == null) return;
+    _mapController.move(saved.center, saved.zoom);
+  }
 
   Marker _markerFor(Moment moment) {
     final selected = moment.id == widget.selectedId;

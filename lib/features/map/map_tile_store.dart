@@ -7,6 +7,7 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart' as sqflite;
 
@@ -81,6 +82,24 @@ class MapTileStore implements TileCache {
         await db.execute(
           'CREATE INDEX tiles_fetched_at ON tiles (fetchedAt)',
         );
+        await db.execute('''
+          CREATE TABLE map_camera (
+            id INTEGER PRIMARY KEY,
+            latitude REAL NOT NULL,
+            longitude REAL NOT NULL,
+            zoom REAL NOT NULL
+          )
+        ''');
+      },
+      onOpen: (db) async {
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS map_camera (
+            id INTEGER PRIMARY KEY,
+            latitude REAL NOT NULL,
+            longitude REAL NOT NULL,
+            zoom REAL NOT NULL
+          )
+        ''');
       },
     );
   }
@@ -171,11 +190,43 @@ class MapTileStore implements TileCache {
   @override
   Future<void> clear() async => (await _db).delete('tiles');
 
+  Future<MapCameraSnapshot?> loadCamera() async {
+    final rows = await (await _db).query('map_camera', limit: 1);
+    if (rows.isEmpty) return null;
+    final row = rows.single;
+    return MapCameraSnapshot(
+      center: LatLng(
+        (row['latitude']! as num).toDouble(),
+        (row['longitude']! as num).toDouble(),
+      ),
+      zoom: (row['zoom']! as num).toDouble(),
+    );
+  }
+
+  Future<void> saveCamera(LatLng center, double zoom) async {
+    await (await _db).insert(
+      'map_camera',
+      {
+        'id': 1,
+        'latitude': center.latitude,
+        'longitude': center.longitude,
+        'zoom': zoom,
+      },
+      conflictAlgorithm: sqflite.ConflictAlgorithm.replace,
+    );
+  }
+
   Future<void> close() async {
     final db = _database;
     _database = null;
     await db?.close();
   }
+}
+
+class MapCameraSnapshot {
+  const MapCameraSnapshot({required this.center, required this.zoom});
+  final LatLng center;
+  final double zoom;
 }
 
 class CachedTileProvider extends TileProvider {

@@ -629,7 +629,7 @@ Adapted for Warang: aqone caches *feed responses* per feed with a per-feed max a
 - [x] **T17.6** Replace `CustomPaint(painter: WarangMapPainter(...))` with a `FlutterMap`. **Delete `map_painter.dart`** once pins render — do not leave it as a fallback; a fake map that can silently reappear is worse than a blank one.
 - [x] **T17.7** OSM raster base layer with a correct `userAgentPackageName` and OSM attribution — the tile usage policy requires both, and this is a licence obligation, not a nicety. Attribution goes bottom-left, at `faint`, small.
 - [x] **T17.8** **Style bridge.** OSM tiles do not look like `DESIGN_SPEC.md` §13. Wrap the tile layer in a `ColorFiltered`/`ColorFilter.matrix` that desaturates and tints toward the Warang palette — a light-theme filter and a dark-theme filter, tuned by eye against the spec swatches. This is an approximation and the spec should say so; the exact §13 style still needs vector or bundled tiles. **Do not ship raw full-colour OSM** — it would break the "photos are the only saturated thing on screen" rule outright.
-- [ ] **T17.9** Camera: `initialCenter` on the last known position, else the user's most recent moment, else a neutral Philippines-wide view. Persist the last camera position so a relaunch resumes where they left off.
+- [x] **T17.9** Camera: `initialCenter` on the last known position, else the user's most recent moment, else a neutral Philippines-wide view. Persist the last camera position so a relaunch resumes where they left off.
 
 **17c — Real location**
 
