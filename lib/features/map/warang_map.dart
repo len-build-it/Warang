@@ -176,9 +176,7 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
   }
 
   List<Marker> _momentMarkers() {
-    final moments = widget.moments
-        .where((moment) => moment.latitude != null && moment.longitude != null)
-        .toList();
+    final moments = momentsWithMapCoordinates(widget.moments).toList();
     final groups = <List<Moment>>[];
     final threshold = (70000 / math.pow(2, _currentZoom - 4))
         .clamp(2500, 70000)
@@ -348,6 +346,11 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
     return await file.exists() ? file : null;
   }
 }
+
+Iterable<Moment> momentsWithMapCoordinates(Iterable<Moment> moments) =>
+    moments.where(
+      (moment) => moment.latitude != null && moment.longitude != null,
+    );
 
 ColorFilter _mapFilter(bool dark) => ColorFilter.matrix(
   dark
