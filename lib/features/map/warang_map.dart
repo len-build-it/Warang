@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -39,6 +40,10 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
   final _photoStore = PhotoStore();
   final _mapController = MapController();
   Position? _position;
+  DateTime? _staleSince;
+  double _currentZoom = 5.8;
+  bool _showMoments = true;
+  bool _showClusters = true;
 
   @override
   void dispose() {
@@ -47,8 +52,11 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
   }
 
   @override
-  Widget build(BuildContext context) => FlutterMap(
-      mapController: _mapController,
+  Widget build(BuildContext context) => Stack(
+    fit: StackFit.expand,
+    children: [
+      FlutterMap(
+        mapController: _mapController,
       options: MapOptions(
         initialCenter: _initialCenter,
         initialZoom: 5.8,
@@ -57,8 +65,10 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
         onTap: (_, _) => widget.onMapTap?.call(),
         onMapReady: _restoreCamera,
         onPositionChanged: (camera, hasGesture) {
+          _currentZoom = camera.zoom;
           if (hasGesture) {
             unawaited(_tileStore.saveCamera(camera.center, camera.zoom));
+            if (mounted) setState(() {});
           }
         },
       ),
@@ -71,6 +81,9 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
             tileProvider: CachedTileProvider(
               store: _tileStore,
               layerId: 'osm-standard',
+              onStaleTile: (fetchedAt) {
+                if (mounted) setState(() => _staleSince = fetchedAt);
+              },
             ),
             maxZoom: 19,
           ),
@@ -78,9 +91,7 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
         MarkerLayer(
           markers: [
             if (_position != null) _positionMarker(_position!),
-            for (final moment in widget.moments)
-              if (moment.latitude != null && moment.longitude != null)
-                _markerFor(moment),
+            if (_showMoments || _showClusters) ..._momentMarkers(),
           ],
         ),
         RichAttributionWidget(
@@ -93,7 +104,127 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
           ],
         ),
       ],
+      ),
+      Positioned(
+        top: 52,
+        right: 16,
+        child: PopupMenuButton<String>(
+          tooltip: 'Map layers',
+          onSelected: (value) {
+            setState(() {
+              if (value == 'moments') _showMoments = !_showMoments;
+              if (value == 'clusters') _showClusters = !_showClusters;
+            });
+          },
+          itemBuilder: (context) => [
+            CheckedPopupMenuItem(
+              value: 'moments',
+              checked: _showMoments,
+              child: const Text('Your moments'),
+            ),
+            CheckedPopupMenuItem(
+              value: 'clusters',
+              checked: _showClusters,
+              child: const Text('Clusters'),
+            ),
+            const PopupMenuItem(enabled: false, child: Text('Base map')),
+          ],
+          child: Material(
+            color: Theme.of(context).colorScheme.surface.withValues(alpha: .94),
+            shape: const CircleBorder(),
+            clipBehavior: Clip.antiAlias,
+            child: const SizedBox(
+              width: 44,
+              height: 44,
+              child: Icon(Icons.layers_outlined, size: 20),
+            ),
+          ),
+        ),
+      ),
+      if (_staleSince != null)
+        Positioned(
+          top: 105,
+          left: 0,
+          right: 0,
+          child: Center(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface.withValues(alpha: .9),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                child: Text(
+                  'MAP · CACHED ${_ageDays(_staleSince!)} DAYS AGO',
+                  style: TextStyle(
+                    fontFamily: 'DM Mono',
+                    fontSize: 9,
+                    letterSpacing: 1.2,
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .54),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+    ],
+  );
+
+  int _ageDays(DateTime fetchedAt) {
+    final days = DateTime.now().difference(fetchedAt).inDays;
+    return math.max(1, days);
+  }
+
+  List<Marker> _momentMarkers() {
+    final moments = widget.moments
+        .where((moment) => moment.latitude != null && moment.longitude != null)
+        .toList();
+    final groups = <List<Moment>>[];
+    final threshold = (70000 / math.pow(2, _currentZoom - 4))
+        .clamp(2500, 70000)
+        .toDouble();
+    const distance = Distance();
+    for (final moment in moments) {
+      final point = LatLng(moment.latitude!, moment.longitude!);
+      final group = groups.cast<List<Moment>?>().firstWhere(
+        (candidate) {
+          if (candidate == null || candidate.isEmpty) return false;
+          final origin = candidate.first;
+          return distance.as(
+                LengthUnit.Meter,
+                LatLng(origin.latitude!, origin.longitude!),
+                point,
+              ) <=
+              threshold;
+        },
+        orElse: () => null,
+      );
+      if (group == null) {
+        groups.add([moment]);
+      } else {
+        group.add(moment);
+      }
+    }
+    return [
+      for (final group in groups)
+        if (group.length == 1 && _showMoments) _markerFor(group.single)
+        else if (group.length > 1 && _showClusters) _clusterMarker(group),
+    ];
+  }
+
+  Marker _clusterMarker(List<Moment> group) {
+    final latitude = group.map((moment) => moment.latitude!).reduce((a, b) => a + b) / group.length;
+    final longitude = group.map((moment) => moment.longitude!).reduce((a, b) => a + b) / group.length;
+    return Marker(
+      point: LatLng(latitude, longitude),
+      width: 52,
+      height: 52,
+      child: GestureDetector(
+        onTap: () => _mapController.move(LatLng(latitude, longitude), _currentZoom + 2),
+        child: WarangClusterPin(count: group.length),
+      ),
     );
+  }
 
   LatLng get _initialCenter {
     final withCoordinates = widget.moments

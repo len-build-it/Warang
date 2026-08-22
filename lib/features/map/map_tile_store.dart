@@ -294,12 +294,14 @@ class CachedTileProvider extends TileProvider {
     required this.store,
     required this.layerId,
     this.client,
+    this.onStaleTile,
     super.headers,
   });
 
   final TileCache store;
   final String layerId;
   final HttpClient? client;
+  final ValueChanged<DateTime>? onStaleTile;
 
   @override
   ImageProvider getImage(TileCoordinates coordinates, TileLayer options) {
@@ -320,6 +322,7 @@ class CachedTileProvider extends TileProvider {
   }) async {
     final cached = await store.get(z: z, x: x, y: y, layerId: layerId);
     if (cached != null) {
+      if (cached.isStale) onStaleTile?.call(cached.fetchedAt);
       unawaited(_revalidate(z: z, x: x, y: y, url: url, cached: cached));
       return cached.bytes;
     }

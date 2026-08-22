@@ -641,14 +641,14 @@ Adapted for Warang: aqone caches *feed responses* per feed with a per-feed max a
 **17d — Pins on real coordinates**
 
 - [x] **T17.14** Delete the `positions` `Offset` table in `_buildPin`. Pins become `Marker`s at `LatLng(moment.lat, moment.lng)`. **Moments with null coordinates must not render on the map at all** — they surface in the trips sheet with the "Add location" affordance (T5.6), which is exactly why they are allowed to exist.
-- [ ] **T17.15** Marker factory — one function producing a photo-pin, a cluster pin, or a selected pin from a moment plus a state, so every pin is built one way. (aqone's `divIcon` factory, in Flutter terms.)
-- [ ] **T17.16** Distance-based clustering at the current zoom, replacing the `moments.length > 5` placeholder cluster. Cluster tapping zooms in; it does not open a card.
-- [ ] **T17.17** Layer groups behind a small toggle: **Your moments** / **Clusters** / base map. Structured as a list of toggleable layers even though there are only two now — this is the seam future layers (trip routes, shared books) hang off.
-- [ ] **T17.18** Tapping a pin still opens the card **over** the map with the map alive underneath. The map must not rebuild or recentre when the card opens.
+- [x] **T17.15** Marker factory — one function producing a photo-pin, a cluster pin, or a selected pin from a moment plus a state, so every pin is built one way. (aqone's `divIcon` factory, in Flutter terms.)
+- [x] **T17.16** Distance-based clustering at the current zoom, replacing the `moments.length > 5` placeholder cluster. Cluster tapping zooms in; it does not open a card.
+- [x] **T17.17** Layer groups behind a small toggle: **Your moments** / **Clusters** / base map. Structured as a list of toggleable layers even though there are only two now — this is the seam future layers (trip routes, shared books) hang off.
+- [x] **T17.18** Tapping a pin still opens the card **over** the map with the map alive underneath. The map must not rebuild or recentre when the card opens.
 
 **17e — Offline honesty**
 
-- [ ] **T17.19** **Age stamp.** When any visible tile is served stale or the device is offline, show a quiet chip — `MAP · CACHED 3 DAYS AGO` — in DM Mono, `faint`, top-centre under the scrim. Never an error, never a modal. Straight from aqone: the map is always usable and always tells you how old it is.
+- [x] **T17.19** **Age stamp.** When any visible tile is served stale or the device is offline, show a quiet chip — `MAP · CACHED 3 DAYS AGO` — in DM Mono, `faint`, top-centre under the scrim. Never an error, never a modal. Straight from aqone: the map is always usable and always tells you how old it is.
 - [ ] **T17.20** Airplane-mode test on a real device: cold start over a previously-visited area renders from cache with the stamp; a never-visited area shows flat land colour, not a grid of broken tiles.
 - [x] **T17.21** Keep the `TileProvider` seam clean so a bundled `.mbtiles` (old T4.1/T4.2) can be added later as a **second** provider consulted before the network — the offline-first endgame is unchanged, just deferred.
 - [ ] **T17.22** **Tests:** cache hit returns bytes without a network call; a stale tile still renders; eviction drops the oldest first; a moment with null coordinates produces no marker.
