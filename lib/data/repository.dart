@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -6,6 +7,7 @@ import 'package:drift/drift.dart';
 import '../core/ids.dart';
 import '../core/models.dart';
 import 'db/database.dart';
+import 'files/photo_store.dart';
 
 /// UI-facing compatibility façade over the Drift data layer.
 ///
@@ -60,6 +62,18 @@ class WarangRepository extends ChangeNotifier {
     await database.profilesDao.updateProfile(
       _profile.id,
       ProfilesCompanion(name: Value(name.trim()), updatedAt: Value(now)),
+    );
+    await _refreshAll();
+  }
+
+  Future<void> setAvatar(File source) async {
+    final relativePath = await PhotoStore().importPhoto(source);
+    await database.profilesDao.updateProfile(
+      _profile.id,
+      ProfilesCompanion(
+        avatarRelPath: Value(relativePath),
+        updatedAt: Value(DateTime.now()),
+      ),
     );
     await _refreshAll();
   }

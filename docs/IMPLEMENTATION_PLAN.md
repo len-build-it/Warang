@@ -665,14 +665,14 @@ Adapted for Warang: aqone caches *feed responses* per feed with a per-feed max a
 
 **No accounts.** "Profile" here is a **local** identity: a display name, an avatar, and counts. It is stored on the device, it is not a login, and there must be no "sign in", "sync", or "coming soon" row anywhere in it (§2). It is future-proofed only in the sense that the existing per-install `authorId` is what it displays.
 
-- [ ] **T18.1** Hamburger button top-left of the map home, 44×44 tap target, in the same neutral treatment as the recenter button — **not** amber (the accent budget is spent on the capture button).
-- [ ] **T18.2** Slide-over drawer, ~82% width, ground-coloured, over a scrim at the same alpha the moment card uses. Swipe-from-edge to open, swipe/scrim-tap to close.
-- [ ] **T18.3** **Profile header:** avatar (tap to pick a photo, stored through the existing `PhotoStore` as a **relative** path — §2), display name (tap to edit, `shared_preferences`), and three counts in DM Mono: **moments · places · trips**. Places = distinct pin clusters, not raw moments.
-- [ ] **T18.4** Nav rows, in this order: **Trips**, **Search**, **Settings**, **Backup & `.travelbook`**, **About Warang**. Each closes the drawer, then navigates — never both at once, it looks broken.
-- [ ] **T18.5** Wire **Search** to the already-written `MomentSearchDelegate`. It has been dead code since Phase 9.
-- [ ] **T18.6** **Delete the hidden long-press settings gesture** once Settings is in the drawer. Two ways in is one way to get confused.
-- [ ] **T18.7** Drawer footer: version string and build number, DM Mono, `faint`. Cheap and it makes bug reports from the phone actually useful.
-- [ ] **T18.8** Both themes; derive the dark variant per `DESIGN_SPEC.md` §8 since no drawer artboard exists. Accent count in the drawer: **zero or one**.
+- [x] **T18.1** Hamburger button top-left of the map home, 44×44 tap target, in the same neutral treatment as the recenter button — **not** amber (the accent budget is spent on the capture button).
+- [x] **T18.2** Slide-over drawer, ~82% width, ground-coloured, over a scrim at the same alpha the moment card uses. Swipe-from-edge to open, swipe/scrim-tap to close.
+- [x] **T18.3** **Profile header:** avatar (tap to pick a photo, stored through the existing `PhotoStore` as a **relative** path — §2), display name (tap to edit, Drift-backed profile row), and three counts in DM Mono: **moments · places · trips**. Places = distinct pin clusters, not raw moments.
+- [x] **T18.4** Nav rows, in this order: **Trips**, **Search**, **Settings**, **Backup & `.travelbook`**, **About Warang**. Each closes the drawer, then navigates — never both at once, it looks broken.
+- [x] **T18.5** Wire **Search** to the already-written `MomentSearchDelegate`. It has been dead code since Phase 9.
+- [x] **T18.6** **Delete the hidden long-press settings gesture** once Settings is in the drawer. Two ways in is one way to get confused.
+- [x] **T18.7** Drawer footer: version string and build number, DM Mono, `faint`. Cheap and it makes bug reports from the phone actually useful.
+- [x] **T18.8** Both themes; derive the dark variant per `DESIGN_SPEC.md` §8 since no drawer artboard exists. Accent count in the drawer: **zero or one**.
 - [ ] **T18.9** Add the drawer and profile to `DESIGN_SPEC.md` as a new section, with the measurements you actually built, so the spec stops lagging the app.
 
 **Acceptance:** every screen in the app is reachable in at most two taps from the map, without long-pressing anything invisible. Accent budget on the map home is still ≤4.
