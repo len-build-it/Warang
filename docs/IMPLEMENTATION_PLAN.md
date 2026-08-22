@@ -633,10 +633,10 @@ Adapted for Warang: aqone caches *feed responses* per feed with a per-feed max a
 
 **17c — Real location**
 
-- [ ] **T17.10** Location permission flow, primed in plain language before the system dialog (this is the outstanding T5.1). Denial is **not** fatal — the map still works, only the marker is absent.
-- [ ] **T17.11** One-shot `geolocator` fix on map open and on recenter. **No continuous stream, no background tracking** (§2). Cache the last known position so a cold start has something to centre on.
-- [ ] **T17.12** `WarangPositionMarker` at the real `LatLng` via a `MarkerLayer` — remove the hardcoded screen-centre `Positioned`. Amber dot, halo, heading cone from `flutter_compass`; if the sensor is unavailable, drop the cone silently rather than pointing north and lying. (Closes T4.4.)
-- [ ] **T17.13** Wire `_RecenterButton` — currently `onPressed: () {}`. Animate the camera to the fix; disabled-looking and inert if permission is denied. Neutral, not amber, per the design audit fallback. (Closes T4.5.)
+- [x] **T17.10** Location permission flow, primed in plain language before the system dialog (this is the outstanding T5.1). Denial is **not** fatal — the map still works, only the marker is absent.
+- [x] **T17.11** One-shot `geolocator` fix on map open and on recenter. **No continuous stream, no background tracking** (§2). Cache the last known position so a cold start has something to centre on.
+- [x] **T17.12** `WarangPositionMarker` at the real `LatLng` via a `MarkerLayer` — remove the hardcoded screen-centre `Positioned`. Amber dot, halo, heading cone from `flutter_compass`; if the sensor is unavailable, drop the cone silently rather than pointing north and lying. (Closes T4.4.)
+- [x] **T17.13** Wire `_RecenterButton` — currently `onPressed: () {}`. Animate the camera to the fix; disabled-looking and inert if permission is denied. Neutral, not amber, per the design audit fallback. (Closes T4.5.)
 
 **17d — Pins on real coordinates**
 

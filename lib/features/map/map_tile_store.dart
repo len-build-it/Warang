@@ -90,6 +90,15 @@ class MapTileStore implements TileCache {
             zoom REAL NOT NULL
           )
         ''');
+        await db.execute('''
+          CREATE TABLE map_location (
+            id INTEGER PRIMARY KEY,
+            latitude REAL NOT NULL,
+            longitude REAL NOT NULL,
+            accuracy REAL,
+            updatedAt INTEGER NOT NULL
+          )
+        ''');
       },
       onOpen: (db) async {
         await db.execute('''
@@ -98,6 +107,15 @@ class MapTileStore implements TileCache {
             latitude REAL NOT NULL,
             longitude REAL NOT NULL,
             zoom REAL NOT NULL
+          )
+        ''');
+        await db.execute('''
+          CREATE TABLE IF NOT EXISTS map_location (
+            id INTEGER PRIMARY KEY,
+            latitude REAL NOT NULL,
+            longitude REAL NOT NULL,
+            accuracy REAL,
+            updatedAt INTEGER NOT NULL
           )
         ''');
       },
@@ -216,6 +234,37 @@ class MapTileStore implements TileCache {
     );
   }
 
+  Future<MapLocationSnapshot?> loadLocation() async {
+    final rows = await (await _db).query('map_location', limit: 1);
+    if (rows.isEmpty) return null;
+    final row = rows.single;
+    return MapLocationSnapshot(
+      center: LatLng(
+        (row['latitude']! as num).toDouble(),
+        (row['longitude']! as num).toDouble(),
+      ),
+      accuracy: (row['accuracy'] as num?)?.toDouble(),
+      updatedAt: DateTime.fromMillisecondsSinceEpoch(row['updatedAt']! as int),
+    );
+  }
+
+  Future<void> saveLocation({
+    required LatLng center,
+    required double? accuracy,
+  }) async {
+    await (await _db).insert(
+      'map_location',
+      {
+        'id': 1,
+        'latitude': center.latitude,
+        'longitude': center.longitude,
+        'accuracy': accuracy,
+        'updatedAt': DateTime.now().millisecondsSinceEpoch,
+      },
+      conflictAlgorithm: sqflite.ConflictAlgorithm.replace,
+    );
+  }
+
   Future<void> close() async {
     final db = _database;
     _database = null;
@@ -227,6 +276,17 @@ class MapCameraSnapshot {
   const MapCameraSnapshot({required this.center, required this.zoom});
   final LatLng center;
   final double zoom;
+}
+
+class MapLocationSnapshot {
+  const MapLocationSnapshot({
+    required this.center,
+    required this.accuracy,
+    required this.updatedAt,
+  });
+  final LatLng center;
+  final double? accuracy;
+  final DateTime updatedAt;
 }
 
 class CachedTileProvider extends TileProvider {

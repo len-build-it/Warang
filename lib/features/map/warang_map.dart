@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../app/theme/components.dart';
@@ -30,13 +31,14 @@ class WarangMapSurface extends StatefulWidget {
   final VoidCallback? onMapTap;
 
   @override
-  State<WarangMapSurface> createState() => _WarangMapSurfaceState();
+  WarangMapSurfaceState createState() => WarangMapSurfaceState();
 }
 
-class _WarangMapSurfaceState extends State<WarangMapSurface> {
+class WarangMapSurfaceState extends State<WarangMapSurface> {
   late final MapTileStore _tileStore = MapTileStore();
   final _photoStore = PhotoStore();
   final _mapController = MapController();
+  Position? _position;
 
   @override
   void dispose() {
@@ -45,9 +47,7 @@ class _WarangMapSurfaceState extends State<WarangMapSurface> {
   }
 
   @override
-  Widget build(BuildContext context) => ColorFiltered(
-    colorFilter: _mapFilter(widget.dark),
-    child: FlutterMap(
+  Widget build(BuildContext context) => FlutterMap(
       mapController: _mapController,
       options: MapOptions(
         initialCenter: _initialCenter,
@@ -63,17 +63,21 @@ class _WarangMapSurfaceState extends State<WarangMapSurface> {
         },
       ),
       children: [
-        TileLayer(
-          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          userAgentPackageName: 'ph.warang.app',
-          tileProvider: CachedTileProvider(
-            store: _tileStore,
-            layerId: 'osm-standard',
+        ColorFiltered(
+          colorFilter: _mapFilter(widget.dark),
+          child: TileLayer(
+            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            userAgentPackageName: 'ph.warang.app',
+            tileProvider: CachedTileProvider(
+              store: _tileStore,
+              layerId: 'osm-standard',
+            ),
+            maxZoom: 19,
           ),
-          maxZoom: 19,
         ),
         MarkerLayer(
           markers: [
+            if (_position != null) _positionMarker(_position!),
             for (final moment in widget.moments)
               if (moment.latitude != null && moment.longitude != null)
                 _markerFor(moment),
@@ -89,8 +93,7 @@ class _WarangMapSurfaceState extends State<WarangMapSurface> {
           ],
         ),
       ],
-    ),
-  );
+    );
 
   LatLng get _initialCenter {
     final withCoordinates = widget.moments
@@ -107,9 +110,89 @@ class _WarangMapSurfaceState extends State<WarangMapSurface> {
 
   Future<void> _restoreCameraAsync() async {
     final saved = await _tileStore.loadCamera();
-    if (!mounted || saved == null) return;
-    _mapController.move(saved.center, saved.zoom);
+    final cachedLocation = await _tileStore.loadLocation();
+    if (!mounted) return;
+    if (cachedLocation != null) {
+      setState(() {
+        _position = _positionFromCached(cachedLocation);
+      });
+    }
+    if (saved != null) _mapController.move(saved.center, saved.zoom);
+    await _refreshLocation(moveToUser: saved == null);
   }
+
+  Future<void> recenter() => _refreshLocation(moveToUser: true);
+
+  Future<void> _refreshLocation({required bool moveToUser}) async {
+    try {
+      if (!await Geolocator.isLocationServiceEnabled()) return;
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        if (!mounted) return;
+        final explain = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Place moments on your map'),
+            content: const Text(
+              'Warang uses your location once to place a moment. It never tracks you in the background.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Not now'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Continue'),
+              ),
+            ],
+          ),
+        );
+        if (explain != true || !mounted) return;
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        return;
+      }
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
+        ),
+      );
+      final center = LatLng(position.latitude, position.longitude);
+      await _tileStore.saveLocation(
+        center: center,
+        accuracy: position.accuracy,
+      );
+      if (!mounted) return;
+      setState(() => _position = position);
+      if (moveToUser) _mapController.move(center, 14);
+    } catch (_) {
+      // Location is an enhancement; a denial or unavailable fix never blocks
+      // the map or the rest of the offline-first app.
+    }
+  }
+
+  Position _positionFromCached(MapLocationSnapshot location) => Position(
+    longitude: location.center.longitude,
+    latitude: location.center.latitude,
+    timestamp: location.updatedAt,
+    accuracy: location.accuracy ?? 0,
+    altitude: 0,
+    altitudeAccuracy: 0,
+    heading: 0,
+    headingAccuracy: 0,
+    speed: 0,
+    speedAccuracy: 0,
+  );
+
+  Marker _positionMarker(Position position) => Marker(
+    point: LatLng(position.latitude, position.longitude),
+    width: 76,
+    height: 76,
+    child: const WarangPositionMarker(),
+  );
 
   Marker _markerFor(Moment moment) {
     final selected = moment.id == widget.selectedId;

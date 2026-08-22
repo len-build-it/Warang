@@ -42,6 +42,7 @@ class _HomeContent extends StatefulWidget {
 
 class _HomeContentState extends State<_HomeContent> {
   final _photoStore = PhotoStore();
+  final _mapKey = GlobalKey<WarangMapSurfaceState>();
   Moment? _selected;
   bool _drawerOpen = false;
 
@@ -125,6 +126,7 @@ class _HomeContentState extends State<_HomeContent> {
           children: [
             Positioned.fill(
               child: WarangMapSurface(
+                key: _mapKey,
                 moments: moments,
                 selectedId: selected?.id,
                 palette: theme.extension<MapPalette>()!,
@@ -195,7 +197,9 @@ class _HomeContentState extends State<_HomeContent> {
               Positioned(
                 right: 20,
                 bottom: 150,
-                child: _RecenterButton(onPressed: () {}),
+                child: _RecenterButton(
+                  onPressed: () => _mapKey.currentState?.recenter(),
+                ),
               ),
             ] else ...[
               Positioned.fill(
