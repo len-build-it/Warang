@@ -1,17 +1,19 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../app/app.dart';
+import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
 import '../../core/models.dart';
 import '../../data/files/photo_store.dart';
 import '../../data/repository.dart';
 import '../capture/capture_screen.dart';
 import '../settings/settings_screen.dart';
-import '../share/share_service.dart';
 import '../trips/trips_sheet.dart';
 import 'map_painter.dart';
 
@@ -31,6 +33,7 @@ class HomeScreen extends ConsumerWidget {
 class _HomeContent extends StatefulWidget {
   const _HomeContent({required this.repository});
   final WarangRepository repository;
+
   @override
   State<_HomeContent> createState() => _HomeContentState();
 }
@@ -50,295 +53,223 @@ class _HomeContentState extends State<_HomeContent> {
       return;
     }
     if (!mounted) return;
-    final saved = await Navigator.of(
+    await Navigator.of(
       context,
     ).push<bool>(MaterialPageRoute(builder: (_) => const CaptureScreen()));
-    if (saved == true && mounted) setState(() {});
   }
 
   void _showTrips() => showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
+    barrierColor: Theme.of(
+      context,
+    ).colorScheme.onSurface.withValues(alpha: .46),
     builder: (_) => TripsSheet(repository: widget.repository),
   );
 
-  void _showSearch() => showSearch<void>(
-    context: context,
-    delegate: MomentSearchDelegate(widget.repository),
-  );
+  void _showSettings() => Navigator.of(
+    context,
+  ).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final palette = theme.extension<MapPalette>()!;
+    final dark = theme.brightness == Brightness.dark;
     final moments = widget.repository.moments;
-    return Scaffold(
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          CustomPaint(
-            painter: WarangMapPainter(
-              palette: palette,
-              dark: theme.brightness == Brightness.dark,
-            ),
-          ),
-          if (moments.isEmpty)
-            Center(child: _EmptyMapState(onCapture: _capture)),
-          ...moments.asMap().entries.map(
-            (entry) => _positionedPin(context, entry.value, entry.key),
-          ),
-          if (moments.length > 4)
-            Positioned(
-              left: MediaQuery.sizeOf(context).width * .64,
-              top: MediaQuery.sizeOf(context).height * .33,
-              child: _ClusterPin(count: moments.length),
-            ),
-          const _PositionMarker(),
-          Positioned(
-            top: MediaQuery.paddingOf(context).top + 12,
-            left: 18,
-            right: 18,
-            child: _TopControls(
-              onSearch: _showSearch,
-              onSettings: () => Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (_) => const SettingsScreen())),
-            ),
-          ),
-          if (_selected != null)
-            Positioned.fill(
-              child: _MomentCard(
-                moment: _selected!,
-                repository: widget.repository,
-                photoStore: _photoStore,
-                onClose: () => setState(() => _selected = null),
+    final visibleMoments = moments.length > 5
+        ? moments.take(5).toList()
+        : moments;
+    final size = MediaQuery.sizeOf(context);
+    final selected = _selected;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: selected == null
+            ? (dark ? Brightness.light : Brightness.dark)
+            : Brightness.light,
+        statusBarBrightness: selected == null
+            ? (dark ? Brightness.dark : Brightness.light)
+            : Brightness.dark,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness: dark
+            ? Brightness.light
+            : Brightness.dark,
+      ),
+      child: Scaffold(
+        extendBody: true,
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            CustomPaint(
+              painter: WarangMapPainter(
+                palette: theme.extension<MapPalette>()!,
+                dark: dark,
               ),
             ),
-          if (_selected == null)
-            Positioned(
-              bottom: MediaQuery.paddingOf(context).bottom + 88,
+            const Positioned(
+              top: 0,
               left: 0,
               right: 0,
-              child: const _SheetHandle(),
+              child: WarangTopScrim(),
             ),
-          Positioned(
-            bottom: MediaQuery.paddingOf(context).bottom + 28,
-            left: 18,
-            right: 18,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: IconButton.filledTonal(
-                      onPressed: _showTrips,
-                      icon: const Icon(Icons.layers_outlined),
+            if (selected == null) ...[
+              ...visibleMoments.asMap().entries.map(
+                (entry) => _buildPin(entry.value, entry.key, size, false),
+              ),
+              if (moments.length > 5)
+                Positioned(
+                  left: 187,
+                  top: 552,
+                  child: WarangClusterPin(count: moments.length - 5),
+                ),
+              Positioned(
+                left: size.width / 2 - 38,
+                top: size.height / 2 - 38,
+                child: const WarangPositionMarker(),
+              ),
+              if (moments.isEmpty)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 158,
+                  child: Center(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface.withValues(alpha: .94),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: .09,
+                            ),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 15,
+                          vertical: 9,
+                        ),
+                        child: Text(
+                          'Capture your first moment.',
+                          style: TextStyle(fontSize: 13.5),
+                        ),
+                      ),
                     ),
                   ),
                 ),
-                _CaptureButton(onPressed: _capture),
-                const Spacer(),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _positionedPin(BuildContext context, Moment moment, int index) {
-    final size = MediaQuery.sizeOf(context);
-    final x = moment.longitude == null
-        ? .18 + ((index * .17) % .62)
-        : .5 + (moment.longitude! % 1) * .12;
-    final y = moment.latitude == null
-        ? .25 + ((index * .13) % .43)
-        : .47 - (moment.latitude! % 1) * .2;
-    return Positioned(
-      left: size.width * x,
-      top: size.height * y,
-      child: GestureDetector(
-        onTap: () => setState(() => _selected = moment),
-        child: _PhotoPin(moment: moment, photoStore: _photoStore),
-      ),
-    );
-  }
-}
-
-class _TopControls extends StatelessWidget {
-  const _TopControls({required this.onSearch, required this.onSettings});
-  final VoidCallback onSearch;
-  final VoidCallback onSettings;
-  @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      CircleAvatar(
-        backgroundColor: Theme.of(
-          context,
-        ).colorScheme.surface.withValues(alpha: .88),
-        child: IconButton(onPressed: onSearch, icon: const Icon(Icons.search)),
-      ),
-      const Spacer(),
-      CircleAvatar(
-        backgroundColor: Theme.of(
-          context,
-        ).colorScheme.surface.withValues(alpha: .88),
-        child: IconButton(onPressed: onSettings, icon: const Icon(Icons.tune)),
-      ),
-    ],
-  );
-}
-
-class _EmptyMapState extends StatelessWidget {
-  const _EmptyMapState({required this.onCapture});
-  final VoidCallback onCapture;
-  @override
-  Widget build(BuildContext context) => Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Icon(
-        Icons.explore_outlined,
-        size: 30,
-        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .45),
-      ),
-      const SizedBox(height: 10),
-      Text(
-        'Capture your first moment.',
-        style: Theme.of(context).textTheme.bodyMedium,
-      ),
-    ],
-  );
-}
-
-class _PositionMarker extends StatelessWidget {
-  const _PositionMarker();
-  @override
-  Widget build(BuildContext context) => Positioned(
-    left: MediaQuery.sizeOf(context).width * .5 - 10,
-    top: MediaQuery.sizeOf(context).height * .48 - 10,
-    child: Container(
-      width: 20,
-      height: 20,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: WarangColors.accent.withValues(alpha: .22),
-      ),
-      child: Center(
-        child: Container(
-          width: 9,
-          height: 9,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            color: WarangColors.accent,
-          ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: WarangSheetPeek(onTap: _showTrips),
+              ),
+              Positioned(
+                bottom: 62,
+                left: 0,
+                right: 0,
+                child: Center(child: WarangCaptureButton(onPressed: _capture)),
+              ),
+              Positioned(
+                right: 20,
+                bottom: 150,
+                child: _RecenterButton(onPressed: () {}),
+              ),
+              Positioned(
+                top: 52,
+                right: 16,
+                child: GestureDetector(
+                  onLongPress: _showSettings,
+                  child: const SizedBox(width: 44, height: 44),
+                ),
+              ),
+            ] else ...[
+              ...moments
+                  .asMap()
+                  .entries
+                  .where((entry) => entry.value.id != selected.id)
+                  .map(
+                    (entry) => _buildPin(entry.value, entry.key, size, false),
+                  ),
+              Positioned.fill(
+                child: GestureDetector(
+                  onTap: () => setState(() => _selected = null),
+                  child: ColoredBox(
+                    color: theme.colorScheme.onSurface.withValues(alpha: .42),
+                  ),
+                ),
+              ),
+              _buildPin(
+                selected,
+                moments.indexWhere((item) => item.id == selected.id),
+                size,
+                true,
+              ),
+              Positioned.fill(
+                child: _MomentCard(
+                  moment: selected,
+                  repository: widget.repository,
+                  photoStore: _photoStore,
+                  onClose: () => setState(() => _selected = null),
+                ),
+              ),
+            ],
+          ],
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
-class _PhotoPin extends StatelessWidget {
-  const _PhotoPin({required this.moment, required this.photoStore});
-  final Moment moment;
-  final PhotoStore photoStore;
-  @override
-  Widget build(BuildContext context) {
-    final surface = Theme.of(context).colorScheme.surface;
-    return Container(
-      width: 58,
-      height: 66,
-      alignment: Alignment.topCenter,
-      child: Stack(
-        alignment: Alignment.topCenter,
-        children: [
-          Container(
-            width: 54,
-            height: 54,
-            padding: const EdgeInsets.all(3),
-            decoration: BoxDecoration(color: surface, shape: BoxShape.circle),
-            child: ClipOval(
-              child: moment.relPath == null
-                  ? const ColoredBox(
-                      color: WarangColors.lightLine,
-                      child: Icon(Icons.photo_outlined),
-                    )
-                  : FutureBuilder<File>(
-                      future: photoStore.resolve(moment.relPath!),
-                      builder: (context, snapshot) => snapshot.hasData
-                          ? Image.file(snapshot.data!, fit: BoxFit.cover)
-                          : const ColoredBox(color: WarangColors.lightLine),
-                    ),
-            ),
-          ),
-          Positioned(
-            bottom: 5,
-            child: Icon(Icons.arrow_drop_down, color: surface, size: 18),
-          ),
-        ],
+  Widget _buildPin(Moment moment, int index, Size size, bool selected) {
+    const positions = [
+      Offset(100, 272),
+      Offset(238, 222),
+      Offset(156, 398),
+      Offset(288, 362),
+      Offset(82, 508),
+      Offset(214, 552),
+    ];
+    final position = positions[index % positions.length];
+    final pinSize = selected ? 66.0 : 58.0;
+    final top = position.dy - pinSize - 9;
+    final left = position.dx - pinSize / 2;
+    final future = moment.relPath == null
+        ? Future<File?>.value(null)
+        : _photoStore.resolve(moment.relPath!).then<File?>((file) => file);
+    return Positioned(
+      left: left,
+      top: top,
+      child: FutureBuilder<File?>(
+        future: future,
+        builder: (context, snapshot) => GestureDetector(
+          onTap: () => setState(() => _selected = moment),
+          child: WarangPhotoPin(file: snapshot.data, selected: selected),
+        ),
       ),
     );
   }
 }
 
-class _ClusterPin extends StatelessWidget {
-  const _ClusterPin({required this.count});
-  final int count;
-  @override
-  Widget build(BuildContext context) => Container(
-    width: 48,
-    height: 48,
-    alignment: Alignment.center,
-    decoration: const BoxDecoration(
-      color: WarangColors.accent,
-      shape: BoxShape.circle,
-    ),
-    child: Text(
-      '$count',
-      style: const TextStyle(
-        fontFamily: 'DM Mono',
-        color: WarangColors.accentInk,
-        fontWeight: FontWeight.w600,
-      ),
-    ),
-  );
-}
-
-class _CaptureButton extends StatelessWidget {
-  const _CaptureButton({required this.onPressed});
+class _RecenterButton extends StatelessWidget {
+  const _RecenterButton({required this.onPressed});
   final VoidCallback onPressed;
+
   @override
   Widget build(BuildContext context) => Material(
-    color: WarangColors.accent,
+    color: Theme.of(context).colorScheme.surface,
     shape: const CircleBorder(),
-    elevation: 2,
+    elevation: 0,
+    shadowColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: .14),
     child: InkWell(
       onTap: onPressed,
       customBorder: const CircleBorder(),
       child: const SizedBox(
-        width: 74,
-        height: 74,
-        child: Icon(
-          Icons.camera_alt_outlined,
-          color: WarangColors.accentInk,
-          size: 30,
-        ),
-      ),
-    ),
-  );
-}
-
-class _SheetHandle extends StatelessWidget {
-  const _SheetHandle();
-  @override
-  Widget build(BuildContext context) => Center(
-    child: Container(
-      width: 42,
-      height: 5,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .35),
-        borderRadius: BorderRadius.circular(5),
+        width: 44,
+        height: 44,
+        child: Icon(Icons.gps_fixed, size: 20),
       ),
     ),
   );
@@ -355,99 +286,158 @@ class _MomentCard extends StatelessWidget {
   final WarangRepository repository;
   final PhotoStore photoStore;
   final VoidCallback onClose;
+
   @override
   Widget build(BuildContext context) {
-    final trip = repository.trips.firstWhere(
-      (item) => item.id == moment.tripId,
-      orElse: () => repository.everyday,
-    );
-    final date =
-        '${moment.capturedAt.day.toString().padLeft(2, '0')} / ${moment.capturedAt.month.toString().padLeft(2, '0')} / ${moment.capturedAt.year}';
-    return ColoredBox(
-      color: Colors.black.withValues(alpha: .18),
-      child: Align(
-        alignment: Alignment.bottomCenter,
-        child: Card(
-          margin: const EdgeInsets.all(12),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+    final future = moment.relPath == null
+        ? Future<File?>.value(null)
+        : photoStore.resolve(moment.relPath!).then<File?>((file) => file);
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Container(
+        height: 472,
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 30),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: .28),
+              blurRadius: 40,
+              offset: const Offset(0, -14),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 44,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.outline,
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            FutureBuilder<File?>(
+              future: future,
+              builder: (context, snapshot) => ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: SizedBox(
+                  height: 224,
+                  child: snapshot.data == null
+                      ? ColoredBox(
+                          color: Theme.of(
+                            context,
+                          ).extension<MapPalette>()!.landAlt,
+                        )
+                      : Image.file(snapshot.data!, fit: BoxFit.cover),
+                ),
+              ),
+            ),
+            if (moment.caption?.isNotEmpty == true) ...[
+              const SizedBox(height: 16),
+              Text(
+                moment.caption!,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontSize: 16.5,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ],
+            const SizedBox(height: 12),
+            RichText(
+              text: TextSpan(
+                style: TextStyle(
+                  fontFamily: 'DM Mono',
+                  fontSize: 11,
+                  letterSpacing: 1.6,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: .54),
+                ),
+                children: [
+                  if (moment.placeLabel == null)
+                    TextSpan(
+                      text: 'ADD LOCATION',
+                      style: TextStyle(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: .72),
+                      ),
+                    ),
+                  if (moment.placeLabel != null)
+                    TextSpan(text: moment.placeLabel!.toUpperCase()),
+                  TextSpan(
+                    text:
+                        ' · ${DateFormat('dd MMM yyyy').format(moment.capturedAt).toUpperCase()} · ${DateFormat('h:mm a').format(moment.capturedAt).toUpperCase()}',
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 18),
+            Divider(height: 1, color: Theme.of(context).colorScheme.outline),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                for (final label in ['Share', 'Edit', 'Delete']) ...[
+                  Expanded(
+                    child: WarangQuietButton(
+                      label: label,
+                      onPressed: label == 'Delete'
+                          ? () async {
+                              await repository.softDeleteMoment(moment.id);
+                              onClose();
+                            }
+                          : null,
+                    ),
+                  ),
+                  if (label != 'Delete') const SizedBox(width: 10),
+                ],
+              ],
+            ),
+            const Spacer(),
+            Column(
               children: [
                 Row(
-                  children: [
-                    Text(
-                      trip.title,
-                      style: Theme.of(context).textTheme.titleLarge,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    6,
+                    (index) => Container(
+                      width: 6,
+                      height: 6,
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: index == 0
+                            ? Theme.of(context).colorScheme.onSurface
+                            : (Theme.of(context).brightness == Brightness.dark
+                                  ? WarangColors.darkDotInactive
+                                  : WarangColors.lightDotInactive),
+                      ),
                     ),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: onClose,
-                      icon: const Icon(Icons.close),
-                    ),
-                  ],
+                  ),
                 ),
-                if (moment.relPath != null)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: FutureBuilder<File>(
-                      future: photoStore.resolve(moment.relPath!),
-                      builder: (context, snapshot) => snapshot.hasData
-                          ? Image.file(
-                              snapshot.data!,
-                              height: 220,
-                              fit: BoxFit.cover,
-                            )
-                          : const SizedBox(height: 80),
-                    ),
-                  ),
-                if (moment.caption != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 14),
-                    child: Text(
-                      moment.caption!,
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                  ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 9),
                 Text(
-                  '${moment.placeLabel ?? 'Location not added'}  ·  $date',
-                  style: const TextStyle(fontFamily: 'DM Mono', fontSize: 12),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    IconButton(
-                      onPressed: moment.relPath == null
-                          ? null
-                          : () async {
-                              final file = await photoStore.resolve(
-                                moment.relPath!,
-                              );
-                              await WarangShareService().shareFile(
-                                file,
-                                caption: moment.caption,
-                              );
-                            },
-                      icon: const Icon(Icons.ios_share_outlined),
-                    ),
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.edit_outlined),
-                    ),
-                    IconButton(
-                      onPressed: () async {
-                        await repository.softDeleteMoment(moment.id);
-                        onClose();
-                      },
-                      icon: const Icon(Icons.delete_outline),
-                    ),
-                  ],
+                  'Swipe for nearby moments',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontSize: 11.5,
+                    height: 1,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: .54),
+                  ),
                 ),
               ],
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -457,34 +447,34 @@ class _MomentCard extends StatelessWidget {
 class MomentSearchDelegate extends SearchDelegate<void> {
   MomentSearchDelegate(this.repository);
   final WarangRepository repository;
+
   @override
   List<Widget>? buildActions(BuildContext context) => [
     if (query.isNotEmpty)
       IconButton(onPressed: () => query = '', icon: const Icon(Icons.clear)),
   ];
+
   @override
   Widget? buildLeading(BuildContext context) => IconButton(
     onPressed: () => close(context, null),
     icon: const Icon(Icons.arrow_back),
   );
+
   @override
   Widget buildResults(BuildContext context) => _results(context);
+
   @override
   Widget buildSuggestions(BuildContext context) => _results(context);
-  Widget _results(BuildContext context) {
-    final moments = repository.search(query);
-    return ListView.builder(
-      itemCount: moments.length,
-      itemBuilder: (context, index) {
-        final moment = moments[index];
-        return ListTile(
-          leading: const Icon(Icons.photo_outlined),
-          title: Text(moment.caption ?? moment.placeLabel ?? 'Moment'),
-          subtitle: Text(
-            moment.capturedAt.toLocal().toString().split(' ').first,
+
+  Widget _results(BuildContext context) => ListView(
+    children: repository
+        .search(query)
+        .map(
+          (moment) => ListTile(
+            title: Text(moment.caption ?? moment.placeLabel ?? 'Moment'),
+            subtitle: Text(DateFormat('dd MMM yyyy').format(moment.capturedAt)),
           ),
-        );
-      },
-    );
-  }
+        )
+        .toList(),
+  );
 }

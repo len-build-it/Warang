@@ -1,84 +1,225 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../app/app.dart';
+import '../../app/theme/components.dart';
+import '../../app/theme/tokens.dart';
 import '../../data/files/photo_store.dart';
 
-class SettingsScreen extends ConsumerWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  bool _copyCaption = true;
+  bool _cornerMark = true;
+
+  @override
+  Widget build(BuildContext context) {
     final repository = ref.watch(repositoryProvider);
-    return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-        children: [
-          Text('You', style: Theme.of(context).textTheme.labelLarge),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.person_outline),
-              title: Text(repository.profile.name),
-              subtitle: const Text('Stored on this phone only'),
-              trailing: const Icon(Icons.chevron_right),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text('Storage', style: Theme.of(context).textTheme.labelLarge),
-          Card(
-            child: FutureBuilder<int>(
-              future: PhotoStore().storageBytes(),
-              builder: (context, snapshot) => ListTile(
-                leading: const Icon(Icons.sd_storage_outlined),
-                title: Text('${_formatBytes(snapshot.data ?? 0)} used'),
-                subtitle: const Text('Photos and thumbnails'),
-                trailing: TextButton(
-                  onPressed: () {},
-                  child: const Text('Clean up'),
-                ),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Theme.of(context).brightness == Brightness.dark
+            ? Brightness.light
+            : Brightness.dark,
+        statusBarBrightness: Theme.of(context).brightness == Brightness.dark
+            ? Brightness.dark
+            : Brightness.light,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness:
+            Theme.of(context).brightness == Brightness.dark
+            ? Brightness.light
+            : Brightness.dark,
+      ),
+      child: Scaffold(
+        body: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 14, 20, 34),
+            children: [
+              Text('Settings', style: Theme.of(context).textTheme.displaySmall),
+              const SizedBox(height: 22),
+              const WarangSectionLabel('You'),
+              const SizedBox(height: 9),
+              WarangSettingsCard(
+                children: [_ProfileRow(name: repository.profile.name)],
               ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text('Map', style: Theme.of(context).textTheme.labelLarge),
-          const Card(
-            child: ListTile(
-              leading: Icon(Icons.brightness_6_outlined),
-              title: Text('Theme follows your phone'),
-              subtitle: Text(
-                'Light and dark palettes are picked automatically',
+              const SizedBox(height: 20),
+              const WarangSectionLabel('Storage'),
+              const SizedBox(height: 9),
+              WarangSettingsCard(
+                children: [
+                  FutureBuilder<int>(
+                    future: PhotoStore().storageBytes(),
+                    builder: (context, snapshot) => WarangSettingsRow(
+                      label: 'Photos on this phone',
+                      value: _formatBytes(snapshot.data ?? 0),
+                    ),
+                  ),
+                  const WarangDivider(),
+                  WarangSettingsRow(
+                    label: 'Back up everything',
+                    emphasized: true,
+                    trailing: Text(
+                      '›',
+                      style: TextStyle(
+                        fontSize: 22,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: .5),
+                      ),
+                    ),
+                    onTap: () => _shareBackup(context),
+                  ),
+                  const WarangDivider(),
+                  const WarangSettingsRow(label: 'Clean up', value: '0 B'),
+                ],
               ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text('Sharing', style: Theme.of(context).textTheme.labelLarge),
-          const Card(
-            child: ListTile(
-              leading: Icon(Icons.ios_share_outlined),
-              title: Text('Caption copied on share'),
-              subtitle: Text(
-                'Everything stays on this phone until you share it',
+              const SizedBox(height: 20),
+              const WarangSectionLabel('Map'),
+              const SizedBox(height: 9),
+              const WarangSettingsCard(
+                children: [
+                  WarangSettingsRow(label: 'Theme', value: 'FOLLOWS PHONE'),
+                  WarangDivider(),
+                  WarangSettingsRow(label: 'Bundled regions', value: '1'),
+                ],
               ),
-            ),
+              const SizedBox(height: 20),
+              const WarangSectionLabel('Sharing'),
+              const SizedBox(height: 9),
+              WarangSettingsCard(
+                children: [
+                  WarangSettingsRow(
+                    label: 'Copy caption on share',
+                    toggle: true,
+                    trailing: WarangToggle(
+                      value: _copyCaption,
+                      onChanged: _setCopyCaption,
+                    ),
+                  ),
+                  const WarangDivider(),
+                  WarangSettingsRow(
+                    label: 'Corner mark on images',
+                    toggle: true,
+                    trailing: WarangToggle(
+                      value: _cornerMark,
+                      onChanged: _setCornerMark,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              const WarangSectionLabel('About'),
+              const SizedBox(height: 9),
+              WarangSettingsCard(
+                children: [
+                  const WarangSettingsRow(label: 'Version', value: '1.0.0'),
+                  const WarangDivider(),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(15, 14, 15, 14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('warang', style: TextStyle(fontSize: 15.5)),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Aklanon. To go out and explore.',
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodySmall?.copyWith(fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 28),
+              Text(
+                'Everything stays on this phone.',
+                textAlign: TextAlign.center,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(fontSize: 12.5),
+              ),
+            ],
           ),
-          const SizedBox(height: 20),
-          Text('About', style: Theme.of(context).textTheme.labelLarge),
-          const Card(
-            child: ListTile(
-              leading: Icon(Icons.info_outline),
-              title: Text('Warang'),
-              subtitle: Text('Aklanon for “to go out and explore”'),
-            ),
-          ),
-        ],
+        ),
+      ),
+    );
+  }
+
+  void _setCopyCaption(bool value) => setState(() => _copyCaption = value);
+  void _setCornerMark(bool value) => setState(() => _cornerMark = value);
+
+  Future<void> _shareBackup(BuildContext context) async {
+    await SharePlus.instance.share(
+      ShareParams(
+        text:
+            'Warang backup: your photos and moments stay on this phone until you share them.',
       ),
     );
   }
 }
 
+class _ProfileRow extends StatelessWidget {
+  const _ProfileRow({required this.name});
+  final String name;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.all(14),
+    child: Row(
+      children: [
+        Container(
+          width: 48,
+          height: 48,
+          alignment: Alignment.center,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            color: WarangColors.accent,
+          ),
+          child: Text(
+            name.isEmpty ? 'W' : name.substring(0, 1).toUpperCase(),
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: WarangColors.accentInk,
+            ),
+          ),
+        ),
+        const SizedBox(width: 14),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              name,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              'Stored on this phone only',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(fontSize: 12.5),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
 String _formatBytes(int bytes) {
   if (bytes < 1024) return '$bytes B';
   if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-  return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+  if (bytes < 1024 * 1024 * 1024) {
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+  }
+  return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
 }

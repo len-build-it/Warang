@@ -14,8 +14,8 @@ class WarangMapPainter extends CustomPainter {
     final landAlt = Paint()..color = palette.landAlt;
     final roads = Paint()
       ..color = palette.roads
-      ..strokeWidth = 1.3
-      ..style = PaintingStyle.stroke;
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
     final island = Path()
       ..moveTo(size.width * .04, size.height * .10)
       ..quadraticBezierTo(
@@ -62,7 +62,7 @@ class WarangMapPainter extends CustomPainter {
       ),
       landAlt,
     );
-    for (var i = 0; i < 6; i++) {
+    for (var i = 0; i < 3; i++) {
       final path = Path()..moveTo(-20, size.height * (.15 + i * .13));
       path.cubicTo(
         size.width * .22,
@@ -72,7 +72,7 @@ class WarangMapPainter extends CustomPainter {
         size.width + 20,
         size.height * (.10 + i * .14),
       );
-      canvas.drawPath(path, roads);
+      canvas.drawPath(path, roads..strokeWidth = 8 - i * 2.5);
     }
     for (var i = 0; i < 4; i++) {
       final path = Path()..moveTo(size.width * (.12 + i * .22), -20);
@@ -84,27 +84,49 @@ class WarangMapPainter extends CustomPainter {
         size.width * (.30 + i * .16),
         size.height + 20,
       );
-      canvas.drawPath(path, roads);
+      canvas.drawPath(path, roads..strokeWidth = 3);
     }
-    final labels = TextPainter(textDirection: TextDirection.ltr);
-    for (final label in [
-      const Offset(.16, .24),
-      const Offset(.71, .52),
-      const Offset(.36, .72),
-    ]) {
-      labels.text = TextSpan(
-        text: '•',
+    _paintLabel(
+      canvas,
+      'MALAY',
+      Offset(size.width * .16, size.height * .24),
+      palette.label,
+    );
+    _paintLabel(
+      canvas,
+      'BULABOG',
+      Offset(size.width * .70, size.height * .51),
+      palette.label,
+    );
+    _paintLabel(
+      canvas,
+      'DIWA',
+      Offset(size.width * .34, size.height * .72),
+      palette.label,
+    );
+    _paintLabel(
+      canvas,
+      'SIBUYAN SEA',
+      Offset(size.width * .55, size.height * .09),
+      palette.labelWater,
+    );
+  }
+
+  void _paintLabel(Canvas canvas, String text, Offset offset, Color color) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: text,
         style: TextStyle(
-          color: dark ? WarangColors.darkFaint : WarangColors.lightFaint,
-          fontSize: 15,
+          fontFamily: 'DM Mono',
+          fontSize: 9,
+          letterSpacing: 1.7,
+          color: color,
+          fontFeatures: const [FontFeature.tabularFigures()],
         ),
-      );
-      labels.layout();
-      labels.paint(
-        canvas,
-        Offset(size.width * label.dx, size.height * label.dy),
-      );
-    }
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    painter.paint(canvas, offset);
   }
 
   @override
