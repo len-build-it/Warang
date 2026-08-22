@@ -248,7 +248,7 @@ class _HomeContentState extends State<_HomeContent> {
                   child: GestureDetector(
                     onTap: _closeDrawer,
                     child: ColoredBox(
-                      color: theme.colorScheme.onSurface.withValues(alpha: .38),
+                      color: theme.colorScheme.onSurface.withValues(alpha: .42),
                     ),
                   ),
                 ),
