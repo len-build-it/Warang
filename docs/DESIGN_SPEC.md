@@ -518,7 +518,19 @@ I checked all eight artboards against the locked rules before writing any of the
 
 ---
 
-## 15. Tasks
+## 15. Drawer and local profile
+
+The map home has a neutral hamburger control at **44 × 44**, positioned **16** from the left edge and **52** from the top. It uses the current theme surface, never amber, and has the same circular clipping as the recenter control.
+
+The drawer is a slide-over panel **82% of the viewport width**, filled with the theme ground colour. It enters from the left over an on-surface scrim at **42% opacity**, matching the selected-moment dimmer. Tapping the scrim, swiping the drawer left, or completing a navigation action closes it. A **24px** edge gesture zone opens it with a rightward swipe.
+
+The safe-area header uses **20px** horizontal padding and **18px** top padding. The profile avatar is **52 × 52**, circular, and is either the `PhotoStore`-resolved relative path or an amber fallback with the first initial. Tapping it opens the system photo picker and stores the imported image as a relative path. The display name is Public Sans 500 at **16px** and is edited through a modal field backed by the Drift profile row. The reassurance line is Public Sans 400 at **12.5px**. Counts sit below the header in DM Mono: value **17px/500**, label **9px/1.2px tracking**, and report **moments**, distinct non-empty place labels, and trips.
+
+Navigation rows are ordered **Trips**, **Search**, **Settings**, **Backup & `.travelbook`**, and **About Warang**. Rows use **12px** corner radii, **12px** horizontal padding, **14px** vertical padding, a **20px** neutral icon, and **14px** gap before a Public Sans 400 label at **15.5px**. The footer uses DM Mono 400 at **9px**, **1.2px** tracking, and on-surface at **42%**, with version and build number.
+
+The dark drawer derives from the §8 ground, surface, ink, and faint tokens. Amber is reserved for the profile fallback avatar; all navigation and counts remain neutral.
+
+## 16. Tasks
 
 These slot into the existing phases in `IMPLEMENTATION_PLAN.md`. Task IDs are `D`-prefixed so they never collide with the plan's own numbering, and existing ticked tasks are untouched.
 
@@ -575,7 +587,7 @@ These slot into the existing phases in `IMPLEMENTATION_PLAN.md`. Task IDs are `D
 
 ---
 
-## 16. Assets
+## 17. Assets
 
 | Path | What | Status |
 | :--- | :--- | :--- |

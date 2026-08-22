@@ -673,7 +673,7 @@ Adapted for Warang: aqone caches *feed responses* per feed with a per-feed max a
 - [x] **T18.6** **Delete the hidden long-press settings gesture** once Settings is in the drawer. Two ways in is one way to get confused.
 - [x] **T18.7** Drawer footer: version string and build number, DM Mono, `faint`. Cheap and it makes bug reports from the phone actually useful.
 - [x] **T18.8** Both themes; derive the dark variant per `DESIGN_SPEC.md` §8 since no drawer artboard exists. Accent count in the drawer: **zero or one**.
-- [ ] **T18.9** Add the drawer and profile to `DESIGN_SPEC.md` as a new section, with the measurements you actually built, so the spec stops lagging the app.
+- [x] **T18.9** Add the drawer and profile to `DESIGN_SPEC.md` as a new section, with the measurements you actually built, so the spec stops lagging the app.
 
 **Acceptance:** every screen in the app is reachable in at most two taps from the map, without long-pressing anything invisible. Accent budget on the map home is still ≤4.
 **Tag:** `phase-18-drawer`
