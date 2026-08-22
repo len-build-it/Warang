@@ -618,10 +618,10 @@ Adapted for Warang: aqone caches *feed responses* per feed with a per-feed max a
 
 **17a — Foundations**
 
-- [ ] **T17.1** Add `flutter_map: ^8.3.1`, `latlong2`, `sqflite`. Confirm `flutter_map_tile_caching` is absent and stays absent (GPL-3.0 — §2).
-- [ ] **T17.2** `MapTileStore` (sqflite): table `tiles(z, x, y, layerId, bytes BLOB, fetchedAt, etag)`, primary key `(layerId, z, x, y)`. API: `get`, `put`, `evictOlderThan`, `totalBytes`, `clear`.
-- [ ] **T17.3** `CachedTileProvider extends TileProvider`: serve the cached blob **immediately** if present, then revalidate in the background when online and the tile is past its max age. A tile fetch must never block a frame and a failed fetch must never surface an error tile — fall back to the stale blob, then to a flat land-coloured placeholder.
-- [ ] **T17.4** Max age and ceiling: tiles **30 days**, cache ceiling **~200 MB**, LRU eviction on write when over. Constants in one place, both exposed in Settings.
+- [x] **T17.1** Add `flutter_map: ^8.3.1`, `latlong2`, `sqflite`. Confirm `flutter_map_tile_caching` is absent and stays absent (GPL-3.0 — §2).
+- [x] **T17.2** `MapTileStore` (sqflite): table `tiles(z, x, y, layerId, bytes BLOB, fetchedAt, etag)`, primary key `(layerId, z, x, y)`. API: `get`, `put`, `evictOlderThan`, `totalBytes`, `clear`.
+- [x] **T17.3** `CachedTileProvider extends TileProvider`: serve the cached blob **immediately** if present, then revalidate in the background when online and the tile is past its max age. A tile fetch must never block a frame and a failed fetch must never surface an error tile — fall back to the stale blob, then to a flat land-coloured placeholder.
+- [x] **T17.4** Max age and ceiling: tiles **30 days**, cache ceiling **~200 MB**, LRU eviction on write when over. Constants in one place, both exposed in Settings.
 - [ ] **T17.5** Settings: "Offline map cache · 42 MB" with a **Clear** action. This also resolves the ⛔ "Downloaded regions · 3" contradiction from the design audit — relabel that row as the cache row.
 
 **17b — The map surface**
@@ -650,7 +650,7 @@ Adapted for Warang: aqone caches *feed responses* per feed with a per-feed max a
 
 - [ ] **T17.19** **Age stamp.** When any visible tile is served stale or the device is offline, show a quiet chip — `MAP · CACHED 3 DAYS AGO` — in DM Mono, `faint`, top-centre under the scrim. Never an error, never a modal. Straight from aqone: the map is always usable and always tells you how old it is.
 - [ ] **T17.20** Airplane-mode test on a real device: cold start over a previously-visited area renders from cache with the stamp; a never-visited area shows flat land colour, not a grid of broken tiles.
-- [ ] **T17.21** Keep the `TileProvider` seam clean so a bundled `.mbtiles` (old T4.1/T4.2) can be added later as a **second** provider consulted before the network — the offline-first endgame is unchanged, just deferred.
+- [x] **T17.21** Keep the `TileProvider` seam clean so a bundled `.mbtiles` (old T4.1/T4.2) can be added later as a **second** provider consulted before the network — the offline-first endgame is unchanged, just deferred.
 - [ ] **T17.22** **Tests:** cache hit returns bytes without a network call; a stale tile still renders; eviction drops the oldest first; a moment with null coordinates produces no marker.
 
 **Acceptance:** standing outside, the marker is on the right street. Airplane mode over a visited area still draws that street, stamped with its age. No pin sits anywhere its coordinates did not put it.
