@@ -7,6 +7,7 @@ import '../../app/app.dart';
 import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
 import '../../data/files/photo_store.dart';
+import '../map/map_tile_store.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -18,6 +19,13 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _copyCaption = true;
   bool _cornerMark = true;
+  late final MapTileStore _mapTileStore = MapTileStore();
+
+  @override
+  void dispose() {
+    _mapTileStore.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,11 +91,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               const SizedBox(height: 20),
               const WarangSectionLabel('Map'),
               const SizedBox(height: 9),
-              const WarangSettingsCard(
+              WarangSettingsCard(
                 children: [
-                  WarangSettingsRow(label: 'Theme', value: 'FOLLOWS PHONE'),
-                  WarangDivider(),
-                  WarangSettingsRow(label: 'Bundled regions', value: '1'),
+                  const WarangSettingsRow(
+                    label: 'Theme',
+                    value: 'FOLLOWS PHONE',
+                  ),
+                  const WarangDivider(),
+                  FutureBuilder<int>(
+                    future: _mapTileStore.totalBytes(),
+                    builder: (context, snapshot) => WarangSettingsRow(
+                      label: 'Offline map cache',
+                      value: _formatBytes(snapshot.data ?? 0),
+                      trailing: Text(
+                        'Clear',
+                        style: TextStyle(
+                          fontFamily: 'Public Sans',
+                          fontSize: 13,
+                          color: Theme.of(context).colorScheme.onSurface.withValues(
+                            alpha: .58,
+                          ),
+                        ),
+                      ),
+                      onTap: _clearMapCache,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 20),
@@ -156,6 +184,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   void _setCopyCaption(bool value) => setState(() => _copyCaption = value);
   void _setCornerMark(bool value) => setState(() => _cornerMark = value);
+
+  Future<void> _clearMapCache() async {
+    await _mapTileStore.clear();
+    if (mounted) setState(() {});
+  }
 
   Future<void> _shareBackup(BuildContext context) async {
     await SharePlus.instance.share(

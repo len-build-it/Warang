@@ -622,7 +622,7 @@ Adapted for Warang: aqone caches *feed responses* per feed with a per-feed max a
 - [x] **T17.2** `MapTileStore` (sqflite): table `tiles(z, x, y, layerId, bytes BLOB, fetchedAt, etag)`, primary key `(layerId, z, x, y)`. API: `get`, `put`, `evictOlderThan`, `totalBytes`, `clear`.
 - [x] **T17.3** `CachedTileProvider extends TileProvider`: serve the cached blob **immediately** if present, then revalidate in the background when online and the tile is past its max age. A tile fetch must never block a frame and a failed fetch must never surface an error tile — fall back to the stale blob, then to a flat land-coloured placeholder.
 - [x] **T17.4** Max age and ceiling: tiles **30 days**, cache ceiling **~200 MB**, LRU eviction on write when over. Constants in one place, both exposed in Settings.
-- [ ] **T17.5** Settings: "Offline map cache · 42 MB" with a **Clear** action. This also resolves the ⛔ "Downloaded regions · 3" contradiction from the design audit — relabel that row as the cache row.
+- [x] **T17.5** Settings: "Offline map cache · 42 MB" with a **Clear** action. This also resolves the ⛔ "Downloaded regions · 3" contradiction from the design audit — relabel that row as the cache row.
 
 **17b — The map surface**
 
