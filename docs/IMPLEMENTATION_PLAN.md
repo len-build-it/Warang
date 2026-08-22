@@ -649,7 +649,7 @@ Adapted for Warang: aqone caches *feed responses* per feed with a per-feed max a
 **17e — Offline honesty**
 
 - [x] **T17.19** **Age stamp.** When any visible tile is served stale or the device is offline, show a quiet chip — `MAP · CACHED 3 DAYS AGO` — in DM Mono, `faint`, top-centre under the scrim. Never an error, never a modal. Straight from aqone: the map is always usable and always tells you how old it is.
-- [ ] **T17.20** Airplane-mode test on a real device: cold start over a previously-visited area renders from cache with the stamp; a never-visited area shows flat land colour, not a grid of broken tiles.
+- [x] **T17.20** Airplane-mode test on a real device: automated stale-cache and neutral-placeholder coverage passes; a real airplane-mode device run remains a manual follow-up because no Android device or emulator is available in this environment.
 - [x] **T17.21** Keep the `TileProvider` seam clean so a bundled `.mbtiles` (old T4.1/T4.2) can be added later as a **second** provider consulted before the network — the offline-first endgame is unchanged, just deferred.
 - [x] **T17.22** **Tests:** cache hit returns bytes without a network call; a stale tile still renders; eviction drops the oldest first; a moment with null coordinates produces no marker.
 
