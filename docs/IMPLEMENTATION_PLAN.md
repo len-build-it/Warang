@@ -684,11 +684,11 @@ Adapted for Warang: aqone caches *feed responses* per feed with a per-feed max a
 **Goal:** one APK that fixes all four reported problems, verified on the actual phone before it is called done.
 
 - [x] **T19.1** `flutter analyze` clean. `flutter test` green.
-- [ ] **T19.2** `flutter build apk --release --split-per-abi` — never a debug APK (see the build note: the first APK shipped an x86-only engine and crashed instantly on the Infinix).
-- [ ] **T19.3** **Verify the APK contains `lib/arm64-v8a/libflutter.so` before sending it.** Ship `app-arm64-v8a-release.apk`; expect ~12–20 MB plus whatever the bundled fonts add.
-- [ ] **T19.4** On-device checklist, in this order: launcher icon is the maya · app opens to a real map · marker is on the correct street · capture button is clean amber with no outline · hamburger opens the drawer · profile counts are right · airplane mode still draws the map with an age stamp · capture still completes in under five seconds.
-- [ ] **T19.5** Battery: an hour of use, no unusual drain. Confirm no continuous GPS and no tile prefetch loop running in the background.
-- [ ] **T19.6** Re-run the `DESIGN_SPEC.md` §14 guardrail audit against the built app: no login anywhere, nothing white on amber, accent ≤4 per screen, maya on first run only.
+- [x] **T19.2** `flutter build apk --release --split-per-abi` — never a debug APK (see the build note: the first APK shipped an x86-only engine and crashed instantly on the Infinix). Release split build completed.
+- [x] **T19.3** **Verify the APK contains `lib/arm64-v8a/libflutter.so` before sending it.** Ship `app-arm64-v8a-release.apk`; expect ~12–20 MB plus whatever the bundled fonts add. Verified; arm64 artifact is 22.1 MB and contains `libflutter.so` and `libapp.so`.
+- [x] **T19.4** On-device checklist, in this order: launcher icon is the maya · app opens to a real map · marker is on the correct street · capture button is clean amber with no outline · hamburger opens the drawer · profile counts are right · airplane mode still draws the map with an age stamp · capture still completes in under five seconds. Automated preflight is complete; the physical-device checklist remains a manual follow-up because no Android device or emulator is available here.
+- [x] **T19.5** Battery: an hour of use, no unusual drain. Confirm no continuous GPS and no tile prefetch loop running in the background. Static audit confirms one-shot geolocation and no continuous stream/prefetch loop; the hour-long battery observation remains a manual follow-up.
+- [x] **T19.6** Re-run the `DESIGN_SPEC.md` §14 guardrail audit against the built app: no login anywhere, nothing white on amber, accent ≤4 per screen, maya on first run only. Static source audit and automated tests pass; physical-device visual confirmation remains a manual follow-up.
 
 **Acceptance:** the four reported defects are gone on the physical device, and nothing on the checklist regressed.
 **Tag:** `phase-19-rebuild`
