@@ -574,7 +574,7 @@ Everything in §2 and §3 still applies — **especially the commit cadence in �
 - [x] **T15.1** Add `flutter_launcher_icons` to `dev_dependencies`. Configure an **adaptive icon**: background a flat `#E8A020`, foreground the maya from `design/warang-maya.png`, padded so nothing clips under a circular, squircle, or rounded-square mask (safe zone is the centre 66% — the maya must sit inside it).
 - [x] **T15.2** Generate a **monochrome** layer as well, for Android 13+ themed icons. A flat silhouette of the maya; do not ship a colour bitmap in the monochrome slot.
 - [x] **T15.3** Generate all densities (mdpi→xxxhdpi), plus the legacy square `ic_launcher.png` for pre-Android-8 launchers. Commit the generated files — do not rely on the generator running on someone else's machine.
-- [ ] **T15.4** App label: confirm `android:label="Warang"` in `AndroidManifest.xml`. Package id stays `ph.warang`.
+- [x] **T15.4** App label: confirm `android:label="Warang"` in `AndroidManifest.xml`. Package id stays `ph.warang`.
 - [ ] **T15.5** Splash: `launch_background.xml` (and the `-v21` variant) to the ground colour — `#ECEDE8` light, `#121410` dark — with the maya centred. Both `values/` and `values-night/` styles.
 - [x] **T15.6** **Bundle the fonts.** Download the static `.ttf` files for Bricolage Grotesque, Public Sans, and DM Mono into `assets/fonts/`, declare them under `flutter: fonts:` with correct weights, and confirm `google_fonts` is not a dependency. Ship only the weights the spec uses — every unused weight is dead APK bytes.
 - [ ] **T15.7** Verify the type actually switched: a screenshot of the map home before and after, side by side. If the letterforms did not change, the family name in the `fonts:` declaration does not match the string in `tokens.dart`.
