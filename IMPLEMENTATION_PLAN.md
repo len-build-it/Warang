@@ -207,12 +207,12 @@ Seeded on first run with `isEveryday = true`. Every capture that has no active t
 ### Phase 0 — Scaffold
 **Goal:** an empty app that builds and runs.
 
-- [ ] **T0.1** `flutter create` into the existing repo without clobbering `.git` or `warang-design-prompt.md`. Package id `ph.warang.app`.
-- [ ] **T0.2** Write `.gitignore` per §3.
+- [x] **T0.1** `flutter create` into the existing repo without clobbering `.git` or `warang-design-prompt.md`. Package id `ph.warang.app`.
+- [x] **T0.2** Write `.gitignore` per §3.
 - [ ] **T0.3** Add all dependencies from §4 to `pubspec.yaml`.
 - [ ] **T0.4** Create the folder layout from §4 with a `.gitkeep` in each empty dir.
 - [ ] **T0.5** Configure `analysis_options.yaml` with `flutter_lints` + `riverpod_lint`, and treat warnings as errors.
-- [ ] **T0.6** Wrap the app in `ProviderScope`.
+- [x] **T0.6** Wrap the app in `ProviderScope`.
 
 **Acceptance:** `flutter run` shows a blank themed screen. `flutter analyze` is clean.
 **Tag:** `phase-0-scaffold`
@@ -223,9 +223,9 @@ Seeded on first run with `isEveryday = true`. Every capture that has no active t
 **Goal:** every colour and text style in the app comes from one place.
 
 - [ ] **T1.1** ⛔ **HUMAN** — obtain `.ttf` files for Bricolage Grotesque, Public Sans, and DM Mono (all SIL Open Font License) and place in `assets/fonts/`. *Fallback while blocked:* declare the families in `pubspec.yaml` and let them fall back to system faces; do not use `google_fonts` runtime fetching.
-- [ ] **T1.2** `tokens.dart` — all colours from §5 as named constants.
-- [ ] **T1.3** Light and dark `ThemeData`, driven by system theme.
-- [ ] **T1.4** `MapPalette` as a `ThemeExtension` with both variants.
+- [x] **T1.2** `tokens.dart` — all colours from §5 as named constants.
+- [x] **T1.3** Light and dark `ThemeData`, driven by system theme.
+- [x] **T1.4** `MapPalette` as a `ThemeExtension` with both variants.
 - [ ] **T1.5** Text theme: display / body / mono roles, tabular figures on mono.
 - [ ] **T1.6** A debug-only `StyleGalleryScreen` showing every colour, text style, and the capture button in both themes.
 
@@ -254,7 +254,7 @@ Seeded on first run with `isEveryday = true`. Every capture that has no active t
 **Goal:** photos on disk, addressed relatively, never orphaned.
 
 - [ ] **T3.1** `PhotoStore`: `<documents>/warang/photos/<yyyy>/<MM>/<uuid>.jpg` and `.../thumbs/<uuid>.jpg`.
-- [ ] **T3.2** `resolve(String relPath) → File` — the **only** place a relative path becomes absolute.
+- [x] **T3.2** `resolve(String relPath) → File` — the **only** place a relative path becomes absolute.
 - [ ] **T3.3** Import pipeline: re-encode originals to max 2000px long edge (quality ≈ 85), generate a 320px thumbnail. The re-encoded file *is* the original; do not keep the camera's raw output.
 - [ ] **T3.4** Orphan sweep: delete files with no live `Photos` row, and rows whose file is missing.
 - [ ] **T3.5** **Tests:** stored paths are relative and contain no drive letter or leading `/`; resolution round-trips; a simulated documents-dir change still resolves; orphan sweep removes only orphans.
@@ -269,11 +269,11 @@ Seeded on first run with `isEveryday = true`. Every capture that has no active t
 
 - [ ] **T4.1** ⛔ **HUMAN** — a bundled stylized `.mbtiles` basemap. Needs generating from an OSM extract (tilemaker or planetiler) with a Warang style, or sourcing. *Fallback while blocked:* a `TileProvider` that reads a network OSM source behind a `kDevTiles` flag, so map work can proceed. **This fallback must not ship.**
 - [ ] **T4.2** `MbTilesTileProvider` — a `flutter_map` `TileProvider` reading tiles from the bundled SQLite MBTiles file. Do **not** add FMTC.
-- [ ] **T4.3** Full-bleed map on the home screen, no app bar over it.
+- [x] **T4.3** Full-bleed map on the home screen, no app bar over it.
 - [ ] **T4.4** Position marker: amber dot, soft halo, heading cone. Not the mascot.
 - [ ] **T4.5** Recenter button, bottom right.
-- [ ] **T4.6** Capture button, bottom centre, amber with a dark glyph. Wired to nothing yet.
-- [ ] **T4.7** Sheet handle peeking from the bottom edge.
+- [x] **T4.6** Capture button, bottom centre, amber with a dark glyph. Wired to nothing yet.
+- [x] **T4.7** Sheet handle peeking from the bottom edge.
 
 **Acceptance:** map renders in both themes with the correct palette, in airplane mode when T4.1 is unblocked.
 **Tag:** `phase-4-map`
@@ -284,10 +284,10 @@ Seeded on first run with `isEveryday = true`. Every capture that has no active t
 **Goal:** the core loop. Button to saved moment in about three seconds.
 
 - [ ] **T5.1** Permission priming for camera and location, in plain language, before the system prompt.
-- [ ] **T5.2** Capture button opens the camera immediately via `image_picker`.
-- [ ] **T5.3** Request a GPS fix in parallel with the camera, timeout **3 seconds**.
-- [ ] **T5.4** Save screen: photo, optional caption field (`"Say something (optional)"`), auto-filled place and time in mono, one amber **Save**.
-- [ ] **T5.5** Save writes the moment, assigns the active trip or Everyday, runs the photo pipeline, and returns to the map.
+- [x] **T5.2** Capture button opens the camera immediately via `image_picker`.
+- [x] **T5.3** Request a GPS fix in parallel with the camera, timeout **3 seconds**.
+- [x] **T5.4** Save screen: photo, optional caption field (`"Say something (optional)"`), auto-filled place and time in mono, one amber **Save**.
+- [x] **T5.5** Save writes the moment, assigns the active trip or Everyday, runs the photo pipeline, and returns to the map.
 - [ ] **T5.6** **No GPS is not an error.** Save with null coordinates and surface a quiet "Add location" affordance on the moment later.
 - [ ] **T5.7** **Tests:** a moment saves with null lat/lng; a moment saves with an empty caption; a capture with no active trip lands in Everyday.
 
@@ -299,7 +299,7 @@ Seeded on first run with `isEveryday = true`. Every capture that has no active t
 ### Phase 6 — Pins and clustering
 **Goal:** the map fills with your photographs.
 
-- [ ] **T6.1** Photo-pin: circular thumbnail, surface-coloured ring, small pointer beneath.
+- [x] **T6.1** Photo-pin: circular thumbnail, surface-coloured ring, small pointer beneath.
 - [ ] **T6.2** Clustering by zoom. Clusters render as a solid amber circle with a **dark** count.
 - [ ] **T6.3** Pins stream reactively from Drift — a new capture appears without a manual refresh.
 - [ ] **T6.4** Thumbnail memory cache; never decode full-size images for pins.
@@ -311,7 +311,7 @@ Seeded on first run with `isEveryday = true`. Every capture that has no active t
 ---
 
 ### Phase 7 — Moment card
-- [ ] **T7.1** Tapping a pin dims the map and raises a card: photo, caption, place and date in mono.
+- [x] **T7.1** Tapping a pin dims the map and raises a card: photo, caption, place and date in mono.
 - [ ] **T7.2** Horizontal swipe through nearby moments, with position dots.
 - [ ] **T7.3** Quiet icon actions: share, edit, delete (soft).
 - [ ] **T7.4** Edit sheet: caption, place label, date, manual pin placement for moments with no coordinates.
@@ -349,11 +349,11 @@ Seeded on first run with `isEveryday = true`. Every capture that has no active t
 - [ ] **T10.2** **9:16 only.** Trip collage: grid of photos, title in the display face, dates in mono, small "Warang" wordmark in a corner.
 - [ ] **T10.3** Collage photo selection auto-spread across the trip's date range — not six from day one — with tap-to-swap on any slot.
 - [ ] **T10.4** Moment card format: photo + place + date + corner mark.
-- [ ] **T10.5** "Just the photo" — raw file, **no branding**.
+- [x] **T10.5** "Just the photo" — raw file, **no branding**.
 - [ ] **T10.6** "All photos" — multi-file share; Instagram builds its own carousel.
 - [ ] **T10.7** Preview screen before every share. No exceptions.
 - [ ] **T10.8** Copy a caption to the clipboard on share (e.g. `Bohol Summer 2025 · 24 moments`).
-- [ ] **T10.9** Hand off via `share_plus`. No Instagram or Facebook APIs.
+- [x] **T10.9** Hand off via `share_plus`. No Instagram or Facebook APIs.
 
 **Tag:** `phase-10-share`
 
@@ -362,13 +362,13 @@ Seeded on first run with `isEveryday = true`. Every capture that has no active t
 ### Phase 11 — `.travelbook`
 **Goal:** trips move between phones as files. Treat every imported file as hostile.
 
-- [ ] **T11.1** Export: zip of `manifest.json` (with a `formatVersion`) + photos, extension `.travelbook`.
-- [ ] **T11.2** Import with **zip-slip guards** — reject any entry whose resolved path escapes the destination directory. The `archive` package will happily write `../../` otherwise.
-- [ ] **T11.3** Enforce caps: total uncompressed size, entry count, per-file size. Reject anything exceeding them.
+- [x] **T11.1** Export: zip of `manifest.json` (with a `formatVersion`) + photos, extension `.travelbook`.
+- [x] **T11.2** Import with **zip-slip guards** — reject any entry whose resolved path escapes the destination directory. The `archive` package will happily write `../../` otherwise.
+- [x] **T11.3** Enforce caps: total uncompressed size, entry count, per-file size. Reject anything exceeding them.
 - [ ] **T11.4** Validate every image actually decodes before it is stored.
 - [ ] **T11.5** Imported trips are marked read-only and visually distinguished from your own.
-- [ ] **T11.6** Re-importing the same file updates rather than duplicating (match on trip UUID).
-- [ ] **T11.7** Reject unknown `formatVersion` with a clear message rather than guessing.
+- [x] **T11.6** Re-importing the same file updates rather than duplicating (match on trip UUID).
+- [x] **T11.7** Reject unknown `formatVersion` with a clear message rather than guessing.
 - [ ] **T11.8** **Tests:** a crafted zip with `../` entries is rejected; an oversized archive is rejected; a corrupt image is rejected; double import produces one trip.
 
 **Acceptance:** the hostile-archive tests pass. This phase is not done until they do.
@@ -377,9 +377,9 @@ Seeded on first run with `isEveryday = true`. Every capture that has no active t
 ---
 
 ### Phase 12 — First run and settings
-- [ ] **T12.1** First run: the maya, "Warang", the line *"A map you fill with your own photographs."*, a name field (local only), and a **Start** button. Plain-language note that nothing leaves the phone. **No login screen.**
+- [x] **T12.1** First run: the maya, "Warang", the line *"A map you fill with your own photographs."*, a name field (local only), and a **Start** button. Plain-language note that nothing leaves the phone. **No login screen.**
 - [ ] **T12.2** Empty map state: centred on the user's city, no pins, one quiet prompt — *"Capture your first moment."*
-- [ ] **T12.3** Settings — You · Storage · Map · Sharing · About. No account section, no sync, no sign-out.
+- [x] **T12.3** Settings — You · Storage · Map · Sharing · About. No account section, no sync, no sign-out.
 - [ ] **T12.4** Storage section shows real space used, with the orphan sweep exposed as "Clean up".
 - [ ] **T12.5** The maya appears only here and on the app icon. Never over a map with photos on it.
 
@@ -403,7 +403,7 @@ Seeded on first run with `isEveryday = true`. Every capture that has no active t
 ### Phase 14 — Pilot hardening
 - [ ] **T14.1** Remove the `kDevTiles` network fallback. Verify the app is fully functional in airplane mode from a cold start.
 - [ ] **T14.2** Audit: no absolute paths in the DB, no network calls anywhere, no analytics.
-- [ ] **T14.3** Android permissions audit — camera and location only. Nothing else.
+- [x] **T14.3** Android permissions audit — camera and location only. Nothing else.
 - [ ] **T14.4** App icon (maya on amber) and splash.
 - [ ] **T14.5** Release build, signed, installed on a physical device.
 - [ ] **T14.6** Battery check: an hour of normal use should not show unusual drain. GPS must not be running continuously.
