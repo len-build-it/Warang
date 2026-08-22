@@ -62,6 +62,7 @@ class WarangQuietButton extends StatelessWidget {
     height: 44,
     child: OutlinedButton(
       onPressed: onPressed,
+      clipBehavior: Clip.antiAlias,
       style: OutlinedButton.styleFrom(
         foregroundColor: Theme.of(
           context,
@@ -232,54 +233,66 @@ class WarangSheetPeek extends StatelessWidget {
   );
 }
 
-class WarangCaptureButton extends StatelessWidget {
+class WarangCaptureButton extends StatefulWidget {
   const WarangCaptureButton({super.key, required this.onPressed});
   final VoidCallback onPressed;
 
   @override
+  State<WarangCaptureButton> createState() => _WarangCaptureButtonState();
+}
+
+class _WarangCaptureButtonState extends State<WarangCaptureButton> {
+  bool _pressed = false;
+
+  void _setPressed(bool pressed) {
+    if (mounted && _pressed != pressed) setState(() => _pressed = pressed);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final surface = Theme.of(context).colorScheme.surface;
-    return Material(
-      color: WarangColors.accent,
-      shape: const CircleBorder(),
-      elevation: 0,
-      shadowColor: Colors.transparent,
-      child: Ink(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: surface.withValues(alpha: dark ? .90 : .88),
-              blurRadius: 0,
-              spreadRadius: 4,
+    return Semantics(
+      button: true,
+      label: 'Capture',
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: widget.onPressed,
+        onTapDown: (_) => _setPressed(true),
+        onTapUp: (_) => _setPressed(false),
+        onTapCancel: () => _setPressed(false),
+        child: AnimatedScale(
+          scale: _pressed ? .96 : 1,
+          duration: const Duration(milliseconds: 90),
+          curve: Curves.easeOut,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: WarangColors.accent,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color:
+                      (dark
+                              ? Colors.black
+                              : Theme.of(context).colorScheme.onSurface)
+                          .withValues(alpha: dark ? .55 : .26),
+                  blurRadius: dark ? 28 : 24,
+                  offset: Offset(0, dark ? 12 : 10),
+                ),
+              ],
             ),
-            BoxShadow(
-              color:
-                  (dark
-                          ? Colors.black
-                          : Theme.of(context).colorScheme.onSurface)
-                      .withValues(alpha: dark ? .55 : .26),
-              blurRadius: dark ? 28 : 24,
-              offset: Offset(0, dark ? 12 : 10),
-            ),
-          ],
-        ),
-        child: InkWell(
-          onTap: onPressed,
-          customBorder: const CircleBorder(),
-          child: const SizedBox(
-            width: 74,
-            height: 74,
-            child: Center(
-              child: SizedBox(
-                width: 30,
-                height: 30,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.fromBorderSide(
-                      BorderSide(color: WarangColors.accentInk, width: 2.5),
+            child: const SizedBox(
+              width: 74,
+              height: 74,
+              child: Center(
+                child: SizedBox(
+                  width: 30,
+                  height: 30,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.fromBorderSide(
+                        BorderSide(color: WarangColors.accentInk, width: 2.5),
+                      ),
                     ),
                   ),
                 ),

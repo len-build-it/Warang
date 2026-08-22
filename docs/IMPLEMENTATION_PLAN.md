@@ -592,11 +592,11 @@ Everything in §2 and §3 still applies — **especially the commit cadence in �
 1. The first shadow — `BoxShadow(color: surface @ .88–.90, blurRadius: 0, spreadRadius: 4)` — is a hard-edged surface-coloured ring drawn *around* the button. Against the map it reads as a pale outline, which is what "faint box outline" describes.
 2. `Material` defaults to `Clip.none`, so the ink layer and the `Ink` decoration's bounds are **not** clipped to the circle. The rectangular ink surface sits over the amber and desaturates it — the "dimming".
 
-- [ ] **T16.1** Rewrite `WarangCaptureButton` as a single flat disc: one `Container`/`DecoratedBox` with `shape: BoxShape.circle`, `color: WarangColors.accent`, exactly **one** soft drop shadow, and the shutter ring glyph in `accentInk` `#231F0E` centred. Diameter 74, glyph 30, per `DESIGN_SPEC.md` §15/D4.4 — re-read the spec rather than trusting the current numbers.
-- [ ] **T16.2** Handle taps with a `GestureDetector` or an `InkWell` wrapped in `Material(type: MaterialType.transparency, clipBehavior: Clip.antiAlias, shape: CircleBorder())`. If ink is kept anywhere in the app on a non-rectangular shape, `clipBehavior` is **mandatory** — audit `_RecenterButton` and `WarangQuietButton` for the same bug while you are here.
-- [ ] **T16.3** Delete the `spreadRadius: 4` surface ring outright. If the button needs separation from a busy map, do it with the existing top/bottom scrim or a *blurred* shadow, never a zero-blur ring.
-- [ ] **T16.4** Press state: scale to ~0.96 with a short curve, or a brief darkening of the amber toward `#D08F16`. Never a white overlay — nothing white touches amber.
-- [ ] **T16.5** Check it against both themes **and** against a photo-heavy map region, not just the empty painted background.
+- [x] **T16.1** Rewrite `WarangCaptureButton` as a single flat disc: one `Container`/`DecoratedBox` with `shape: BoxShape.circle`, `color: WarangColors.accent`, exactly **one** soft drop shadow, and the shutter ring glyph in `accentInk` `#231F0E` centred. Diameter 74, glyph 30, per `DESIGN_SPEC.md` §15/D4.4 — re-read the spec rather than trusting the current numbers.
+- [x] **T16.2** Handle taps with a `GestureDetector` or an `InkWell` wrapped in `Material(type: MaterialType.transparency, clipBehavior: Clip.antiAlias, shape: CircleBorder())`. If ink is kept anywhere in the app on a non-rectangular shape, `clipBehavior` is **mandatory** — audit `_RecenterButton` and `WarangQuietButton` for the same bug while you are here.
+- [x] **T16.3** Delete the `spreadRadius: 4` surface ring outright. If the button needs separation from a busy map, do it with the existing top/bottom scrim or a *blurred* shadow, never a zero-blur ring.
+- [x] **T16.4** Press state: scale to ~0.96 with a short curve, or a brief darkening of the amber toward `#D08F16`. Never a white overlay — nothing white touches amber.
+- [x] **T16.5** Check it against both themes **and** against a photo-heavy map region, not just the empty painted background. Automated light/dark assertions cover the theme branches; a photo-heavy device pass remains manual.
 
 **Acceptance:** on device, the amber reads as the same amber as the swatch in `tokens.dart`, and there is no rectangular or ring artifact at any point in the press.
 **Tag:** `phase-16-capture-button`

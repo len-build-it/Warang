@@ -261,6 +261,7 @@ class _RecenterButton extends StatelessWidget {
   Widget build(BuildContext context) => Material(
     color: Theme.of(context).colorScheme.surface,
     shape: const CircleBorder(),
+    clipBehavior: Clip.antiAlias,
     elevation: 0,
     shadowColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: .14),
     child: InkWell(
