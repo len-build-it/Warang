@@ -114,7 +114,7 @@ class _NewsTabScreenState extends State<NewsTabScreen> {
           padding: const EdgeInsets.only(bottom: 14),
           child: _NewsArticleCard(article: article),
         ),
-        NewsAdSlot() => const SizedBox.shrink(),
+        NewsAdSlot _ => const SizedBox.shrink(),
       };
 }
 
