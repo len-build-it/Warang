@@ -16,31 +16,30 @@ import '../../data/files/photo_store.dart';
 import '../../data/repository.dart';
 import '../capture/capture_screen.dart';
 import '../settings/settings_screen.dart';
-import '../trips/trips_sheet.dart';
 import '../map/warang_map.dart';
 
-class HomeScreen extends ConsumerWidget {
-  const HomeScreen({super.key});
+class TravelModeScreen extends ConsumerWidget {
+  const TravelModeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final repository = ref.watch(repositoryProvider);
     return AnimatedBuilder(
       animation: repository,
-      builder: (context, _) => _HomeContent(repository: repository),
+      builder: (context, _) => _TravelModeContent(repository: repository),
     );
   }
 }
 
-class _HomeContent extends StatefulWidget {
-  const _HomeContent({required this.repository});
+class _TravelModeContent extends StatefulWidget {
+  const _TravelModeContent({required this.repository});
   final WarangRepository repository;
 
   @override
-  State<_HomeContent> createState() => _HomeContentState();
+  State<_TravelModeContent> createState() => _TravelModeContentState();
 }
 
-class _HomeContentState extends State<_HomeContent> {
+class _TravelModeContentState extends State<_TravelModeContent> {
   final _photoStore = PhotoStore();
   final _mapKey = GlobalKey<WarangMapSurfaceState>();
   Moment? _selected;
@@ -61,16 +60,6 @@ class _HomeContentState extends State<_HomeContent> {
       context,
     ).push<bool>(MaterialPageRoute(builder: (_) => const CaptureScreen()));
   }
-
-  void _showTrips() => showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    barrierColor: Theme.of(
-      context,
-    ).colorScheme.onSurface.withValues(alpha: .46),
-    builder: (_) => TripsSheet(repository: widget.repository),
-  );
 
   void _showSettings() => Navigator.of(
     context,
@@ -186,7 +175,7 @@ class _HomeContentState extends State<_HomeContent> {
                 left: 0,
                 right: 0,
                 bottom: 0,
-                child: WarangSheetPeek(onTap: _showTrips),
+                child: const WarangSheetPeek(),
               ),
               Positioned(
                 bottom: 62,
@@ -244,10 +233,6 @@ class _HomeContentState extends State<_HomeContent> {
               child: _WarangDrawer(
                 repository: widget.repository,
                 onClose: _closeDrawer,
-                onTrips: () {
-                  _closeDrawer();
-                  _showTrips();
-                },
                 onSearch: _showSearch,
                 onSettings: () {
                   _closeDrawer();
@@ -314,7 +299,6 @@ class _WarangDrawer extends StatelessWidget {
   const _WarangDrawer({
     required this.repository,
     required this.onClose,
-    required this.onTrips,
     required this.onSearch,
     required this.onSettings,
     required this.onBackup,
@@ -323,7 +307,6 @@ class _WarangDrawer extends StatelessWidget {
 
   final WarangRepository repository;
   final VoidCallback onClose;
-  final VoidCallback onTrips;
   final VoidCallback onSearch;
   final VoidCallback onSettings;
   final VoidCallback onBackup;
@@ -408,11 +391,6 @@ class _WarangDrawer extends StatelessWidget {
                 child: ListView(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   children: [
-                    _DrawerRow(
-                      icon: Icons.map_outlined,
-                      label: 'Trips',
-                      onTap: onTrips,
-                    ),
                     _DrawerRow(
                       icon: Icons.search,
                       label: 'Search',
