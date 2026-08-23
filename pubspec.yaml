@@ -41,6 +41,7 @@ flutter:
   uses-material-design: true
   assets:
     - design/warang-maya.png
+    - assets/data/news_items.json
   fonts:
     - family: Bricolage Grotesque
       fonts:
