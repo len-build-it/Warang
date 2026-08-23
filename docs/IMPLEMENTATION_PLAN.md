@@ -6,15 +6,21 @@ Repo: `C:\Users\User\Desktop\Warang` · Branch: `master` · No remote (local com
 
 > # 🔴 WORK ORDER — this overrides the phase numbering
 >
-> **Do Part II first: phases 15 → 16 → 18 → 17 → 19. Then resume Part I at Phase 3.**
+> **Part II (phases 15–19) is done — every task is ticked.** Do not reopen it; do not "improve" it further.
 >
-> Phases 15–19 are printed at the **end** of this file because they were added later. They are **not** last in the queue. The old instruction "work top to bottom, do not skip ahead" is what caused them to be missed twice — it is now void. **Section order ≠ execution order.**
+> **Current work: Part III — security hardening, phases 20 → 21. Then resume Part I at Phase 3.**
 >
-> Why these first: the pilot APK has been installed on a physical phone **twice**, and both times the same defects were reported — stock launcher icon, a boxed and dimmed capture button, a fake map, and no way to reach settings. Phases 15, 16 and 18 depend on nothing in Phases 3–14 and are roughly an afternoon each. Phase 17 needs only the Phase 2 data layer, which is done. **Every build that ships without them is another round where the person testing this app sees the same four bugs.**
+> Part III is printed at the very **end** of this file, after Part II, because it was added later. It is **not** last in the queue — that is the exact same mistake that made Part II get missed twice before this file had a work-order block at all. **Section order ≠ execution order, on this project, permanently. Assume nothing about priority from where a phase sits in the file — read this block.**
 >
-> Order rationale: **15** (icon + fonts) and **16** (capture button) are the cheapest and most visible, so they land first. **18** (drawer) makes the rest of the app reachable. **17** (real map) is the largest, so it goes after the small wins rather than blocking them. **19** is the on-device gate — nothing is "done" until it passes.
+> Why security now, before resuming Part I: Phase 17 gave the app its first two pieces of surface that touch untrusted input — a `.travelbook` file handed over by another person, and a network tile fetch. Phase 11's own acceptance line already says "the hostile-archive tests pass. This phase is not done until they do" — and it wasn't: T11.4, T11.5, and T11.8 are still unticked below. Phase 20 is that unfinished work, not new scope. Phase 21 (Android manifest hardening) is small, independent of app code, and closes an unrelated but equally cheap gap (device backup can currently copy the whole photo+location database off the phone). Doing both **before** Phase 3 means the data-layer changes in Part I don't need a security re-audit bolted on afterward.
 >
-> Report progress against **this order**. If you are about to start any Part I phase between 3 and 14 while a phase in 15–19 is still unticked, **stop — you are working the wrong queue.**
+> Order rationale: **20** first because it finishes an already-flagged, already-acceptance-blocked phase. **21** second because it's unrelated to app code and roughly an hour once 20 is out of the way.
+>
+> **Before writing any Phase 20 code: commit this plan edit by itself** — `docs(plan): add Part III security hardening (phases 20-21)` — per §3's rule that this file's own edits are never left unstaged. Do this as your first commit of the session.
+>
+> Report progress against **this order**. If you are about to start any Part I phase while a phase in 20–21 is still unticked, **stop — you are working the wrong queue.**
+>
+> **This work order is the only source of priority. If any instruction anywhere else in this file — a section heading, a comment, a stray "next steps" note — implies a different order, this block wins. Do not resolve that conflict yourself; if it seems genuinely ambiguous, stop and ask the human rather than guessing.**
 
 > ## ⛔ STOP — read this before your first `git commit`
 >
@@ -24,7 +30,7 @@ Repo: `C:\Users\User\Desktop\Warang` · Branch: `master` · No remote (local com
 >
 > **You do not get to batch commits until the end of a task, a phase, or a session.** Commit as you go, or the work is not done correctly no matter how good the code is. Full protocol in **§3 below — that is the authority**.
 
-**This file has two parts.** Part I (§1–§8) is the original pilot plan, phases 0–14. **Part II** at the end is the post-pilot fix pack, phases 15–19, added 2026-08-22 after the first release APK was tested on a physical device. Part II amends a few Part I decisions; every amendment is marked inline where the original text sits. **Part II is the current work — see the work order above.**
+**This file has three parts.** Part I (§1–§8) is the original pilot plan, phases 0–14. **Part II**, phases 15–19, is the post-pilot fix pack added 2026-08-22 after the first release APK was tested on a physical device — it amends a few Part I decisions, each marked inline where the original text sits, and it is now **complete**. **Part III**, phases 20–21, is a security hardening pack added 2026-08-23 to close out Phase 11's never-finished acceptance criterion and to harden the Android manifest before Part I resumes. **Part III is the current work — see the work order above.**
 
 **Outstanding housekeeping, do this before anything else:** the working tree currently has `DESIGN_SPEC.md`, `IMPLEMENTATION_PLAN.md` and `Logo.png` showing as deleted at the repo root and untracked under `docs/` and `assets/` — the moves were never committed. Commit them as `chore: move docs and brand assets into docs/ and assets/` (use `git mv` semantics: `git add -A`), so `git status` is clean before Phase 15 starts. Also delete any stale `.git/index.lock` if git complains — one was left behind by a tool that could not unlink it.
 
@@ -367,11 +373,11 @@ Seeded on first run with `isEveryday = true`. Every capture that has no active t
 ### Phase 3 — File storage
 **Goal:** photos on disk, addressed relatively, never orphaned.
 
-- [ ] **T3.1** `PhotoStore`: `<documents>/warang/photos/<yyyy>/<MM>/<uuid>.jpg` and `.../thumbs/<uuid>.jpg`.
+- [x] **T3.1** `PhotoStore`: `<documents>/warang/photos/<yyyy>/<MM>/<uuid>.jpg` and `.../thumbs/<uuid>.jpg`.
 - [x] **T3.2** `resolve(String relPath) → File` — the **only** place a relative path becomes absolute.
-- [ ] **T3.3** Import pipeline: re-encode originals to max 2000px long edge (quality ≈ 85), generate a 320px thumbnail. The re-encoded file *is* the original; do not keep the camera's raw output.
-- [ ] **T3.4** Orphan sweep: delete files with no live `Photos` row, and rows whose file is missing.
-- [ ] **T3.5** **Tests:** stored paths are relative and contain no drive letter or leading `/`; resolution round-trips; a simulated documents-dir change still resolves; orphan sweep removes only orphans.
+- [x] **T3.3** Import pipeline: re-encode originals to max 2000px long edge (quality ≈ 85), generate a 320px thumbnail. The re-encoded file *is* the original; do not keep the camera's raw output.
+- [x] **T3.4** Orphan sweep: delete files with no live `Photos` row, and rows whose file is missing.
+- [x] **T3.5** **Tests:** stored paths are relative and contain no drive letter or leading `/`; resolution round-trips; a simulated documents-dir change still resolves; orphan sweep removes only orphans.
 
 **Acceptance:** grepping the DB for `/data/` or `C:\` returns nothing.
 **Tag:** `phase-3-files`
@@ -700,3 +706,55 @@ Adapted for Warang: aqone caches *feed responses* per feed with a per-feed max a
 - The exact `DESIGN_SPEC.md` §13 map style. The Phase 17 colour filter is an approximation; the real answer is vector tiles or a bundled `.mbtiles`, and it is not worth blocking a working map on.
 - Trip detail and share preview screens — still undesigned.
 - The zoomed-out "look back" view. Phase 17 makes it possible for the first time; treat it as its own feature, not a side effect of pinch-zoom.
+
+---
+
+# Part III — Security hardening (added 2026-08-23)
+
+Warang has no server, no accounts, and no network sync — so this is not the usual auth/API security work. The two real gaps are: the app's only channel for untrusted external input (a `.travelbook` file someone hands you), which Phase 11 flagged and never finished; and the Android manifest, which currently lets the platform's own backup mechanisms copy the private photo-and-location database off the device without any Warang code being involved.
+
+**Everything in §2 and §3 still applies without exception — this includes the commit cadence.** A security phase committed as one or two blobs defeats its own purpose: if a hardening change turns out to be wrong, you want to revert *that* line, not the whole phase. Apply §3's decomposition exactly as written for Phase 2's worked example.
+
+**Scope discipline — read before touching anything below.** This pack does two things and no more. Do not add anything not listed in Phase 20 or 21, no matter how reasonable it seems in the moment — including anything from the "explicitly out of scope" list at the end of this section. If a task here seems to require touching a settled §2 decision, **stop and ask the human**, exactly as §2 already instructs. These are the only directives for Part III; do not substitute your own judgment about what "security hardening" should additionally include.
+
+---
+
+### Phase 20 — Finish `.travelbook` hardening (close Phase 11)
+**Goal:** Phase 11's own acceptance line — *"the hostile-archive tests pass. This phase is not done until they do"* — finally becomes true.
+
+**Diagnosis.** `lib/features/travelbook/travelbook_service.dart`'s `_looksLikeImage` only sniffs the first few magic bytes of a JPEG/PNG/WEBP header. It does not decode the image. A file with a valid header followed by a corrupt or adversarial body sails through this check, gets written to disk via `photoStore.storeBytes`, and only fails later — inside the app's image renderer, on whatever screen the user happens to open, with no traceable cause. A header can also lie about content that decodes into an enormous bitmap even though the *compressed* file is small enough to pass `maxEntryBytes`/`maxUncompressedBytes` — those two caps bound compressed and declared-uncompressed byte counts, not decoded memory, so they do not stop a small-file/huge-pixel-count decompression bomb. Separately, **T11.5 was never implemented**: `WarangRepository.upsertImportedTrip` has no read-only concept, so a re-imported trip is fully editable exactly like one authored on-device. And **T11.8's hostile-archive test suite does not exist.**
+
+- [ ] **T20.1** Replace the header-sniff in `_looksLikeImage` with an actual decode attempt — `package:image`'s `decodeImage`, run inside `compute()` so a large or slow decode never blocks the UI isolate. A null result or a thrown exception rejects the entry with `TravelbookSecurityException`.
+- [ ] **T20.2** Cap **decoded pixel dimensions**, not just compressed bytes: reject any image whose decoded `width * height` exceeds a fixed ceiling (30 megapixels is a reasonable start — well above anything Phase 3's own 2000px-long-edge re-encode pipeline ever produces). This is what actually stops a decompression bomb; T20.1 alone only proves the bytes decode, not that decoding them is cheap.
+- [ ] **T20.3** Add `isImported BOOLEAN NOT NULL DEFAULT FALSE` to the `Trips` table (a real schema migration, `schemaVersion` bump, per §3's "change the database schema" commit trigger — its own commit, separate from T20.1/T20.2). `upsertImportedTrip` sets it `true`. Surface it in the UI added by Phase 8: a small "Imported · read-only" label on the trip card and in trip detail, with edit/delete/add-moment affordances disabled when it is `true`. This closes T11.5.
+- [ ] **T20.4** Harden `_safeEntry` with the two checks it is currently missing, alongside the zip-slip guard it already has: reject any entry name containing a NUL byte, and reject any entry name longer than 255 bytes. Both are established zip-parser edge cases, independent of the `../` traversal case already handled.
+- [ ] **T20.5** Validate that `Moment.id` and `Trip.id` read from the manifest are well-formed UUID v4 strings before use; if not, generate a fresh UUID for that row instead of trusting the archive's value. Right now an attacker-supplied string is trusted straight into a primary key.
+- [ ] **T20.6** **Tests — this closes T11.8.** At minimum: a crafted zip containing a `../../` entry is rejected; a zip with a NUL-byte entry name is rejected; an archive over `maxArchiveBytes` is rejected; a corrupt image (valid magic bytes, undecodable body) is rejected; a "decode-bomb" image (tiny compressed file, huge declared pixel dimensions) is rejected; a non-UUID id in the manifest is regenerated rather than trusted verbatim; re-importing the same file updates rather than duplicates (already covered by T11.6 — re-assert it here); an imported trip round-trips as read-only through the repository layer.
+
+**Acceptance:** every test in T20.6 is green; `flutter analyze` clean. Phase 11's original acceptance line is now actually satisfied, not just asserted.
+**Tag:** `phase-20-travelbook-hardening`
+
+---
+
+### Phase 21 — Android platform hardening
+**Goal:** the installed APK does not hand a photo-and-location diary to anything that can trigger a device backup, and the app cannot make an unencrypted network request even by accident.
+
+**Diagnosis.** `android/app/src/main/AndroidManifest.xml` sets no `android:allowBackup` attribute, so it defaults to `true`. Android's auto-backup (and `adb backup` against a debuggable build) can copy the app's private storage — the Drift database, every photo, and the tile cache from Phase 17 — off the device, with zero Warang code involved and nothing in this app able to prevent it. Separately, there is no `android:networkSecurityConfig`, so nothing in the manifest explicitly forbids cleartext HTTP, even though §2's narrowed non-negotiable already requires the Phase 17 tile fetch to carry nothing but a `z/x/y` and to otherwise stay off the network entirely.
+
+- [ ] **T21.1** Set `android:allowBackup="false"` on the `<application>` element. This single line is the highest-value change in this phase — it closes the ADB/auto-backup exfiltration path outright.
+- [ ] **T21.2** For API 31+, also add `android:dataExtractionRules="@xml/data_extraction_rules"` pointing to a rules file that denies both cloud backup and device-to-device transfer. `allowBackup="false"` alone predates and does not fully cover these newer Android 12+ data-extraction paths.
+- [ ] **T21.3** Add `res/xml/network_security_config.xml` with a base config of `cleartextTrafficPermitted="false"` and no domain-specific exception, referenced via `android:networkSecurityConfig="@xml/network_security_config"` on `<application>`. Confirm the OSM tile URL wired in Phase 17 is `https://` — if it turns out to be `http://`, this change will correctly break it, which is the intended outcome; fix the URL, don't add a cleartext exception for it.
+- [ ] **T21.4** Audit exported components: confirm `MainActivity` (which correctly needs `exported="true"` for its `LAUNCHER`/`MAIN` intent filter) is the *only* exported component once plugin-contributed manifest entries are merged in. Record what you found in this checkbox's commit message — an audit that isn't written down didn't happen.
+- [ ] **T21.5** Confirm the release build is not debuggable and that no `key.properties` or keystore file has ended up in the repo. §3's "what not to commit" list already forbids `*.jks`/`*.keystore`/`key.properties`; this task verifies that rule has actually held, it does not restate it.
+
+**Acceptance:** `aapt dump badging` (or `aapt2 dump badging`) on the built release APK shows `allowBackup='false'`; `adb backup` (or Android's "back up my data" device transfer) against the installed app refuses or yields an empty backup; a manual plain-HTTP fetch attempt from within the app fails closed rather than silently succeeding.
+**Tag:** `phase-21-android-hardening`
+
+---
+
+### Explicitly out of scope for Part III
+
+Do not implement either of these without the human asking for them by name — they were considered and deliberately left out, not overlooked.
+
+- **App lock (PIN or biometric gate on launch).** Rejected for now: it adds friction ahead of every capture, which conflicts directly with §2's "nothing may stand between the button and the shutter." If revisited later, it must ship as an opt-in Settings toggle, off by default — never a mandatory gate in front of the map.
+- **Encrypting the Drift database at rest (e.g. SQLCipher).** A bigger lift than this pack's scope — it would mean a native driver swap and its own migration story. The phone's own device lock is the primary control in the meantime. Revisit as its own phase, with human sign-off, if wanted.

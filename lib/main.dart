@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'app/app.dart';
 import 'data/db/database.dart';
+import 'data/files/photo_store.dart';
 import 'data/repository.dart';
 
 Future<void> main() async {
@@ -17,8 +18,10 @@ Future<void> main() async {
   final database = WarangDatabase.open(
     File(p.join(databaseDirectory.path, 'warang.sqlite')),
   );
-  final repository = WarangRepository(database);
+  final photoStore = PhotoStore(documentsDirectory: documents);
+  final repository = WarangRepository(database, photoStore: photoStore);
   await repository.initialize();
+  await photoStore.sweepOrphans(database);
   runApp(
     ProviderScope(
       overrides: [

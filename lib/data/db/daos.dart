@@ -166,6 +166,19 @@ class MomentsDao extends DatabaseAccessor<WarangDatabase>
 class PhotosDao extends DatabaseAccessor<WarangDatabase> with _$PhotosDaoMixin {
   PhotosDao(super.attachedDatabase);
 
+  Future<List<PhotoRow>> getActive() =>
+      (select(photos)..where((photo) => photo.deletedAt.isNull())).get();
+
+  Future<List<PhotoRow>> getLive() async {
+    final rows = await customSelect(
+      '''SELECT p.* FROM photos p
+         INNER JOIN moments m ON m.id = p.moment_id
+         WHERE p.deleted_at IS NULL AND m.deleted_at IS NULL''',
+      readsFrom: {photos, moments},
+    ).get();
+    return rows.map(_photoFromRow).toList();
+  }
+
   Future<PhotoRow?> firstForMoment(String momentId) =>
       (select(photos)
             ..where(
@@ -178,6 +191,14 @@ class PhotosDao extends DatabaseAccessor<WarangDatabase> with _$PhotosDaoMixin {
 
   Future<int> insertPhoto(PhotosCompanion entry) => into(photos).insert(entry);
 
+  Future<int> softDelete(String id, DateTime deletedAt) =>
+      (update(photos)..where((photo) => photo.id.equals(id))).write(
+        PhotosCompanion(
+          deletedAt: Value(deletedAt),
+          updatedAt: Value(deletedAt),
+        ),
+      );
+
   Future<List<PhotoRow>> getOrphans() async {
     final rows = await customSelect(
       '''SELECT p.* FROM photos p
@@ -185,25 +206,23 @@ class PhotosDao extends DatabaseAccessor<WarangDatabase> with _$PhotosDaoMixin {
          WHERE p.deleted_at IS NULL AND (m.id IS NULL OR m.deleted_at IS NOT NULL)''',
       readsFrom: {photos, moments},
     ).get();
-    return rows
-        .map(
-          (row) => PhotoRow(
-            id: row.read<String>('id'),
-            momentId: row.read<String>('moment_id'),
-            relPath: row.read<String>('rel_path'),
-            thumbRelPath: row.read<String>('thumb_rel_path'),
-            width: row.read<int>('width'),
-            height: row.read<int>('height'),
-            bytes: row.read<int>('bytes'),
-            position: row.read<int>('position'),
-            createdAt: row.read<DateTime>('created_at'),
-            updatedAt: row.read<DateTime>('updated_at'),
-            deletedAt: row.readNullable<DateTime>('deleted_at'),
-            authorId: row.read<String>('author_id'),
-          ),
-        )
-        .toList();
+    return rows.map(_photoFromRow).toList();
   }
+
+  PhotoRow _photoFromRow(QueryRow row) => PhotoRow(
+    id: row.read<String>('id'),
+    momentId: row.read<String>('moment_id'),
+    relPath: row.read<String>('rel_path'),
+    thumbRelPath: row.read<String>('thumb_rel_path'),
+    width: row.read<int>('width'),
+    height: row.read<int>('height'),
+    bytes: row.read<int>('bytes'),
+    position: row.read<int>('position'),
+    createdAt: row.read<DateTime>('created_at'),
+    updatedAt: row.read<DateTime>('updated_at'),
+    deletedAt: row.readNullable<DateTime>('deleted_at'),
+    authorId: row.read<String>('author_id'),
+  );
 }
 
 @DriftAccessor(tables: [AppMeta])

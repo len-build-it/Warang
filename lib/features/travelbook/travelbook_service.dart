@@ -125,13 +125,19 @@ class TravelbookService {
             'A photo in this travelbook is invalid.',
           );
         }
-        relPath = await photoStore.storeBytes(
-          image,
-          extension: p
-              .extension(archivePath)
-              .replaceFirst('.', '')
-              .toLowerCase(),
-        );
+        late final StoredPhoto stored;
+        try {
+          stored = await photoStore.storeBytesAsset(image);
+        } on FormatException {
+          throw const TravelbookSecurityException(
+            'A photo in this travelbook is invalid.',
+          );
+        }
+        relPath = stored.relPath;
+        json['thumbRelPath'] = stored.thumbRelPath;
+        json['width'] = stored.width;
+        json['height'] = stored.height;
+        json['bytes'] = stored.bytes;
       }
       importedMoments.add(
         Moment(
@@ -143,6 +149,10 @@ class TravelbookService {
           longitude: (json['longitude'] as num?)?.toDouble(),
           placeLabel: json['placeLabel'] as String?,
           relPath: relPath,
+          thumbRelPath: json['thumbRelPath'] as String?,
+          width: json['width'] as int? ?? 0,
+          height: json['height'] as int? ?? 0,
+          bytes: json['bytes'] as int? ?? 0,
         ),
       );
     }

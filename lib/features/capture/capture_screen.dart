@@ -69,14 +69,18 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
     final photo = _photo;
     if (photo == null || _saving) return;
     setState(() => _saving = true);
-    final relative = await _photoStore.importPhoto(File(photo.path));
+    final stored = await _photoStore.importPhotoAsset(File(photo.path));
     await ref
         .read(repositoryProvider)
         .addMoment(
           caption: _captionController.text,
           latitude: _position?.latitude,
           longitude: _position?.longitude,
-          relPath: relative,
+          relPath: stored.relPath,
+          thumbRelPath: stored.thumbRelPath,
+          width: stored.width,
+          height: stored.height,
+          bytes: stored.bytes,
           capturedAt: DateTime.now(),
         );
     if (mounted) Navigator.of(context).pop(true);

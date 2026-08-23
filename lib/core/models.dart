@@ -118,6 +118,10 @@ class Moment {
     this.placeLabel,
     this.sortIndex = 0,
     this.relPath,
+    this.thumbRelPath,
+    this.width = 0,
+    this.height = 0,
+    this.bytes = 0,
     this.deletedAt,
     this.authorId = 'local',
     this.createdAt,
@@ -136,6 +140,10 @@ class Moment {
 
   /// Compatibility projection of the first row in the Photos table.
   final String? relPath;
+  final String? thumbRelPath;
+  final int width;
+  final int height;
+  final int bytes;
   final DateTime? deletedAt;
   final String authorId;
   final DateTime? createdAt;
@@ -152,6 +160,10 @@ class Moment {
     'placeLabel': placeLabel,
     'sortIndex': sortIndex,
     'relPath': relPath,
+    'thumbRelPath': thumbRelPath,
+    'width': width,
+    'height': height,
+    'bytes': bytes,
     'deletedAt': deletedAt?.toIso8601String(),
     'authorId': authorId,
     'createdAt': createdAt?.toIso8601String(),
@@ -169,6 +181,10 @@ class Moment {
     placeLabel: json['placeLabel'] as String?,
     sortIndex: json['sortIndex'] as int? ?? 0,
     relPath: json['relPath'] as String?,
+    thumbRelPath: json['thumbRelPath'] as String?,
+    width: json['width'] as int? ?? 0,
+    height: json['height'] as int? ?? 0,
+    bytes: json['bytes'] as int? ?? 0,
     deletedAt: _date(json['deletedAt']),
     authorId: json['authorId'] as String? ?? 'local',
     createdAt: _date(json['createdAt']),

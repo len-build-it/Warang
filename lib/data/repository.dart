@@ -15,9 +15,11 @@ import 'files/photo_store.dart';
 /// the existing screens simple while exposing cached snapshots and notifying
 /// them whenever a reactive DAO stream changes.
 class WarangRepository extends ChangeNotifier {
-  WarangRepository(this.database);
+  WarangRepository(this.database, {PhotoStore? photoStore})
+    : photoStore = photoStore ?? PhotoStore();
 
   final WarangDatabase database;
+  final PhotoStore photoStore;
   late Profile _profile;
   List<Trip> _trips = const [];
   List<Moment> _moments = const [];
@@ -67,7 +69,7 @@ class WarangRepository extends ChangeNotifier {
   }
 
   Future<void> setAvatar(File source) async {
-    final relativePath = await PhotoStore().importPhoto(source);
+    final relativePath = await photoStore.importAvatar(source);
     await database.profilesDao.updateProfile(
       _profile.id,
       ProfilesCompanion(
@@ -119,12 +121,16 @@ class WarangRepository extends ChangeNotifier {
         ),
       );
       if (relPath != null) {
+        final validatedRelPath = PhotoStore.validateRelativePath(relPath);
+        final validatedThumbPath = PhotoStore.validateRelativePath(
+          thumbRelPath ?? relPath,
+        );
         await database.photosDao.insertPhoto(
           PhotosCompanion.insert(
             id: newId(),
             momentId: id,
-            relPath: relPath,
-            thumbRelPath: thumbRelPath ?? relPath,
+            relPath: validatedRelPath,
+            thumbRelPath: validatedThumbPath,
             width: width,
             height: height,
             bytes: bytes,
@@ -207,6 +213,24 @@ class WarangRepository extends ChangeNotifier {
           await database.momentsDao.insertMoment(values);
         } else {
           await database.momentsDao.updateMoment(moment.id, values);
+        }
+        if (moment.relPath != null &&
+            await database.photosDao.firstForMoment(moment.id) == null) {
+          await database.photosDao.insertPhoto(
+            PhotosCompanion.insert(
+              id: newId(),
+              momentId: moment.id,
+              relPath: PhotoStore.validateRelativePath(moment.relPath!),
+              thumbRelPath: PhotoStore.validateRelativePath(
+                moment.thumbRelPath ?? moment.relPath!,
+              ),
+              width: moment.width,
+              height: moment.height,
+              bytes: moment.bytes,
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
         }
       }
     });
@@ -295,6 +319,10 @@ class WarangRepository extends ChangeNotifier {
       placeLabel: row.placeLabel,
       sortIndex: row.sortIndex,
       relPath: photo?.relPath,
+      thumbRelPath: photo?.thumbRelPath,
+      width: photo?.width ?? 0,
+      height: photo?.height ?? 0,
+      bytes: photo?.bytes ?? 0,
       deletedAt: row.deletedAt,
       authorId: row.authorId,
       createdAt: row.createdAt,
