@@ -171,11 +171,11 @@ class _TravelModeContentState extends State<_TravelModeContent> {
                     ),
                   ),
                 ),
-              Positioned(
+              const Positioned(
                 left: 0,
                 right: 0,
                 bottom: 0,
-                child: const WarangSheetPeek(),
+                child: WarangSheetPeek(),
               ),
               Positioned(
                 bottom: 62,

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/db/daos.dart';
 import '../data/db/database.dart';
 import '../data/repository.dart';
-import '../features/travel_mode/travel_mode_screen.dart';
+import 'shell/app_shell.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import 'theme/tokens.dart';
 
@@ -48,7 +48,7 @@ class WarangApp extends ConsumerWidget {
         animation: repository,
         builder: (context, _) => repository.profile.name.isEmpty
             ? const OnboardingScreen()
-            : const TravelModeScreen(),
+            : const AppShell(),
       ),
     );
   }
