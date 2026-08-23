@@ -8,17 +8,19 @@ Repo: `C:\Users\User\Desktop\Warang` · Branch: `master` · No remote (local com
 >
 > **Part II (phases 15–19) is done — every task is ticked.** Do not reopen it; do not "improve" it further.
 >
-> **Current work: Part III — security hardening, phases 20 → 21. Then resume Part I at Phase 3.**
+> **Current work: Part III — security hardening, phases 20 → 21. Then Part IV — the tab shell, phases 22 → 24. Then resume Part I at Phase 3.**
 >
-> Part III is printed at the very **end** of this file, after Part II, because it was added later. It is **not** last in the queue — that is the exact same mistake that made Part II get missed twice before this file had a work-order block at all. **Section order ≠ execution order, on this project, permanently. Assume nothing about priority from where a phase sits in the file — read this block.**
+> Part III and Part IV are both printed at the very **end** of this file, after Part II, because they were added later. Neither is last in the queue — that is the exact same mistake that made Part II get missed twice before this file had a work-order block at all. **Section order ≠ execution order, on this project, permanently. Assume nothing about priority from where a phase sits in the file — read this block.**
 >
 > Why security now, before resuming Part I: Phase 17 gave the app its first two pieces of surface that touch untrusted input — a `.travelbook` file handed over by another person, and a network tile fetch. Phase 11's own acceptance line already says "the hostile-archive tests pass. This phase is not done until they do" — and it wasn't: T11.4, T11.5, and T11.8 are still unticked below. Phase 20 is that unfinished work, not new scope. Phase 21 (Android manifest hardening) is small, independent of app code, and closes an unrelated but equally cheap gap (device backup can currently copy the whole photo+location database off the phone). Doing both **before** Phase 3 means the data-layer changes in Part I don't need a security re-audit bolted on afterward.
 >
-> Order rationale: **20** first because it finishes an already-flagged, already-acceptance-blocked phase. **21** second because it's unrelated to app code and roughly an hour once 20 is out of the way.
+> Why Part IV before Phase 3, not after: this was a deliberate human call, made explicitly against the alternative of waiting for Phase 3's real Drift persistence layer first. The reasoning: Phase 22's tab shell and Phase 23's memories/analytics charts can be built and visually verified against placeholder data now, the same way AqOne's own `DashboardScreen` chart painters were built and shipped before that project's data layer was final — and doing the nav restructuring before Phase 3 means Phase 3's repository work only has to wire real data into an already-settled shell, not retrofit a shell around already-wired screens.
 >
-> **Before writing any Phase 20 code: commit this plan edit by itself** — `docs(plan): add Part III security hardening (phases 20-21)` — per §3's rule that this file's own edits are never left unstaged. Do this as your first commit of the session.
+> Order rationale: **20** first because it finishes an already-flagged, already-acceptance-blocked phase. **21** second because it's unrelated to app code and roughly an hour once 20 is out of the way. **22** third because Phases 23 and 24 both assume the tab shell exists. **23** before **24** because the human's stated identity priority is map-first — Travel Mode stays the launch tab regardless of build order, but the memories/home tab is the more load-bearing piece of the new shell and should exist before the lighter-weight static news tab is slotted in beside it.
 >
-> Report progress against **this order**. If you are about to start any Part I phase while a phase in 20–21 is still unticked, **stop — you are working the wrong queue.**
+> **Before writing any Phase 20 code: commit this plan edit by itself** — `docs(plan): add Part III security hardening (phases 20-21)` — per §3's rule that this file's own edits are never left unstaged. Do this as your first commit of the session. **Before writing any Phase 22 code, likewise commit this Part IV addition by itself** — `docs(plan): add Part IV tab shell (phases 22-24)`.
+>
+> Report progress against **this order**. If you are about to start any Part I phase while a phase in 20–24 is still unticked, **stop — you are working the wrong queue.**
 >
 > **This work order is the only source of priority. If any instruction anywhere else in this file — a section heading, a comment, a stray "next steps" note — implies a different order, this block wins. Do not resolve that conflict yourself; if it seems genuinely ambiguous, stop and ask the human rather than guessing.**
 
@@ -30,7 +32,7 @@ Repo: `C:\Users\User\Desktop\Warang` · Branch: `master` · No remote (local com
 >
 > **You do not get to batch commits until the end of a task, a phase, or a session.** Commit as you go, or the work is not done correctly no matter how good the code is. Full protocol in **§3 below — that is the authority**.
 
-**This file has three parts.** Part I (§1–§8) is the original pilot plan, phases 0–14. **Part II**, phases 15–19, is the post-pilot fix pack added 2026-08-22 after the first release APK was tested on a physical device — it amends a few Part I decisions, each marked inline where the original text sits, and it is now **complete**. **Part III**, phases 20–21, is a security hardening pack added 2026-08-23 to close out Phase 11's never-finished acceptance criterion and to harden the Android manifest before Part I resumes. **Part III is the current work — see the work order above.**
+**This file has four parts.** Part I (§1–§8) is the original pilot plan, phases 0–14. **Part II**, phases 15–19, is the post-pilot fix pack added 2026-08-22 after the first release APK was tested on a physical device — it amends a few Part I decisions, each marked inline where the original text sits, and it is now **complete**. **Part III**, phases 20–21, is a security hardening pack added 2026-08-23 to close out Phase 11's never-finished acceptance criterion and to harden the Android manifest before Part I resumes. **Part IV**, phases 22–24, is a navigation/product-scope addition, also added 2026-08-23, that turns the app from a single map screen into a three-tab shell (Travel Mode, Home, News) — see §1a below for the product reasoning. **Part III is the current work, then Part IV — see the work order above.**
 
 **Outstanding housekeeping, do this before anything else:** the working tree currently has `DESIGN_SPEC.md`, `IMPLEMENTATION_PLAN.md` and `Logo.png` showing as deleted at the repo root and untracked under `docs/` and `assets/` — the moves were never committed. Commit them as `chore: move docs and brand assets into docs/ and assets/` (use `git mv` semantics: `git add -A`), so `git status` is clean before Phase 15 starts. Also delete any stale `.git/index.lock` if git complains — one was left behind by a tool that could not unlink it.
 
@@ -45,6 +47,16 @@ Repo: `C:\Users\User\Desktop\Warang` · Branch: `master` · No remote (local com
 A map you fill with your own photographs. You are somewhere — a cafe, a trail, a beach — you press one button, the camera opens, you shoot, and a photo-pin drops where you stood. Later you look back at a map covered in your own pictures.
 
 It is **not** a game. It is **not** a social network. There is no server, no account, and no cloud. Sharing happens by rendering an image to the system share sheet, or by handing a `.travelbook` file to a friend.
+
+### 1a. Product scope, amended 2026-08-23 (Part IV)
+
+Everything in §1 above still describes the app's core screen — it is now called **Travel Mode**, not "home." As of Part IV the app is a **three-tab shell**, modeled on the sibling project **AqOne**'s (`C:\Users\User\Desktop\AqOne`) `HomeScreen`: an `IndexedStack` of tabs behind a bottom nav bar (mobile) / sidebar (desktop, `LayoutBuilder` switch at 900px), tabs kept alive in memory rather than pushed as routes. Copy that shell *pattern* — the `IndexedStack` + persistent-nav structure — not AqOne's code verbatim; AqOne is a different app (maritime advisories/vessel tracking) with a different data model.
+
+The three tabs:
+
+- **Travel Mode** — everything §1 describes: the full-screen map, capture button, pin clustering, card-over-map. **This is the default tab on launch — the map-first identity is not negotiable and this decision is explicit, not a default left unmade.** Its only Part IV change: the trips/timeline pull-up sheet (`lib/features/trips/trips_sheet.dart`) moves out of this screen entirely — see Home below.
+- **Home** — new. A scrollable "shelf of memories": the trips list (moved here from Travel Mode) plus offline-computed analytics (moments per month, places visited, capture streak, etc. — see Phase 23) rendered as custom-painted charts, following the pattern in AqOne's `dashboard.dart` (`FishCaughtBarPainter`/`SalesLinePainter` — same painter approach, different metrics, no shared code).
+- **News** — new. A static, bundled advisories/tips feed — **no network fetch, no backend, in this phase.** Modeled visually on AqOne's `advisories.dart` (list + empty state), but built against a local static data source, not `api_client.dart`'s live fetch. See Phase 24 for the ad-slot seam this tab is built with — the human has stated an intent to monetize this tab later via user-curated ads, but **no ad-serving logic is in scope for Part IV.** Do not build any ad infrastructure beyond the seam described in Phase 24; if scope seems to be creeping toward it, stop and ask the human.
 
 ---
 
@@ -71,6 +83,11 @@ These are settled decisions. If a task seems to require breaking one, **stop and
 | Put colour near a photograph | Photos are the only saturated thing on screen. |
 
 > **Amendment (2026-08-22, Part II).** The "zero network calls" rule is narrowed, not dropped. **Map tiles may be fetched from OSM** and cached locally (Phase 17). Everything else stands: no accounts, no sync, no analytics, no geocoding, no telemetry. A tile request carries a `z/x/y` and nothing else — no user data, no photo, no coordinate history. Every other byte still stays on the device, and the app must remain fully usable with the radio off, serving cached tiles with a visible age stamp.
+>
+> **Amendment (2026-08-23, Part IV).** Two clarifications, neither a further narrowing:
+>
+> 1. **"No analytics" in the table above means third-party analytics/telemetry SDKs that phone home** (Firebase Analytics, Sentry, Mixpanel, etc.) — it does **not** mean the Home tab's in-app moments/trips charts (Phase 23). Those are computed entirely on-device from data already in Drift, rendered locally, sent nowhere, and stored nowhere but the existing tables. This was ambiguous enough to be worth spelling out explicitly rather than leaving Luna to infer it.
+> 2. **The News tab (Phase 24) ships static, bundled content only — no network fetch.** The human has stated an intent to eventually monetize this tab with user-curated ads, which would require a real content source and is a genuine future narrowing of the offline rule, on the order of the Phase 17 tile-fetch amendment. **That narrowing is not authorized by this note.** Do not add any network call, ad SDK, or remote content fetch to the News tab without the human explicitly signing off on it as its own decision, the same way Phase 17's tile fetch was.
 
 ### Always do these
 
@@ -320,7 +337,7 @@ Seeded on first run with `isEveryday = true`. Every capture that has no active t
 
 ## 7. Phases
 
-> **Execution order is not this order.** Per the work order at the top of this file: **15 → 16 → 18 → 17 → 19, then resume here at Phase 3.** Phases 0–2 are done. Phases 3–14 are on hold until Part II is complete.
+> **Execution order is not this order.** Per the work order at the top of this file: **15 → 16 → 18 → 17 → 19 → 20 → 21 → 22 → 23 → 24, then resume here at Phase 3.** Phases 0–2 are done. Phases 3–14 are on hold until Parts II, III, and IV are complete.
 
 ### Phase 0 — Scaffold
 **Goal:** an empty app that builds and runs.
@@ -758,3 +775,66 @@ Do not implement either of these without the human asking for them by name — t
 
 - **App lock (PIN or biometric gate on launch).** Rejected for now: it adds friction ahead of every capture, which conflicts directly with §2's "nothing may stand between the button and the shutter." If revisited later, it must ship as an opt-in Settings toggle, off by default — never a mandatory gate in front of the map.
 - **Encrypting the Drift database at rest (e.g. SQLCipher).** A bigger lift than this pack's scope — it would mean a native driver swap and its own migration story. The phone's own device lock is the primary control in the meantime. Revisit as its own phase, with human sign-off, if wanted.
+
+---
+
+# Part IV — Tab shell: Travel Mode, Home, News (added 2026-08-23)
+
+**Product context — read §1a above first.** This part turns Warang from a single map screen into a three-tab app: **Travel Mode** (today's map screen, moved not rewritten), **Home** (new — trips shelf + offline analytics), **News** (new — static bundled advisories/tips, with a seam for user-curated ads later, but no ad logic now). The nav shell pattern is adapted from the sibling project AqOne's `flutter/lib/home.dart` — an `IndexedStack` behind a bottom nav (mobile) / sidebar (desktop, 900px breakpoint) — copied as a *pattern*, not as shared code; AqOne is a separate, differently-scoped app and nothing in this part depends on its source tree at build time.
+
+**Scope discipline — read before touching anything below.** This pack builds the shell and its two new tabs' *static* structure. It does not build: any network-backed News content, any ad-serving or ad-slot-filling logic beyond the seam described in Phase 24, any change to the capture flow, or any change to §2's non-negotiables beyond the two clarifications already logged above. If a task here seems to need any of those, **stop and ask the human**.
+
+**Everything in §2 and §3 still applies without exception — this includes the commit cadence.** Apply §3's decomposition exactly as written for Phase 2's worked example: the shell, the Home screen, its chart painters, and the News screen are separable pieces and should land as separate commits, not one shell-and-two-tabs blob.
+
+---
+
+### Phase 22 — The tab shell, and moving Travel Mode into it
+**Goal:** the app opens on a bottom-nav (mobile) / sidebar (desktop) shell with three tabs; Travel Mode is tab 0 and behaves exactly as it does today; Home and News exist as empty/placeholder screens wired into the same `IndexedStack`.
+
+- [ ] **T22.1** Create `lib/app/shell/app_shell.dart`: a `StatefulWidget` holding `_currentIndex` (default `0`, Travel Mode) and an `IndexedStack` of the three tab screens, following AqOne `home.dart`'s structure — `LayoutBuilder` branches at `maxWidth >= 900` into a desktop `Row` (fixed sidebar + `Expanded` content) or a mobile `Stack` (content `Column` + an overlaid bottom nav bar). Tabs stay resident in the `IndexedStack` once built (no rebuild on tab switch) — same lazy-build-once pattern AqOne uses for its Venture tab if a tab is expensive to construct.
+- [ ] **T22.2** Bottom nav bar / sidebar nav items, three only: Travel Mode (map pin icon), Home (the app's existing default icon or a simple house glyph — confirm against `DESIGN_SPEC.md`; if it says nothing about tab icons, that's a spec gap, flag it rather than guessing), News. Style from `DESIGN_SPEC.md`'s existing component tokens (radius 14, accent rules from §2) — do **not** reuse AqOne's blue palette; Warang's amber/sage tokens apply throughout, including this nav chrome.
+- [ ] **T22.3** `main.dart` now routes to `AppShell` instead of directly to the map screen. Confirm first-run flow (maya screen, if any is still gated ahead of this) still runs before the shell, not inside a tab.
+- [ ] **T22.4** Move `lib/features/home/home_screen.dart` and `lib/features/home/map_painter.dart` into `lib/features/travel_mode/` (rename files and the widget class from `HomeScreen`/references to `TravelModeScreen` — grep for every reference before deleting the old path, this is a rename not a duplicate). No behavioral change in this task — capture, clustering, card-over-map, recenter button all work identically. This is Travel Mode's new home in the file tree; do not fold it into `app_shell.dart`.
+- [ ] **T22.5** Remove the trips pull-up sheet (`lib/features/trips/trips_sheet.dart`) invocation from Travel Mode. Do **not** delete the sheet widget file yet — Phase 23 repurposes its list-rendering logic for the Home tab's trips shelf.
+- [ ] **T22.6** Placeholder `HomeTabScreen` and `NewsTabScreen` widgets — simple centered "Coming in Phase 23/24" text — wired into the `IndexedStack` at their indices so the shell is fully navigable before either tab has real content.
+
+**Acceptance:** app launches into Travel Mode by default; switching tabs preserves each screen's state (e.g. map camera position isn't reset by visiting Home and coming back); Travel Mode's capture flow is provably unchanged (existing tests for it still pass, plus a manual capture-while-in-shell check); no trips sheet appears over the map anymore.
+**Tag:** `phase-22-tab-shell`
+
+---
+
+### Phase 23 — Home tab: trips shelf and offline analytics
+**Goal:** Home is a scrollable screen — the trips list (moved from Travel Mode's old pull-up sheet) plus a small set of locally-computed stats, rendered as custom-painted charts.
+
+- [ ] **T23.1** `lib/features/home_tab/home_tab_screen.dart`: adapt `trips_sheet.dart`'s trip-card list rendering into a top-level scrollable section (not a bottom sheet — it's the tab's main content now). Same trip-card visual design, same tap-through to trip detail; only the container changes from sheet to page.
+- [ ] **T23.2** Analytics section below the trips shelf, pattern-matched to AqOne `dashboard.dart`'s `_buildAnalyticsSection` + custom `CustomPainter` charts (`FishCaughtBarPainter`/`SalesLinePainter` are the structural reference — bar chart + line/trend chart — not the content). Warang's version needs its own metrics; pick from what's cheaply computable from existing tables without new queries beyond simple `COUNT`/`GROUP BY`: moments captured per month (bar chart, last 6–12 months), cumulative places/trips over time (line chart), current capture streak (a stat tile, not a chart). Confirm exact metrics and chart count against `DESIGN_SPEC.md` if it's been updated for this phase; if not, this is a spec gap — flag it, pick the above as a reasonable default, and note the assumption in the phase's commit message.
+- [ ] **T23.3** All analytics are computed **on-device, on demand, from the existing Drift tables** — no new table, no cached/precomputed analytics table, no telemetry, no network. Re-read the §2 amendment above before writing this: it exists precisely to head off treating this task as forbidden "analytics."
+- [ ] **T23.4** Empty states: zero trips → the shelf shows the same empty-state pattern used elsewhere in the app (maya, per §2's mascot rule — non-map empty state), not a blank scroll. Analytics section with too little data (e.g. under a week of use) shows a "come back after your first few captures" message rather than a chart with one bar.
+- [ ] **T23.5** Delete `trips_sheet.dart` once T23.1 has fully absorbed its rendering logic and nothing else references it — confirm with a grep before deleting.
+
+**Acceptance:** Home shows real trips (including the Everyday trip) and at least one working bar chart and one working line/trend chart, all computed from on-device data with the app in airplane mode; empty states render correctly on a fresh install; deleting `trips_sheet.dart` doesn't break any other screen.
+**Tag:** `phase-23-home-analytics`
+
+---
+
+### Phase 24 — News tab: static advisories, with an ad-slot seam
+**Goal:** News is a list screen with bundled, static content — visually modeled on AqOne's `advisories.dart`, but reading from a local asset instead of a live API — built so a future ad-curation feature can slot in without a screen rewrite.
+
+- [ ] **T24.1** `lib/features/news_tab/news_tab_screen.dart`: a `ListView` over a small static dataset — bundle as `assets/data/news_items.json` (title, body, optional icon/category, date) rather than hardcoding Dart literals, so content can be refreshed by editing one file without a code change. Register the asset in `pubspec.yaml`.
+- [ ] **T24.2** List-item widget modeled on `advisories.dart`'s card layout (icon, title, snippet, timestamp) but restyled to Warang's tokens — sage-grey surfaces, amber used sparingly per §2's ≤4-per-screen rule, DM Mono for the date. Empty state (no bundled items) uses the same maya empty-state pattern as Phase 23.
+- [ ] **T24.3** **The ad-slot seam** (structure only, no ad logic): define a sealed/union `NewsListEntry` type with two variants — `NewsArticle` (today's only real content) and `NewsAdSlot` (an inert placeholder variant, unused in this phase, that a future phase can populate). The list-building code accepts `List<NewsListEntry>` and renders each variant with its own widget, so adding real ad entries later is "add a case," not "restructure the screen." Do **not** implement `NewsAdSlot`'s actual rendering beyond a `SizedBox.shrink()` stub, do **not** wire in any ad SDK, and do **not** fetch anything from a network to populate it — see the §2 amendment above.
+- [ ] **T24.4** Pull-to-refresh gesture is present in the UI (matching AqOne's `advisories.dart` interaction pattern for visual/muscle-memory consistency) but, since content is static in this phase, its handler just re-reads the bundled asset — it must not attempt any network call. Comment the handler clearly so a future phase knows exactly where a real fetch would go.
+
+**Acceptance:** News tab renders the bundled items with correct styling in both themes; app is fully usable in airplane mode (no network call is ever attempted from this screen); `NewsAdSlot` compiles and is provably inert (no instance is ever constructed by current code, confirmed by a quick grep, not just by reading T24.3's intent).
+**Tag:** `phase-24-news-static`
+
+---
+
+### Explicitly out of scope for Part IV
+
+Do not implement any of these without the human asking for them by name.
+
+- **Any ad-serving, ad-curation, or ad-sales logic.** Phase 24 builds a structural seam (`NewsAdSlot`) and nothing else. The human has stated a monetization intent for later, not a spec for now.
+- **A live/networked News feed of any kind.** Would be a further, and more significant, narrowing of the §2 offline rule than the Phase 17 tile fetch was — needs its own explicit sign-off, not an inference from this pack.
+- **Changing Travel Mode's default-tab status.** Confirmed explicitly by the human as map-first; do not make Home the launch tab even if it seems like a nicer "welcome back" experience.
+- **Reusing AqOne's actual Dart source, assets, or backend.** The shell and chart *patterns* are the reference; AqOne's code, its blue palette, its maritime domain content, and its `api_client.dart`/backend are not part of Warang and should not be imported, copied, or pointed to at runtime.
