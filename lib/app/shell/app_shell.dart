@@ -21,11 +21,7 @@ class _AppShellState extends State<AppShell> {
     _ShellItem(Icons.article_outlined, 'News'),
   ];
 
-  final _tabs = const [
-    TravelModeScreen(),
-    HomeTabScreen(),
-    NewsTabScreen(),
-  ];
+  final _tabs = const [TravelModeScreen(), HomeTabScreen(), NewsTabScreen()];
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
@@ -95,7 +91,9 @@ class _MobileNavigation extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .14),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: .14),
             blurRadius: 18,
             offset: const Offset(0, -4),
           ),
@@ -157,7 +155,9 @@ class _DesktopNavigation extends StatelessWidget {
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
                         letterSpacing: 1.8,
-                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .54),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: .54),
                       ),
                     ),
                   ),
@@ -218,7 +218,10 @@ class _NavigationItem extends StatelessWidget {
                     children: [
                       Icon(item.icon, color: color, size: 21),
                       const SizedBox(width: 12),
-                      Text(item.label, style: TextStyle(color: color, fontSize: 14)),
+                      Text(
+                        item.label,
+                        style: TextStyle(color: color, fontSize: 14),
+                      ),
                     ],
                   )
                 : Column(
