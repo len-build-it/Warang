@@ -16,23 +16,32 @@ Most photo apps give you a scrolling wall of images. Warang gives you a map.
 
 Open it and you see where you are. Tap once and the camera is already open. The photo you take drops a pin exactly where you stood. Months later, zoom out — and the payoff is a map of everywhere you've been, filled in with your own pictures.
 
-No account. No feed. No servers holding your memories. Warang works with the radio off.
+No account. No feed. No servers holding your memories. Previously visited map
+areas remain visible with the radio off; uncached areas need a connection for
+OpenStreetMap tiles.
 
 ## What it does
 
-**Capture in one tap.** The button opens the camera immediately. Location is read at the moment of capture — never in the background, never continuously — so it costs you almost no battery. Captions and details are optional and can be added later. A missing GPS lock never blocks a shot; you can place the pin yourself afterwards.
+**Capture in one tap.** The button opens the camera immediately. Location is
+read at capture time, never continuously or in the background. A missing GPS
+lock never blocks saving the photograph.
 
 **A map, not a grid.** The home screen is the map. Pins are your photos. Repeat visits to the same spot cluster into one pin with a count, so a favourite café doesn't bury a whole city.
 
-**Moments over the map.** Tapping a pin opens a card on top of the map — photo, place, date — and you swipe sideways through nearby memories. You never leave the map to browse.
+**Moments over the map.** Tapping a pin opens its photograph, caption, place,
+and date over the live map. Moments can be deleted from this card.
 
-**Trips.** Pull up the sheet from the bottom for trips and a timeline. Everyday shots file themselves automatically; promote them into a real trip whenever you want.
+**Home.** The Home tab lists Everyday and user-created trips, with local
+moments, places, and capture-trend summaries.
 
-**Share on your terms.** From a single moment: the raw photo, or a moment card. From a trip: a collage, all photos, or a portable `.travelbook` file. Every path shows you a preview before anything leaves the app, and no map image is ever exported — your coordinates stay yours.
+**News.** The News tab contains a small bundled set of offline travel notes.
 
 **Search.** Full-text search across captions and places, offline.
 
-**Yours to keep.** Export everything to a `.travelbook` archive and put it wherever you like — your own Drive, iCloud, a hard disk. There is no cloud to lock you in and none to lock you out.
+Backup, restore, moment editing/sharing, trip organization, and `.travelbook`
+import/export are tracked in
+[`docs/REMEDIATION_IMPLEMENTATION_PLAN.md`](docs/REMEDIATION_IMPLEMENTATION_PLAN.md)
+and are not exposed as finished features yet.
 
 ## Design
 
@@ -53,8 +62,7 @@ Amber `#E8A020` against sage-grey neutrals, in both light and dark, following yo
 | Database | Drift over SQLite, with FTS5 search |
 | Map | `flutter_map` + `latlong2`, cache-first custom tile provider |
 | Location | `geolocator`, one-shot reads only |
-| Sharing | `share_plus` |
-| Archives | `archive` (`.travelbook` export/import) |
+| Planned sharing/archive primitives | `share_plus` + `archive` (not exposed yet) |
 
 Android first, iOS to follow. No platform-only dependencies.
 
@@ -93,13 +101,14 @@ lib/
   data/           Drift database, DAOs, repository, photo storage
   features/
     capture/      Camera and save flow
-    home/         Map home screen
+    home_tab/     Trips shelf and local summaries
     map/          Map surface and offline tile store
+    news_tab/     Bundled offline notes
     onboarding/   First run
     settings/     Settings
-    share/        Share formats and previews
-    travelbook/   .travelbook export and import
-    trips/        Trips sheet
+    share/        Planned share hand-off primitive
+    travel_mode/  Capture, map, search, and moment cards
+    travelbook/   Unexposed archive service under remediation
 docs/             Implementation plan and design spec
 design/           Brand assets and the design canvas export
 assets/           Fonts and logos
@@ -108,7 +117,11 @@ test/             Widget and data-layer tests
 
 ## Privacy
 
-Warang makes no account, no sync, no analytics, and no geocoding calls. Photos and locations live in the app's own storage on your device and are never uploaded. Map tiles are the only thing fetched from the network, and they are cached so the app keeps working without it.
+Warang makes no account, no sync, no telemetry, and no geocoding calls. Photos
+and locations live in the app's own storage and are never uploaded by Warang.
+OpenStreetMap tiles are the only network fetch and are cached for revisiting
+areas offline. Android backup hardening is still a release blocker tracked in
+the remediation plan.
 
 ## License
 
