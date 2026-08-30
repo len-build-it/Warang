@@ -117,10 +117,10 @@ signed release artifact.
 
 ### Tasks
 
-- [ ] Set `android:allowBackup="false"` on the application.
-- [ ] Add Android 12+ data-extraction rules that deny cloud backup and
+- [x] Set `android:allowBackup="false"` on the application.
+- [x] Add Android 12+ data-extraction rules that deny cloud backup and
   device-to-device transfer.
-- [ ] Add a network-security configuration that blocks cleartext traffic.
+- [x] Add a network-security configuration that blocks cleartext traffic.
   Keep the map endpoint HTTPS; do not add an HTTP exception.
 - [ ] Inspect the merged release manifest. Record every exported component,
   why it is exported, and any permission that protects it. The currently
@@ -128,7 +128,7 @@ signed release artifact.
   assumed to be harmless.
 - [ ] Configure release signing through ignored local key properties or the CI
   environment. Never commit a key, certificate, password, or `key.properties`.
-- [ ] Add a repeatable release-verification script/check that asserts the
+- [x] Add a repeatable release-verification script/check that asserts the
   manifest protections and refuses debug signing for distribution builds.
 
 ### Required commits
@@ -147,6 +147,19 @@ signed release artifact.
   and the network-security configuration.
 - The distribution APK is signed with the supplied release key, not debug.
 - The exported-component audit is checked into the commit message or this doc.
+
+**Progress 2026-08-30:** `c1bf0ee`, `9d75459`, `aa52028`. The merged debug
+manifest contains the required privacy attributes. Two components are
+exported: `MainActivity` for the launcher, and AndroidX
+`ProfileInstallReceiver`, which is protected by `android.permission.DUMP`.
+Debug builds succeed. Release builds now fail closed with “Missing
+android/key.properties” instead of using the debug key.
+
+**⛔ HUMAN BLOCKER:** provide a production upload keystore outside the
+repository and an ignored `android/key.properties` containing `storeFile`,
+`storePassword`, `keyAlias`, and `keyPassword`. Then build the release APK,
+inspect its merged manifest/signature, tick the two remaining Phase 1 tasks,
+and only then start Phase 2.
 
 ---
 
