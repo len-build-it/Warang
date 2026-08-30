@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../app/app.dart';
 import '../../app/theme/components.dart';
@@ -69,22 +68,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       value: _formatBytes(snapshot.data ?? 0),
                     ),
                   ),
-                  const WarangDivider(),
-                  WarangSettingsRow(
-                    label: 'Back up everything',
-                    emphasized: true,
-                    trailing: Text(
-                      '›',
-                      style: TextStyle(
-                        fontSize: 22,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withValues(alpha: .5),
-                      ),
-                    ),
-                    onTap: () => _shareBackup(context),
-                  ),
-                  const WarangDivider(),
                   const WarangSettingsRow(label: 'Clean up', value: '0 B'),
                 ],
               ),
@@ -108,9 +91,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         style: TextStyle(
                           fontFamily: 'Public Sans',
                           fontSize: 13,
-                          color: Theme.of(context).colorScheme.onSurface.withValues(
-                            alpha: .58,
-                          ),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: .58),
                         ),
                       ),
                       onTap: _clearMapCache,
@@ -188,15 +171,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _clearMapCache() async {
     await _mapTileStore.clear();
     if (mounted) setState(() {});
-  }
-
-  Future<void> _shareBackup(BuildContext context) async {
-    await SharePlus.instance.share(
-      ShareParams(
-        text:
-            'Warang backup: your photos and moments stay on this phone until you share them.',
-      ),
-    );
   }
 }
 

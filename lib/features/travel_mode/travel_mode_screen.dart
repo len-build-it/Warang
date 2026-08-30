@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../app/app.dart';
 import '../../app/theme/components.dart';
@@ -70,15 +69,6 @@ class _TravelModeContentState extends State<_TravelModeContent> {
     showSearch<void>(
       context: context,
       delegate: MomentSearchDelegate(widget.repository),
-    );
-  }
-
-  Future<void> _shareBackup() async {
-    await SharePlus.instance.share(
-      ShareParams(
-        text:
-            'Warang backup: your photos and moments stay on this phone until you share them.',
-      ),
     );
   }
 
@@ -238,10 +228,6 @@ class _TravelModeContentState extends State<_TravelModeContent> {
                   _closeDrawer();
                   _showSettings();
                 },
-                onBackup: () {
-                  _closeDrawer();
-                  _shareBackup();
-                },
                 onAbout: () {
                   _closeDrawer();
                   showAboutDialog(
@@ -271,7 +257,6 @@ class _TravelModeContentState extends State<_TravelModeContent> {
       ),
     );
   }
-
 }
 
 class _HomeMenuButton extends StatelessWidget {
@@ -301,7 +286,6 @@ class _WarangDrawer extends StatelessWidget {
     required this.onClose,
     required this.onSearch,
     required this.onSettings,
-    required this.onBackup,
     required this.onAbout,
   });
 
@@ -309,7 +293,6 @@ class _WarangDrawer extends StatelessWidget {
   final VoidCallback onClose;
   final VoidCallback onSearch;
   final VoidCallback onSettings;
-  final VoidCallback onBackup;
   final VoidCallback onAbout;
 
   @override
@@ -375,11 +358,17 @@ class _WarangDrawer extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Row(
                   children: [
-                    _DrawerCount(value: repository.moments.length, label: 'Moments'),
+                    _DrawerCount(
+                      value: repository.moments.length,
+                      label: 'Moments',
+                    ),
                     const SizedBox(width: 22),
                     _DrawerCount(value: places, label: 'Places'),
                     const SizedBox(width: 22),
-                    _DrawerCount(value: repository.trips.length, label: 'Trips'),
+                    _DrawerCount(
+                      value: repository.trips.length,
+                      label: 'Trips',
+                    ),
                   ],
                 ),
               ),
@@ -400,11 +389,6 @@ class _WarangDrawer extends StatelessWidget {
                       icon: Icons.tune,
                       label: 'Settings',
                       onTap: onSettings,
-                    ),
-                    _DrawerRow(
-                      icon: Icons.archive_outlined,
-                      label: 'Backup & .travelbook',
-                      onTap: onBackup,
                     ),
                     _DrawerRow(
                       icon: Icons.info_outline,
@@ -561,7 +545,11 @@ class _DrawerCount extends StatelessWidget {
 }
 
 class _DrawerRow extends StatelessWidget {
-  const _DrawerRow({required this.icon, required this.label, required this.onTap});
+  const _DrawerRow({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
   final IconData icon;
   final String label;
   final VoidCallback onTap;
@@ -576,7 +564,13 @@ class _DrawerRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .68)),
+            Icon(
+              icon,
+              size: 20,
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: .68),
+            ),
             const SizedBox(width: 14),
             Text(label, style: const TextStyle(fontSize: 15.5)),
           ],
