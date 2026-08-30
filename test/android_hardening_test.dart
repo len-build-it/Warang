@@ -43,4 +43,16 @@ void main() {
     expect(map, contains('https://tile.openstreetmap.org/'));
     expect(map, isNot(contains('http://tile.openstreetmap.org/')));
   });
+
+  test('Android release builds refuse debug or missing signing', () {
+    final gradle = File('android/app/build.gradle.kts').readAsStringSync();
+    final gitignore = File('.gitignore').readAsStringSync();
+
+    expect(gradle, isNot(contains('signingConfigs.getByName("debug")')));
+    expect(gradle, contains('Missing android/key.properties'));
+    expect(gradle, contains('signingConfigs.getByName("release")'));
+    expect(gitignore, contains('key.properties'));
+    expect(gitignore, contains('*.jks'));
+    expect(gitignore, contains('*.keystore'));
+  });
 }
