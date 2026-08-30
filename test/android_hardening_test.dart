@@ -25,4 +25,22 @@ void main() {
       );
     }
   });
+
+  test('Android cleartext traffic is disabled', () {
+    final manifest = File(
+      'android/app/src/main/AndroidManifest.xml',
+    ).readAsStringSync();
+    final networkSecurity = File(
+      'android/app/src/main/res/xml/network_security_config.xml',
+    ).readAsStringSync();
+    final map = File('lib/features/map/warang_map.dart').readAsStringSync();
+
+    expect(
+      manifest,
+      contains('android:networkSecurityConfig="@xml/network_security_config"'),
+    );
+    expect(networkSecurity, contains('cleartextTrafficPermitted="false"'));
+    expect(map, contains('https://tile.openstreetmap.org/'));
+    expect(map, isNot(contains('http://tile.openstreetmap.org/')));
+  });
 }
