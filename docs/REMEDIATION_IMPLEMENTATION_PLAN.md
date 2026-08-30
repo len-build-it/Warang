@@ -81,16 +81,16 @@ following are mandatory for this plan.
 
 ### Tasks
 
-- [ ] Replace the current text-only “Back up everything” action with an
+- [x] Replace the current text-only “Back up everything” action with an
   unavailable/coming-soon state, or remove it, until Phase 2 is complete.
-- [ ] Remove the text-only “Backup & `.travelbook`” drawer action until Phase
+- [x] Remove the text-only “Backup & `.travelbook`” drawer action until Phase
   3 is complete.
-- [ ] Remove disabled Share/Edit controls and fake “Swipe for nearby moments”
+- [x] Remove disabled Share/Edit controls and fake “Swipe for nearby moments”
   affordances, or label them as unavailable, until Phase 4 implements them.
-- [ ] Rewrite the README feature list to match the current app. In particular,
+- [x] Rewrite the README feature list to match the current app. In particular,
   do not claim manual pin placement, travelbook access, share previews,
   full-device backup, trip promotion, or nearby swiping.
-- [ ] Add a widget test for every temporarily hidden/relabelled action.
+- [x] Add a widget test for every temporarily hidden/relabelled action.
 
 ### Required commits
 
@@ -104,6 +104,9 @@ following are mandatory for this plan.
 
 - No visible action performs a no-op or shares placeholder text.
 - README claims can be demonstrated on a device.
+
+**Completed 2026-08-30:** `2770a86`, `e91013d`, `8d64418`. Analyzer clean;
+all 18 tests green.
 
 ---
 
