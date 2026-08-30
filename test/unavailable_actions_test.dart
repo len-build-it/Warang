@@ -5,7 +5,9 @@ import 'package:sqflite/sqflite.dart' as sqflite;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:warang/app/app.dart';
 import 'package:warang/app/theme/tokens.dart';
+import 'package:warang/core/models.dart';
 import 'package:warang/data/db/database.dart';
+import 'package:warang/data/files/photo_store.dart';
 import 'package:warang/data/repository.dart';
 import 'package:warang/features/settings/settings_screen.dart';
 import 'package:warang/features/travel_mode/travel_mode_screen.dart';
@@ -39,11 +41,53 @@ void main() {
   testWidgets('unavailable travelbook action is absent from the drawer', (
     tester,
   ) async {
-    await tester.pumpWidget(_app(repository, const TravelModeScreen()));
-    await tester.tap(find.byIcon(Icons.menu));
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpWidget(
+      _app(
+        repository,
+        Scaffold(
+          body: WarangDrawer(
+            repository: repository,
+            onClose: () {},
+            onSearch: () {},
+            onSettings: () {},
+            onAbout: () {},
+          ),
+        ),
+      ),
+    );
 
     expect(find.text('Backup & .travelbook'), findsNothing);
+  });
+
+  testWidgets('moment card shows only actions that work', (tester) async {
+    await tester.pumpWidget(
+      _app(
+        repository,
+        Scaffold(
+          body: MomentCard(
+            moment: Moment(
+              id: 'moment',
+              tripId: repository.everyday.id,
+              capturedAt: DateTime(2026),
+              latitude: 11.55,
+              longitude: 122,
+            ),
+            repository: repository,
+            photoStore: PhotoStore(),
+            onClose: () {},
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Delete'), findsOneWidget);
+    expect(find.text('Share'), findsNothing);
+    expect(find.text('Edit'), findsNothing);
+    expect(find.text('Swipe for nearby moments'), findsNothing);
+    expect(
+      find.textContaining('NO LOCATION', findRichText: true),
+      findsOneWidget,
+    );
   });
 }
 

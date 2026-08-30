@@ -190,7 +190,7 @@ class _TravelModeContentState extends State<_TravelModeContent> {
                 ),
               ),
               Positioned.fill(
-                child: _MomentCard(
+                child: MomentCard(
                   moment: selected,
                   repository: widget.repository,
                   photoStore: _photoStore,
@@ -220,7 +220,7 @@ class _TravelModeContentState extends State<_TravelModeContent> {
               top: 0,
               bottom: 0,
               width: size.width * .82,
-              child: _WarangDrawer(
+              child: WarangDrawer(
                 repository: widget.repository,
                 onClose: _closeDrawer,
                 onSearch: _showSearch,
@@ -280,8 +280,9 @@ class _HomeMenuButton extends StatelessWidget {
   );
 }
 
-class _WarangDrawer extends StatelessWidget {
-  const _WarangDrawer({
+class WarangDrawer extends StatelessWidget {
+  const WarangDrawer({
+    super.key,
     required this.repository,
     required this.onClose,
     required this.onSearch,
@@ -603,8 +604,9 @@ class _RecenterButton extends StatelessWidget {
   );
 }
 
-class _MomentCard extends StatelessWidget {
-  const _MomentCard({
+class MomentCard extends StatelessWidget {
+  const MomentCard({
+    super.key,
     required this.moment,
     required this.repository,
     required this.photoStore,
@@ -693,7 +695,7 @@ class _MomentCard extends StatelessWidget {
                 children: [
                   if (moment.placeLabel == null)
                     TextSpan(
-                      text: 'ADD LOCATION',
+                      text: 'NO LOCATION',
                       style: TextStyle(
                         color: Theme.of(
                           context,
@@ -712,59 +714,14 @@ class _MomentCard extends StatelessWidget {
             const SizedBox(height: 18),
             Divider(height: 1, color: Theme.of(context).colorScheme.outline),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                for (final label in ['Share', 'Edit', 'Delete']) ...[
-                  Expanded(
-                    child: WarangQuietButton(
-                      label: label,
-                      onPressed: label == 'Delete'
-                          ? () async {
-                              await repository.softDeleteMoment(moment.id);
-                              onClose();
-                            }
-                          : null,
-                    ),
-                  ),
-                  if (label != 'Delete') const SizedBox(width: 10),
-                ],
-              ],
+            WarangQuietButton(
+              label: 'Delete',
+              onPressed: () async {
+                await repository.softDeleteMoment(moment.id);
+                onClose();
+              },
             ),
             const Spacer(),
-            Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(
-                    6,
-                    (index) => Container(
-                      width: 6,
-                      height: 6,
-                      margin: const EdgeInsets.symmetric(horizontal: 3),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: index == 0
-                            ? Theme.of(context).colorScheme.onSurface
-                            : (Theme.of(context).brightness == Brightness.dark
-                                  ? WarangColors.darkDotInactive
-                                  : WarangColors.lightDotInactive),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 9),
-                Text(
-                  'Swipe for nearby moments',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontSize: 11.5,
-                    height: 1,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withValues(alpha: .54),
-                  ),
-                ),
-              ],
-            ),
           ],
         ),
       ),
