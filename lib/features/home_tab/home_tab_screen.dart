@@ -466,26 +466,10 @@ class _EverydayRow extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
               clipBehavior: Clip.antiAlias,
-              child: coverPath == null
-                  ? const Icon(Icons.wb_sunny_outlined, size: 22)
-                  : FutureBuilder<File?>(
-                      future: store
-                          .resolve(coverPath!)
-                          .then<File?>((f) => f)
-                          .catchError((_) => null),
-                      builder: (context, snapshot) {
-                        final file = snapshot.data;
-                        if (file != null && file.existsSync()) {
-                          return Image.file(
-                            file,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) =>
-                                const Icon(Icons.wb_sunny_outlined, size: 22),
-                          );
-                        }
-                        return const Icon(Icons.wb_sunny_outlined, size: 22);
-                      },
-                    ),
+              child: _EverydayThumbnail(
+                coverPath: coverPath,
+                photoStore: store,
+              ),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -506,6 +490,67 @@ class _EverydayRow extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _EverydayThumbnail extends StatefulWidget {
+  const _EverydayThumbnail({required this.coverPath, required this.photoStore});
+
+  final String? coverPath;
+  final PhotoStore photoStore;
+
+  @override
+  State<_EverydayThumbnail> createState() => _EverydayThumbnailState();
+}
+
+class _EverydayThumbnailState extends State<_EverydayThumbnail> {
+  Future<File?>? _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolve();
+  }
+
+  @override
+  void didUpdateWidget(covariant _EverydayThumbnail oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.coverPath != widget.coverPath ||
+        oldWidget.photoStore != widget.photoStore) {
+      _resolve();
+    }
+  }
+
+  void _resolve() {
+    final path = widget.coverPath;
+    _future = path == null
+        ? null
+        : widget.photoStore
+              .resolve(path)
+              .then<File?>((f) => f)
+              .catchError((_) => null);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_future == null) {
+      return const Icon(Icons.wb_sunny_outlined, size: 22);
+    }
+    return FutureBuilder<File?>(
+      future: _future,
+      builder: (context, snapshot) {
+        final file = snapshot.data;
+        if (file != null && file.existsSync()) {
+          return Image.file(
+            file,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) =>
+                const Icon(Icons.wb_sunny_outlined, size: 22),
+          );
+        }
+        return const Icon(Icons.wb_sunny_outlined, size: 22);
+      },
     );
   }
 }
@@ -548,25 +593,7 @@ class _TripCard extends StatelessWidget {
           children: [
             SizedBox(
               height: 136,
-              child: coverPath == null
-                  ? _fallbackBanner(context)
-                  : FutureBuilder<File?>(
-                      future: store
-                          .resolve(coverPath!)
-                          .then<File?>((f) => f)
-                          .catchError((_) => null),
-                      builder: (context, snapshot) {
-                        final file = snapshot.data;
-                        if (file != null && file.existsSync()) {
-                          return Image.file(
-                            file,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) => _fallbackBanner(context),
-                          );
-                        }
-                        return _fallbackBanner(context);
-                      },
-                    ),
+              child: _TripBannerImage(coverPath: coverPath, photoStore: store),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(15, 13, 15, 15),
@@ -605,8 +632,68 @@ class _TripCard extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _fallbackBanner(BuildContext context) => ColoredBox(
+class _TripBannerImage extends StatefulWidget {
+  const _TripBannerImage({required this.coverPath, required this.photoStore});
+
+  final String? coverPath;
+  final PhotoStore photoStore;
+
+  @override
+  State<_TripBannerImage> createState() => _TripBannerImageState();
+}
+
+class _TripBannerImageState extends State<_TripBannerImage> {
+  Future<File?>? _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolve();
+  }
+
+  @override
+  void didUpdateWidget(covariant _TripBannerImage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.coverPath != widget.coverPath ||
+        oldWidget.photoStore != widget.photoStore) {
+      _resolve();
+    }
+  }
+
+  void _resolve() {
+    final path = widget.coverPath;
+    _future = path == null
+        ? null
+        : widget.photoStore
+              .resolve(path)
+              .then<File?>((f) => f)
+              .catchError((_) => null);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_future == null) {
+      return _fallback(context);
+    }
+    return FutureBuilder<File?>(
+      future: _future,
+      builder: (context, snapshot) {
+        final file = snapshot.data;
+        if (file != null && file.existsSync()) {
+          return Image.file(
+            file,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) => _fallback(context),
+          );
+        }
+        return _fallback(context);
+      },
+    );
+  }
+
+  Widget _fallback(BuildContext context) => ColoredBox(
     color: Theme.of(context).extension<MapPalette>()!.landAlt,
     child: const Center(child: Icon(Icons.landscape_outlined, size: 34)),
   );

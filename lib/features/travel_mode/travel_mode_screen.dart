@@ -599,7 +599,7 @@ class _RecenterButton extends StatelessWidget {
   );
 }
 
-class MomentCard extends StatelessWidget {
+class MomentCard extends StatefulWidget {
   const MomentCard({
     super.key,
     required this.moment,
@@ -613,10 +613,43 @@ class MomentCard extends StatelessWidget {
   final VoidCallback onClose;
 
   @override
-  Widget build(BuildContext context) {
-    final future = moment.relPath == null
+  State<MomentCard> createState() => _MomentCardState();
+}
+
+class _MomentCardState extends State<MomentCard> {
+  Future<File?>? _future;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolve();
+  }
+
+  @override
+  void didUpdateWidget(covariant MomentCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.moment.relPath != widget.moment.relPath ||
+        oldWidget.photoStore != widget.photoStore) {
+      _resolve();
+    }
+  }
+
+  void _resolve() {
+    final relPath = widget.moment.relPath;
+    _future = relPath == null
         ? Future<File?>.value(null)
-        : photoStore.resolve(moment.relPath!).then<File?>((file) => file);
+        : widget.photoStore
+              .resolve(relPath)
+              .then<File?>((file) => file)
+              .catchError((_) => null);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final future = _future;
+    final moment = widget.moment;
+    final repository = widget.repository;
+    final onClose = widget.onClose;
     final theme = Theme.of(context);
     final dark = theme.brightness == Brightness.dark;
 
