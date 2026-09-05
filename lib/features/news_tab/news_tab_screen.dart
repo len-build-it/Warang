@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
+import '../../app/theme/tokens.dart';
+
 sealed class NewsListEntry {
   const NewsListEntry();
 }
@@ -82,12 +84,13 @@ class _NewsTabScreenState extends State<NewsTabScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           final entries = snapshot.data ?? const <NewsListEntry>[];
+          final bottomPadding = WarangLayout.navigationHeight(context) + 24.0;
           return RefreshIndicator(
             onRefresh: _refresh,
             color: Theme.of(context).colorScheme.primary,
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(20, 22, 20, 108),
+              padding: EdgeInsets.fromLTRB(20, 22, 20, bottomPadding),
               children: [
                 Text('News', style: Theme.of(context).textTheme.displaySmall),
                 const SizedBox(height: 7),
