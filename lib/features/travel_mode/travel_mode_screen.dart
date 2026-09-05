@@ -619,6 +619,18 @@ class MomentCard extends StatelessWidget {
         : photoStore.resolve(moment.relPath!).then<File?>((file) => file);
     final theme = Theme.of(context);
     final dark = theme.brightness == Brightness.dark;
+
+    final placeText =
+        moment.placeLabel != null && moment.placeLabel!.trim().isNotEmpty
+        ? moment.placeLabel!.trim().toUpperCase()
+        : 'NO LOCATION';
+    final dateText = DateFormat(
+      'dd MMM yyyy',
+    ).format(moment.capturedAt).toUpperCase();
+    final timeText = DateFormat(
+      'h:mm a',
+    ).format(moment.capturedAt).toUpperCase();
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
@@ -651,24 +663,54 @@ class MomentCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 14),
-            FutureBuilder<File?>(
-              future: future,
-              builder: (context, snapshot) => ClipRRect(
-                borderRadius: BorderRadius.circular(14),
+            // Restrained printed photograph frame:
+            Container(
+              decoration: BoxDecoration(
+                color: dark
+                    ? WarangColors.darkSurface
+                    : WarangColors.lightSurface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: dark ? WarangColors.darkLine : WarangColors.lightLine,
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: theme.colorScheme.onSurface.withValues(
+                      alpha: dark ? 0.22 : 0.08,
+                    ),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.all(7),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
                 child: SizedBox(
                   height: 224,
-                  child: snapshot.data == null
-                      ? ColoredBox(
-                          color: Theme.of(
-                            context,
-                          ).extension<MapPalette>()!.landAlt,
-                        )
-                      : Image.file(snapshot.data!, fit: BoxFit.cover),
+                  width: double.infinity,
+                  child: FutureBuilder<File?>(
+                    future: future,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData &&
+                          snapshot.data != null &&
+                          snapshot.data!.existsSync()) {
+                        return Image.file(snapshot.data!, fit: BoxFit.cover);
+                      }
+                      return ColoredBox(
+                        color: theme.extension<MapPalette>()!.landAlt,
+                        child: const Center(
+                          child: Icon(Icons.photo_outlined, size: 36),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
             if (moment.caption?.isNotEmpty == true) ...[
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
               Text(
                 moment.caption!,
                 style: theme.textTheme.bodyLarge?.copyWith(
@@ -678,31 +720,37 @@ class MomentCard extends StatelessWidget {
               ),
             ],
             const SizedBox(height: 12),
-            RichText(
-              text: TextSpan(
-                style: TextStyle(
-                  fontFamily: 'DM Mono',
-                  fontSize: 11,
-                  letterSpacing: 1.6,
-                  color: theme.colorScheme.onSurface.withValues(alpha: .54),
+            // Readable opaque caption/metadata area with stamp-like stored metadata:
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+              decoration: BoxDecoration(
+                color: theme.scaffoldBackgroundColor,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: theme.colorScheme.outline.withValues(alpha: 0.65),
                 ),
-                children: [
-                  if (moment.placeLabel == null)
+              ),
+              child: RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                    fontFamily: 'DM Mono',
+                    fontSize: 11,
+                    letterSpacing: 1.4,
+                    color: theme.colorScheme.onSurface.withValues(alpha: .64),
+                  ),
+                  children: [
                     TextSpan(
-                      text: 'NO LOCATION',
+                      text: placeText,
                       style: TextStyle(
                         color: theme.colorScheme.onSurface.withValues(
-                          alpha: .72,
+                          alpha: moment.placeLabel == null ? .72 : .88,
                         ),
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                  if (moment.placeLabel != null)
-                    TextSpan(text: moment.placeLabel!.toUpperCase()),
-                  TextSpan(
-                    text:
-                        ' · ${DateFormat('dd MMM yyyy').format(moment.capturedAt).toUpperCase()} · ${DateFormat('h:mm a').format(moment.capturedAt).toUpperCase()}',
-                  ),
-                ],
+                    TextSpan(text: ' · $dateText · $timeText'),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 18),
