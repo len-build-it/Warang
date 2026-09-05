@@ -1,6 +1,6 @@
 # Implementation Plan: Warang UI Design Update
 
-> **Status:** Phase 1 complete; waiting for confirmation before Phase 2.
+> **Status:** Phase 2 complete; waiting for confirmation before Phase 3.
 > **Target Branch:** Current verified branch `master`; preserve unrelated work.
 > **Test Command:** `flutter test`
 > **Lint/Check Command:** `flutter analyze`
@@ -182,7 +182,7 @@ Recorded Phase 1 Commits:
 > This stop comes from `.agents/skills/implementation-plan/SKILL.md`, Four Iron Rules #4: "Execution must halt at the end of each phase."
 > Explain that source when requesting the next-phase sign-off.
 
-## Phase 2: UI-1 - Shared surfaces and accessibility
+### Phase 2: UI-1 - Shared surfaces and accessibility
 
 **Goal:** Provide reusable restrained surfaces with readable and accessible controls.
 
@@ -190,38 +190,43 @@ Recorded Phase 1 Commits:
 
 Primary files: `lib/app/theme/tokens.dart`, `lib/app/theme/components.dart`.
 
-- [ ] Reuse existing buttons, metadata, settings rows, and theme roles.
+- [x] Reuse existing buttons, metadata, settings rows, and theme roles.
 Keep changes to the smallest set of shared components needed.
-- [ ] If multiple controls need identical glass rendering, add one small shared surface widget in the existing components file.
+- [x] If multiple controls need identical glass rendering, add one small shared surface widget in the existing components file.
 Use Flutter's built-in clipping, backdrop blur, and decoration; add no package.
-- [ ] Clip blur to the control bounds.
+- [x] Clip blur to the control bounds.
 Keep a solid-surface rendering path for high-contrast mode and environments where blur is unsuitable.
-- [ ] Use supported accessibility signals from the installed Flutter SDK.
+- [x] Use supported accessibility signals from the installed Flutter SDK.
 Respect reduced motion; do not add looping decorative animation.
-- [ ] Ensure interactive controls have at least 48 × 48 logical-pixel hit areas, meaningful semantic labels, focus indication, and visible pressed/selected states.
+- [x] Ensure interactive controls have at least 48 × 48 logical-pixel hit areas, meaningful semantic labels, focus indication, and visible pressed/selected states.
 
 Acceptance: surface styling is consistent in both themes, touch feedback remains visible, and glass can render opaquely without losing controls or layout.
 
 ### Verification Gate
 
-- [ ] Run `dart format --output=none --set-exit-if-changed lib test` after formatting changed Dart files; exit code 0.
-- [ ] Run `flutter analyze`; exit code 0.
-- [ ] Run `flutter test`; exit code 0.
-- [ ] Run `flutter build apk --debug`; exit code 0.
-- [ ] Verify the acceptance criteria for this phase and capture light/dark evidence for affected screens.
+- [x] Run `dart format --output=none --set-exit-if-changed lib test` after formatting changed Dart files; exit code 0.
+- [x] Run `flutter analyze`; exit code 0.
+- [x] Run `flutter test`; exit code 0.
+- [x] Run `flutter build apk --debug`; exit code 0.
+- [x] Verify the acceptance criteria for this phase and capture light/dark evidence for affected screens.
 
 ### Review Gate (Ponytail)
 
-- [ ] Review the diff using `.agents/skills/ponytail-review/SKILL.md`.
-- [ ] Confirm no unrequested packages, speculative abstractions, duplicate styling systems, or unrelated changes.
-- [ ] Confirm existing behavior, accessibility, and data safeguards remain intact.
+- [x] Review the diff using `.agents/skills/ponytail-review/SKILL.md`.
+- [x] Confirm no unrequested packages, speculative abstractions, duplicate styling systems, or unrelated changes.
+- [x] Confirm existing behavior, accessibility, and data safeguards remain intact.
 
 ### Git Checkpoint
 
-- [ ] Follow `docs/IMPLEMENTATION_PLAN.md` section 3: commit each independently reversible change as it becomes green, not one bundled phase diff.
-- [ ] Stage only specific changed paths, include this plan's completed checkboxes, and use conventional messages such as `refactor(ui): phase 2 - surfaces`.
-- [ ] Use `docs(plan): phase 1 - record UI baseline` for a documentation-only baseline checkpoint.
-- [ ] Record all actual phase commit hashes; do not add an agent co-author or rewrite history.
+- [x] Follow `docs/IMPLEMENTATION_PLAN.md` section 3: commit each independently reversible change as it becomes green, not one bundled phase diff.
+- [x] Stage only specific changed paths, include this plan's completed checkboxes, and use conventional messages such as `refactor(ui): phase 2 - surfaces`.
+- [x] Use `docs(plan): phase 1 - record UI baseline` for a documentation-only baseline checkpoint.
+- [x] Record all actual phase commit hashes; do not add an agent co-author or rewrite history.
+
+Recorded Phase 2 Commits:
+- `5bb8cf8 feat(theme): add WarangGlass tokens for frosted surfaces`
+- `ef7606a feat(theme): add glass surfaces and accessible control touch targets`
+- `cd8c098 test(ui): add tests for glass surfaces fallback and accessibility targets`
 
 ### HARD STOP
 
