@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -6,6 +8,7 @@ import '../../app/app.dart';
 import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
 import '../../core/models.dart';
+import '../../data/files/photo_store.dart';
 import '../../data/repository.dart';
 import 'analytics_charts.dart';
 import 'trip_detail_screen.dart';
@@ -32,6 +35,8 @@ class _HomeTabContent extends StatefulWidget {
 }
 
 class _HomeTabContentState extends State<_HomeTabContent> {
+  final _photoStore = PhotoStore();
+
   Future<void> _createTrip() async {
     final title = TextEditingController();
     final place = TextEditingController();
@@ -71,6 +76,23 @@ class _HomeTabContentState extends State<_HomeTabContent> {
     place.dispose();
   }
 
+  String? _findTripCoverPath(Trip trip, List<Moment> tripMoments) {
+    if (trip.coverMomentId != null) {
+      for (final m in tripMoments) {
+        if (m.id == trip.coverMomentId &&
+            (m.thumbRelPath != null || m.relPath != null)) {
+          return m.thumbRelPath ?? m.relPath;
+        }
+      }
+    }
+    for (final m in tripMoments) {
+      if (m.thumbRelPath != null || m.relPath != null) {
+        return m.thumbRelPath ?? m.relPath;
+      }
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final trips = widget.repository.trips;
@@ -78,6 +100,11 @@ class _HomeTabContentState extends State<_HomeTabContent> {
     final moments = widget.repository.moments;
     final realTrips = trips.where((trip) => !trip.isEveryday).toList();
     final analytics = _AnalyticsSnapshot.from(moments);
+    final everydayMoments = moments
+        .where((moment) => moment.tripId == everyday.id)
+        .toList(growable: false);
+    final everydayCoverPath = _findTripCoverPath(everyday, everydayMoments);
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
@@ -95,27 +122,31 @@ class _HomeTabContentState extends State<_HomeTabContent> {
             const SizedBox(height: 12),
             _EverydayRow(
               trip: everyday,
-              count: moments
-                  .where((moment) => moment.tripId == everyday.id)
-                  .length,
+              count: everydayMoments.length,
+              coverPath: everydayCoverPath,
+              photoStore: _photoStore,
               onTap: () => _openTrip(everyday),
             ),
             const SizedBox(height: 18),
             if (realTrips.isEmpty)
               const _TripEmptyState()
             else
-              ...realTrips.map(
-                (trip) => Padding(
+              ...realTrips.map((trip) {
+                final tripMoments = moments
+                    .where((moment) => moment.tripId == trip.id)
+                    .toList(growable: false);
+                final tripCoverPath = _findTripCoverPath(trip, tripMoments);
+                return Padding(
                   padding: const EdgeInsets.only(bottom: 16),
                   child: _TripCard(
                     trip: trip,
-                    count: moments
-                        .where((moment) => moment.tripId == trip.id)
-                        .length,
+                    count: tripMoments.length,
+                    coverPath: tripCoverPath,
+                    photoStore: _photoStore,
                     onTap: () => _openTrip(trip),
                   ),
-                ),
-              ),
+                );
+              }),
             WarangPrimaryButton(
               label: 'New trip',
               height: 54,
@@ -161,6 +192,7 @@ class _HomeTabContentState extends State<_HomeTabContent> {
           moments: widget.repository.moments
               .where((moment) => moment.tripId == trip.id)
               .toList(growable: false),
+          photoStore: _photoStore,
         ),
       ),
     );
@@ -288,9 +320,11 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.fromLTRB(12, 13, 12, 12),
     decoration: BoxDecoration(
-      color: Theme.of(context).colorScheme.surface,
+      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.65),
       borderRadius: BorderRadius.circular(14),
-      border: Border.all(color: Theme.of(context).colorScheme.outline),
+      border: Border.all(
+        color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.65),
+      ),
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -400,53 +434,80 @@ class _EverydayRow extends StatelessWidget {
     required this.trip,
     required this.count,
     required this.onTap,
+    this.coverPath,
+    this.photoStore,
   });
   final Trip trip;
   final int count;
   final VoidCallback onTap;
+  final String? coverPath;
+  final PhotoStore? photoStore;
 
   @override
-  Widget build(BuildContext context) => InkWell(
-    onTap: onTap,
-    borderRadius: BorderRadius.circular(14),
-    child: Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Theme.of(context).colorScheme.outline),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: Theme.of(context).extension<MapPalette>()!.landAlt,
-              borderRadius: BorderRadius.circular(10),
+  Widget build(BuildContext context) {
+    final store = photoStore ?? PhotoStore();
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Theme.of(context).colorScheme.outline),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: Theme.of(context).extension<MapPalette>()!.landAlt,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: coverPath == null
+                  ? const Icon(Icons.wb_sunny_outlined, size: 22)
+                  : FutureBuilder<File?>(
+                      future: store
+                          .resolve(coverPath!)
+                          .then<File?>((f) => f)
+                          .catchError((_) => null),
+                      builder: (context, snapshot) {
+                        final file = snapshot.data;
+                        if (file != null && file.existsSync()) {
+                          return Image.file(
+                            file,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) =>
+                                const Icon(Icons.wb_sunny_outlined, size: 22),
+                          );
+                        }
+                        return const Icon(Icons.wb_sunny_outlined, size: 22);
+                      },
+                    ),
             ),
-            child: const Icon(Icons.wb_sunny_outlined, size: 22),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Everyday',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleMedium?.copyWith(fontSize: 18),
-                ),
-                const SizedBox(height: 5),
-                WarangMetadata('CASUAL CAPTURES · $count MOMENTS'),
-              ],
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Everyday',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleMedium?.copyWith(fontSize: 18),
+                  ),
+                  const SizedBox(height: 5),
+                  WarangMetadata('CASUAL CAPTURES · $count MOMENTS'),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _TripCard extends StatelessWidget {
@@ -454,39 +515,58 @@ class _TripCard extends StatelessWidget {
     required this.trip,
     required this.count,
     required this.onTap,
+    this.coverPath,
+    this.photoStore,
   });
   final Trip trip;
   final int count;
   final VoidCallback onTap;
+  final String? coverPath;
+  final PhotoStore? photoStore;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final store = photoStore ?? PhotoStore();
     final planned =
         trip.startDate != null && trip.startDate!.isAfter(DateTime.now());
     final range = trip.startDate == null
         ? 'NO DATES · $count MOMENTS'
-        : '${DateFormat('MMM d').format(trip.startDate!).toUpperCase()}${trip.endDate == null ? '' : '–${DateFormat('d').format(trip.endDate!)}'} · $count MOMENTS';
+        : '${DateFormat('MMM d').format(trip.startDate!).toUpperCase()}${trip.endDate == null ? '' : '-${DateFormat('d').format(trip.endDate!)}'} · $count MOMENTS';
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
       child: Container(
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
+          color: theme.scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: Theme.of(context).colorScheme.outline),
+          border: Border.all(color: theme.colorScheme.outline),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             SizedBox(
-              height: 132,
-              child: ColoredBox(
-                color: Theme.of(context).extension<MapPalette>()!.landAlt,
-                child: const Center(
-                  child: Icon(Icons.landscape_outlined, size: 34),
-                ),
-              ),
+              height: 136,
+              child: coverPath == null
+                  ? _fallbackBanner(context)
+                  : FutureBuilder<File?>(
+                      future: store
+                          .resolve(coverPath!)
+                          .then<File?>((f) => f)
+                          .catchError((_) => null),
+                      builder: (context, snapshot) {
+                        final file = snapshot.data;
+                        if (file != null && file.existsSync()) {
+                          return Image.file(
+                            file,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) => _fallbackBanner(context),
+                          );
+                        }
+                        return _fallbackBanner(context);
+                      },
+                    ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(15, 13, 15, 15),
@@ -497,10 +577,20 @@ class _TripCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          trip.title,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
+                        if (trip.place != null &&
+                            trip.place!.trim().isNotEmpty) ...[
+                          Text(
+                            trip.place!.trim(),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.72,
+                              ),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                        ],
+                        Text(trip.title, style: theme.textTheme.titleMedium),
                         const SizedBox(height: 6),
                         WarangMetadata(range),
                       ],
@@ -515,6 +605,11 @@ class _TripCard extends StatelessWidget {
       ),
     );
   }
+
+  Widget _fallbackBanner(BuildContext context) => ColoredBox(
+    color: Theme.of(context).extension<MapPalette>()!.landAlt,
+    child: const Center(child: Icon(Icons.landscape_outlined, size: 34)),
+  );
 }
 
 class _PlannedChip extends StatelessWidget {
