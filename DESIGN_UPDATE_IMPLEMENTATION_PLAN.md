@@ -1,6 +1,6 @@
 # Implementation Plan: Warang UI Design Update
 
-> **Status:** Phase 2 complete; waiting for confirmation before Phase 3.
+> **Status:** Phase 3 complete; waiting for confirmation before Phase 4.
 > **Target Branch:** Current verified branch `master`; preserve unrelated work.
 > **Test Command:** `flutter test`
 > **Lint/Check Command:** `flutter analyze`
@@ -245,41 +245,48 @@ Recorded Phase 2 Commits:
 Primary files: `lib/app/shell/app_shell.dart`, `lib/features/travel_mode/travel_mode_screen.dart`.
 Inspect `lib/features/map/warang_map.dart`; change it only if a necessary presentation issue cannot be fixed in the overlay.
 
-- [ ] Apply the shared frosted treatment to mobile navigation on Travel Mode and compact menu/recenter controls.
+- [x] Apply the shared frosted treatment to mobile navigation on Travel Mode and compact menu/recenter controls.
 Use solid navigation surfaces on content-heavy tabs and the desktop sidebar.
-- [ ] Keep navigation labels, order, selection behavior, and tab state.
+- [x] Keep navigation labels, order, selection behavior, and tab state.
 Make the selected state legible in dark mode and distinguishable beyond color alone.
-- [ ] Keep the capture button an opaque amber disc with its existing single-shadow treatment and semantic label.
+- [x] Keep the capture button an opaque amber disc with its existing single-shadow treatment and semantic label.
 Add no menu, picker, or decorative delay before capture.
-- [ ] Calculate control placement from actual safe insets and occupied navigation height.
+- [x] Calculate control placement from actual safe insets and occupied navigation height.
 Replace affected hardcoded device offsets where needed so capture, recenter, cards, and navigation do not overlap.
-- [ ] Keep the map interactive outside overlays; clipping must not create invisible touch-blocking regions.
-- [ ] Keep the drawer mostly opaque because it contains text and actions.
+- [x] Keep the map interactive outside overlays; clipping must not create invisible touch-blocking regions.
+- [x] Keep the drawer mostly opaque because it contains text and actions.
 Preserve current open/close behavior and feature availability.
-- [ ] Preserve map attribution, cache notices, clustering, selection, and location behavior.
+- [x] Preserve map attribution, cache notices, clustering, selection, and location behavior.
 
 Acceptance: launch still opens the map; map gestures work around controls; capture is reachable on short phones; selecting and dismissing a moment works without navigation collisions.
 
 ### Verification Gate
 
-- [ ] Run `dart format --output=none --set-exit-if-changed lib test` after formatting changed Dart files; exit code 0.
-- [ ] Run `flutter analyze`; exit code 0.
-- [ ] Run `flutter test`; exit code 0.
-- [ ] Run `flutter build apk --debug`; exit code 0.
-- [ ] Verify the acceptance criteria for this phase and capture light/dark evidence for affected screens.
+- [x] Run `dart format --output=none --set-exit-if-changed lib test` after formatting changed Dart files; exit code 0.
+- [x] Run `flutter analyze`; exit code 0.
+- [x] Run `flutter test`; exit code 0.
+- [x] Run `flutter build apk --debug`; exit code 0.
+- [x] Verify the acceptance criteria for this phase and capture light/dark evidence for affected screens.
 
 ### Review Gate (Ponytail)
 
-- [ ] Review the diff using `.agents/skills/ponytail-review/SKILL.md`.
-- [ ] Confirm no unrequested packages, speculative abstractions, duplicate styling systems, or unrelated changes.
-- [ ] Confirm existing behavior, accessibility, and data safeguards remain intact.
+- [x] Review the diff using `.agents/skills/ponytail-review/SKILL.md`.
+- [x] Confirm no unrequested packages, speculative abstractions, duplicate styling systems, or unrelated changes.
+- [x] Confirm existing behavior, accessibility, and data safeguards remain intact.
 
 ### Git Checkpoint
 
-- [ ] Follow `docs/IMPLEMENTATION_PLAN.md` section 3: commit each independently reversible change as it becomes green, not one bundled phase diff.
-- [ ] Stage only specific changed paths, include this plan's completed checkboxes, and use conventional messages such as `refactor(ui): phase 3 - map-navigation`.
-- [ ] Use `docs(plan): phase 1 - record UI baseline` for a documentation-only baseline checkpoint.
-- [ ] Record all actual phase commit hashes; do not add an agent co-author or rewrite history.
+- [x] Follow `docs/IMPLEMENTATION_PLAN.md` section 3: commit each independently reversible change as it becomes green, not one bundled phase diff.
+- [x] Stage only specific changed paths, include this plan's completed checkboxes, and use conventional messages such as `refactor(ui): phase 3 - map-navigation`.
+- [x] Use `docs(plan): phase 1 - record UI baseline` for a documentation-only baseline checkpoint.
+- [x] Record all actual phase commit hashes; do not add an agent co-author or rewrite history.
+
+Recorded Phase 3 Commits:
+- `1404d9c fix(ui): prevent RenderFlex overflow in trip empty state`
+- `35f4b59 feat(layout): add WarangLayout for navigation height calculations`
+- `1b9d105 feat(nav): apply frosted glass and accessible selection to app shell navigation`
+- `ba1b4fe feat(map): apply frosted controls and dynamic insets to map and travel mode overlays`
+- `caaabf2 test(nav): add widget tests for map navigation frosted glass and layout offsets`
 
 ### HARD STOP
 
