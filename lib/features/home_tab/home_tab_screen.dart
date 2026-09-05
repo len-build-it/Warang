@@ -426,18 +426,20 @@ class _EverydayRow extends StatelessWidget {
             child: const Icon(Icons.wb_sunny_outlined, size: 22),
           ),
           const SizedBox(width: 14),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Everyday',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontSize: 18),
-              ),
-              const SizedBox(height: 5),
-              WarangMetadata('CASUAL CAPTURES · $count MOMENTS'),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Everyday',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleMedium?.copyWith(fontSize: 18),
+                ),
+                const SizedBox(height: 5),
+                WarangMetadata('CASUAL CAPTURES · $count MOMENTS'),
+              ],
+            ),
           ),
         ],
       ),
