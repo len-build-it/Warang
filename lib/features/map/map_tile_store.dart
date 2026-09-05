@@ -58,14 +58,21 @@ class MapTileStore implements TileCache {
   final String? databasePath;
   sqflite.Database? _database;
 
+  bool _closed = false;
+
   Future<sqflite.Database> get _db async {
+    if (_closed) {
+      throw StateError('MapTileStore is closed');
+    }
     final existing = _database;
-    if (existing != null) return existing;
-    final path = databasePath ??
+    if (existing != null && existing.isOpen) return existing;
+    final path =
+        databasePath ??
         p.join(await sqflite.getDatabasesPath(), 'warang_map_tiles.sqlite');
-    return _database ??= await sqflite.openDatabase(
+    return _database = await sqflite.openDatabase(
       path,
       version: 1,
+      singleInstance: false,
       onCreate: (db, _) async {
         await db.execute('''
           CREATE TABLE tiles (
@@ -79,9 +86,7 @@ class MapTileStore implements TileCache {
             PRIMARY KEY (z, x, y, layerId)
           )
         ''');
-        await db.execute(
-          'CREATE INDEX tiles_fetched_at ON tiles (fetchedAt)',
-        );
+        await db.execute('CREATE INDEX tiles_fetched_at ON tiles (fetchedAt)');
         await db.execute('''
           CREATE TABLE map_camera (
             id INTEGER PRIMARY KEY,
@@ -129,40 +134,43 @@ class MapTileStore implements TileCache {
     required int y,
     required String layerId,
   }) async {
-    final rows = await (await _db).query(
-      'tiles',
-      where: 'z = ? AND x = ? AND y = ? AND layerId = ?',
-      whereArgs: [z, x, y, layerId],
-      limit: 1,
-    );
-    if (rows.isEmpty) return null;
-    final row = rows.single;
-    return MapTileRecord(
-      z: row['z']! as int,
-      x: row['x']! as int,
-      y: row['y']! as int,
-      layerId: row['layerId']! as String,
-      bytes: Uint8List.fromList((row['bytes']! as List<int>)),
-      fetchedAt: DateTime.fromMillisecondsSinceEpoch(row['fetchedAt']! as int),
-      etag: row['etag'] as String?,
-    );
+    if (_closed) return null;
+    try {
+      final rows = await (await _db).query(
+        'tiles',
+        where: 'z = ? AND x = ? AND y = ? AND layerId = ?',
+        whereArgs: [z, x, y, layerId],
+        limit: 1,
+      );
+      if (rows.isEmpty) return null;
+      final row = rows.single;
+      return MapTileRecord(
+        z: row['z']! as int,
+        x: row['x']! as int,
+        y: row['y']! as int,
+        layerId: row['layerId']! as String,
+        bytes: Uint8List.fromList((row['bytes']! as List<int>)),
+        fetchedAt: DateTime.fromMillisecondsSinceEpoch(
+          row['fetchedAt']! as int,
+        ),
+        etag: row['etag'] as String?,
+      );
+    } catch (_) {
+      return null;
+    }
   }
 
   @override
   Future<void> put(MapTileRecord tile) async {
-    await (await _db).insert(
-      'tiles',
-      {
-        'z': tile.z,
-        'x': tile.x,
-        'y': tile.y,
-        'layerId': tile.layerId,
-        'bytes': tile.bytes,
-        'fetchedAt': tile.fetchedAt.millisecondsSinceEpoch,
-        'etag': tile.etag,
-      },
-      conflictAlgorithm: sqflite.ConflictAlgorithm.replace,
-    );
+    await (await _db).insert('tiles', {
+      'z': tile.z,
+      'x': tile.x,
+      'y': tile.y,
+      'layerId': tile.layerId,
+      'bytes': tile.bytes,
+      'fetchedAt': tile.fetchedAt.millisecondsSinceEpoch,
+      'etag': tile.etag,
+    }, conflictAlgorithm: sqflite.ConflictAlgorithm.replace);
     await evictToLimit(mapTileMaxBytes);
   }
 
@@ -209,66 +217,79 @@ class MapTileStore implements TileCache {
   Future<void> clear() async => (await _db).delete('tiles');
 
   Future<MapCameraSnapshot?> loadCamera() async {
-    final rows = await (await _db).query('map_camera', limit: 1);
-    if (rows.isEmpty) return null;
-    final row = rows.single;
-    return MapCameraSnapshot(
-      center: LatLng(
-        (row['latitude']! as num).toDouble(),
-        (row['longitude']! as num).toDouble(),
-      ),
-      zoom: (row['zoom']! as num).toDouble(),
-    );
+    if (_closed) return null;
+    try {
+      final rows = await (await _db).query('map_camera', limit: 1);
+      if (rows.isEmpty) return null;
+      final row = rows.single;
+      return MapCameraSnapshot(
+        center: LatLng(
+          (row['latitude']! as num).toDouble(),
+          (row['longitude']! as num).toDouble(),
+        ),
+        zoom: (row['zoom']! as num).toDouble(),
+      );
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> saveCamera(LatLng center, double zoom) async {
-    await (await _db).insert(
-      'map_camera',
-      {
+    if (_closed) return;
+    try {
+      await (await _db).insert('map_camera', {
         'id': 1,
         'latitude': center.latitude,
         'longitude': center.longitude,
         'zoom': zoom,
-      },
-      conflictAlgorithm: sqflite.ConflictAlgorithm.replace,
-    );
+      }, conflictAlgorithm: sqflite.ConflictAlgorithm.replace);
+    } catch (_) {}
   }
 
   Future<MapLocationSnapshot?> loadLocation() async {
-    final rows = await (await _db).query('map_location', limit: 1);
-    if (rows.isEmpty) return null;
-    final row = rows.single;
-    return MapLocationSnapshot(
-      center: LatLng(
-        (row['latitude']! as num).toDouble(),
-        (row['longitude']! as num).toDouble(),
-      ),
-      accuracy: (row['accuracy'] as num?)?.toDouble(),
-      updatedAt: DateTime.fromMillisecondsSinceEpoch(row['updatedAt']! as int),
-    );
+    if (_closed) return null;
+    try {
+      final rows = await (await _db).query('map_location', limit: 1);
+      if (rows.isEmpty) return null;
+      final row = rows.single;
+      return MapLocationSnapshot(
+        center: LatLng(
+          (row['latitude']! as num).toDouble(),
+          (row['longitude']! as num).toDouble(),
+        ),
+        accuracy: (row['accuracy'] as num?)?.toDouble(),
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(
+          row['updatedAt']! as int,
+        ),
+      );
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> saveLocation({
     required LatLng center,
     required double? accuracy,
   }) async {
-    await (await _db).insert(
-      'map_location',
-      {
+    if (_closed) return;
+    try {
+      await (await _db).insert('map_location', {
         'id': 1,
         'latitude': center.latitude,
         'longitude': center.longitude,
         'accuracy': accuracy,
         'updatedAt': DateTime.now().millisecondsSinceEpoch,
-      },
-      conflictAlgorithm: sqflite.ConflictAlgorithm.replace,
-    );
+      }, conflictAlgorithm: sqflite.ConflictAlgorithm.replace);
+    } catch (_) {}
   }
 
   Future<void> close() async {
+    _closed = true;
     final db = _database;
     _database = null;
-    await db?.close();
+    if (db != null && db.isOpen) {
+      await db.close();
+    }
   }
 }
 
