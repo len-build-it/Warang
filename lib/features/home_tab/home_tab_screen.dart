@@ -384,9 +384,11 @@ class _TripEmptyState extends StatelessWidget {
       children: [
         Image.asset('design/warang-maya.png', width: 42, height: 42),
         const SizedBox(width: 10),
-        Text(
-          'Trips you make will live here.',
-          style: Theme.of(context).textTheme.bodySmall,
+        Expanded(
+          child: Text(
+            'Trips you make will live here.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
         ),
       ],
     ),
