@@ -25,6 +25,12 @@ abstract final class WarangColors {
   static const darkMapLabelWater = Color(0xFF5D6A6B);
 }
 
+abstract final class WarangGlass {
+  static const lightAlpha = 0.88;
+  static const darkAlpha = 0.90;
+  static const blurSigma = 8.0;
+}
+
 @immutable
 class MapPalette extends ThemeExtension<MapPalette> {
   const MapPalette({
