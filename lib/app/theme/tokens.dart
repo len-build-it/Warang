@@ -31,6 +31,20 @@ abstract final class WarangGlass {
   static const blurSigma = 8.0;
 }
 
+abstract final class WarangLayout {
+  static const mobileNavHeight = 64.0;
+  static const mobileNavMarginVertical = 8.0;
+  static const mobileNavMarginHorizontal = 12.0;
+
+  static double navigationHeight(BuildContext context) {
+    if (MediaQuery.sizeOf(context).width >= 900) return 0.0;
+    final bottom = MediaQuery.paddingOf(context).bottom;
+    return mobileNavHeight +
+        mobileNavMarginVertical +
+        (bottom > mobileNavMarginVertical ? bottom : mobileNavMarginVertical);
+  }
+}
+
 @immutable
 class MapPalette extends ThemeExtension<MapPalette> {
   const MapPalette({
