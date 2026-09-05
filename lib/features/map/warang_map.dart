@@ -273,6 +273,12 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
 
   Future<void> recenter() => _refreshLocation(moveToUser: true);
 
+  void moveToCoordinate(
+    double latitude,
+    double longitude, [
+    double zoom = 15.0,
+  ]) => _mapController.move(LatLng(latitude, longitude), zoom);
+
   Future<void> _refreshLocation({required bool moveToUser}) async {
     try {
       if (!await Geolocator.isLocationServiceEnabled()) return;
