@@ -304,42 +304,49 @@ Recorded Phase 3 Commits:
 
 Primary files: `lib/features/travel_mode/travel_mode_screen.dart` (`MomentCard`), `lib/features/home_tab/home_tab_screen.dart`, `lib/features/home_tab/trip_detail_screen.dart`.
 
-- [ ] Frame the existing moment photo as a restrained printed photograph: neutral edge, shallow shadow, readable opaque caption/metadata area.
-- [ ] Present trip cards as simple journal covers using their real titles, dates, places, and counts.
+- [x] Frame the existing moment photo as a restrained printed photograph: neutral edge, shallow shadow, readable opaque caption/metadata area.
+- [x] Present trip cards as simple journal covers using their real titles, dates, places, and counts.
 Keep text horizontal and selectable/readable where appropriate; avoid decorative rotation.
-- [ ] Replace generic trip-detail image placeholders with an existing local trip photograph when available.
+- [x] Replace generic trip-detail image placeholders with an existing local trip photograph when available.
 Reuse the current photo-path resolver/loading pattern; do not persist new cover fields or absolute paths.
-- [ ] Use real local thumbnails for existing moment rows where feasible with that same loading pattern.
+- [x] Use real local thumbnails for existing moment rows where feasible with that same loading pattern.
 Missing or unreadable files show a neutral fallback without crashing.
-- [ ] Keep Everyday, New trip, summaries, and charts available.
+- [x] Keep Everyday, New trip, summaries, and charts available.
 Place memories before analytics and visually subordinate secondary summaries; do not change calculations.
-- [ ] Use actual stored metadata for any stamp-like date label.
+- [x] Use actual stored metadata for any stamp-like date label.
 Do not generate locations, dates, stamps, achievements, or sample user memories.
-- [ ] Preserve deletion handling and existing dismissal behavior.
+- [x] Preserve deletion handling and existing dismissal behavior.
 Keep unavailable Edit/Share actions unavailable.
 
 Acceptance: photos lead the hierarchy; long trip names and captions wrap; empty trips and missing images remain usable; no new database or repository behavior is introduced.
 
 ### Verification Gate
 
-- [ ] Run `dart format --output=none --set-exit-if-changed lib test` after formatting changed Dart files; exit code 0.
-- [ ] Run `flutter analyze`; exit code 0.
-- [ ] Run `flutter test`; exit code 0.
-- [ ] Run `flutter build apk --debug`; exit code 0.
-- [ ] Verify the acceptance criteria for this phase and capture light/dark evidence for affected screens.
+- [x] Run `dart format --output=none --set-exit-if-changed lib test` after formatting changed Dart files; exit code 0.
+- [x] Run `flutter analyze`; exit code 0.
+- [x] Run `flutter test`; exit code 0.
+- [x] Run `flutter build apk --debug`; exit code 0.
+- [x] Verify the acceptance criteria for this phase and capture light/dark evidence for affected screens.
 
 ### Review Gate (Ponytail)
 
-- [ ] Review the diff using `.agents/skills/ponytail-review/SKILL.md`.
-- [ ] Confirm no unrequested packages, speculative abstractions, duplicate styling systems, or unrelated changes.
-- [ ] Confirm existing behavior, accessibility, and data safeguards remain intact.
+- [x] Review the diff using `.agents/skills/ponytail-review/SKILL.md`.
+- [x] Confirm no unrequested packages, speculative abstractions, duplicate styling systems, or unrelated changes.
+- [x] Confirm existing behavior, accessibility, and data safeguards remain intact.
 
 ### Git Checkpoint
 
-- [ ] Follow `docs/IMPLEMENTATION_PLAN.md` section 3: commit each independently reversible change as it becomes green, not one bundled phase diff.
-- [ ] Stage only specific changed paths, include this plan's completed checkboxes, and use conventional messages such as `refactor(ui): phase 4 - memories`.
-- [ ] Use `docs(plan): phase 1 - record UI baseline` for a documentation-only baseline checkpoint.
-- [ ] Record all actual phase commit hashes; do not add an agent co-author or rewrite history.
+- [x] Follow `docs/IMPLEMENTATION_PLAN.md` section 3: commit each independently reversible change as it becomes green, not one bundled phase diff.
+- [x] Stage only specific changed paths, include this plan's completed checkboxes, and use conventional messages such as `refactor(ui): phase 4 - memories`.
+- [x] Use `docs(plan): phase 1 - record UI baseline` for a documentation-only baseline checkpoint.
+- [x] Record all actual phase commit hashes; do not add an agent co-author or rewrite history.
+
+Recorded Phase 4 Commits:
+- `31dd8ce feat(ui): frame moment photo as restrained printed photograph`
+- `70d8d6b feat(ui): add real trip covers and moment thumbnails to trip detail`
+- `c4e8fa3 feat(ui): present journal trip covers and real thumbnails on home tab`
+- `95cdb69 refactor(ui): cache photo futures in stateful wrappers to prevent rebuild loops`
+- `c437261 test(ui): add widget tests for tactile memories and photo loading`
 
 ### HARD STOP
 
