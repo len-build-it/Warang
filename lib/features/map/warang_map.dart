@@ -52,127 +52,137 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
   }
 
   @override
-  Widget build(BuildContext context) => Stack(
-    fit: StackFit.expand,
-    children: [
-      FlutterMap(
-        mapController: _mapController,
-        options: MapOptions(
-          initialCenter: _initialCenter,
-          initialZoom: 5.8,
-          minZoom: 2,
-          maxZoom: 18,
-          onTap: (_, _) => widget.onMapTap?.call(),
-          onMapReady: _restoreCamera,
-          onPositionChanged: (camera, hasGesture) {
-            _currentZoom = camera.zoom;
-            if (hasGesture) {
-              unawaited(_tileStore.saveCamera(camera.center, camera.zoom));
-              if (mounted) setState(() {});
-            }
-          },
-        ),
-        children: [
-          ColorFiltered(
-            colorFilter: _mapFilter(widget.dark),
-            child: TileLayer(
-              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              userAgentPackageName: 'ph.warang.app',
-              tileProvider: CachedTileProvider(
-                store: _tileStore,
-                layerId: 'osm-standard',
-                onStaleTile: (fetchedAt) {
-                  if (mounted) setState(() => _staleSince = fetchedAt);
-                },
-              ),
-              maxZoom: 19,
-            ),
+  Widget build(BuildContext context) {
+    final topOffset = math.max(MediaQuery.paddingOf(context).top, 12.0) + 8.0;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        FlutterMap(
+          mapController: _mapController,
+          options: MapOptions(
+            initialCenter: _initialCenter,
+            initialZoom: 5.8,
+            minZoom: 2,
+            maxZoom: 18,
+            onTap: (_, _) => widget.onMapTap?.call(),
+            onMapReady: _restoreCamera,
+            onPositionChanged: (camera, hasGesture) {
+              _currentZoom = camera.zoom;
+              if (hasGesture) {
+                unawaited(_tileStore.saveCamera(camera.center, camera.zoom));
+                if (mounted) setState(() {});
+              }
+            },
           ),
-          MarkerLayer(
-            markers: [
-              if (_position != null) _positionMarker(_position!),
-              if (_showMoments || _showClusters) ..._momentMarkers(),
-            ],
-          ),
-          RichAttributionWidget(
-            alignment: AttributionAlignment.bottomLeft,
-            attributions: [
-              TextSourceAttribution('OpenStreetMap contributors', onTap: () {}),
-            ],
-          ),
-        ],
-      ),
-      Positioned(
-        top: 52,
-        right: 16,
-        child: PopupMenuButton<String>(
-          tooltip: 'Map layers',
-          onSelected: (value) {
-            setState(() {
-              if (value == 'moments') _showMoments = !_showMoments;
-              if (value == 'clusters') _showClusters = !_showClusters;
-            });
-          },
-          itemBuilder: (context) => [
-            CheckedPopupMenuItem(
-              value: 'moments',
-              checked: _showMoments,
-              child: const Text('Your moments'),
-            ),
-            CheckedPopupMenuItem(
-              value: 'clusters',
-              checked: _showClusters,
-              child: const Text('Clusters'),
-            ),
-            const PopupMenuItem(enabled: false, child: Text('Base map')),
-          ],
-          child: Material(
-            color: Theme.of(context).colorScheme.surface.withValues(alpha: .94),
-            shape: const CircleBorder(),
-            clipBehavior: Clip.antiAlias,
-            child: const SizedBox(
-              width: 44,
-              height: 44,
-              child: Icon(Icons.layers_outlined, size: 20),
-            ),
-          ),
-        ),
-      ),
-      if (_staleSince != null)
-        Positioned(
-          top: 105,
-          left: 0,
-          right: 0,
-          child: Center(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: Theme.of(
-                  context,
-                ).colorScheme.surface.withValues(alpha: .9),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
+          children: [
+            ColorFiltered(
+              colorFilter: _mapFilter(widget.dark),
+              child: TileLayer(
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'ph.warang.app',
+                tileProvider: CachedTileProvider(
+                  store: _tileStore,
+                  layerId: 'osm-standard',
+                  onStaleTile: (fetchedAt) {
+                    if (mounted) setState(() => _staleSince = fetchedAt);
+                  },
                 ),
-                child: Text(
-                  'MAP · CACHED ${_ageDays(_staleSince!)} DAYS AGO',
-                  style: TextStyle(
-                    fontFamily: 'DM Mono',
-                    fontSize: 9,
-                    letterSpacing: 1.2,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withValues(alpha: .54),
+                maxZoom: 19,
+              ),
+            ),
+            MarkerLayer(
+              markers: [
+                if (_position != null) _positionMarker(_position!),
+                if (_showMoments || _showClusters) ..._momentMarkers(),
+              ],
+            ),
+            RichAttributionWidget(
+              alignment: AttributionAlignment.bottomLeft,
+              attributions: [
+                TextSourceAttribution(
+                  'OpenStreetMap contributors',
+                  onTap: () {},
+                ),
+              ],
+            ),
+          ],
+        ),
+        Positioned(
+          top: topOffset,
+          right: 16,
+          child: PopupMenuButton<String>(
+            tooltip: 'Map layers',
+            onSelected: (value) {
+              setState(() {
+                if (value == 'moments') _showMoments = !_showMoments;
+                if (value == 'clusters') _showClusters = !_showClusters;
+              });
+            },
+            itemBuilder: (context) => [
+              CheckedPopupMenuItem(
+                value: 'moments',
+                checked: _showMoments,
+                child: const Text('Your moments'),
+              ),
+              CheckedPopupMenuItem(
+                value: 'clusters',
+                checked: _showClusters,
+                child: const Text('Clusters'),
+              ),
+              const PopupMenuItem(enabled: false, child: Text('Base map')),
+            ],
+            child: WarangGlassSurface(
+              shape: BoxShape.circle,
+              child: SizedBox(
+                width: 48,
+                height: 48,
+                child: Center(
+                  child: Icon(
+                    Icons.layers_outlined,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
               ),
             ),
           ),
         ),
-    ],
-  );
+        if (_staleSince != null)
+          Positioned(
+            top: topOffset + 54,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.surface.withValues(alpha: .9),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  child: Text(
+                    'MAP · CACHED ${_ageDays(_staleSince!)} DAYS AGO',
+                    style: TextStyle(
+                      fontFamily: 'DM Mono',
+                      fontSize: 9,
+                      letterSpacing: 1.2,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: .54),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
 
   int _ageDays(DateTime fetchedAt) {
     final days = DateTime.now().difference(fetchedAt).inDays;

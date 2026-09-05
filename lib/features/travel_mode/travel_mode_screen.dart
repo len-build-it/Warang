@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -84,6 +85,8 @@ class _TravelModeContentState extends State<_TravelModeContent> {
     final moments = widget.repository.moments;
     final size = MediaQuery.sizeOf(context);
     final selected = _selected;
+    final navHeight = WarangLayout.navigationHeight(context);
+    final topOffset = math.max(MediaQuery.paddingOf(context).top, 12.0) + 8.0;
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -123,7 +126,7 @@ class _TravelModeContentState extends State<_TravelModeContent> {
               child: WarangTopScrim(),
             ),
             Positioned(
-              top: 52,
+              top: topOffset,
               left: 16,
               child: _HomeMenuButton(onPressed: _openDrawer),
             ),
@@ -132,50 +135,48 @@ class _TravelModeContentState extends State<_TravelModeContent> {
                 Positioned(
                   left: 0,
                   right: 0,
-                  bottom: 158,
+                  bottom: navHeight + 104,
                   child: Center(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surface.withValues(alpha: .94),
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                            color: theme.colorScheme.onSurface.withValues(
-                              alpha: .09,
-                            ),
-                            blurRadius: 10,
-                            offset: const Offset(0, 2),
+                    child: IgnorePointer(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface.withValues(
+                            alpha: .94,
                           ),
-                        ],
-                      ),
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 15,
-                          vertical: 9,
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: [
+                            BoxShadow(
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: .09,
+                              ),
+                              blurRadius: 10,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
-                        child: Text(
-                          'Capture your first moment.',
-                          style: TextStyle(fontSize: 13.5),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 15,
+                            vertical: 9,
+                          ),
+                          child: Text(
+                            'Capture your first moment.',
+                            style: TextStyle(fontSize: 13.5),
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              const Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: WarangSheetPeek(),
-              ),
               Positioned(
-                bottom: 62,
+                bottom: navHeight + 16,
                 left: 0,
                 right: 0,
                 child: Center(child: WarangCaptureButton(onPressed: _capture)),
               ),
               Positioned(
-                right: 20,
-                bottom: 150,
+                right: 16,
+                bottom: navHeight + 29,
                 child: _RecenterButton(
                   onPressed: () => _mapKey.currentState?.recenter(),
                 ),
@@ -183,18 +184,30 @@ class _TravelModeContentState extends State<_TravelModeContent> {
             ] else ...[
               Positioned.fill(
                 child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
                   onTap: () => setState(() => _selected = null),
                   child: ColoredBox(
                     color: theme.colorScheme.onSurface.withValues(alpha: .42),
                   ),
                 ),
               ),
-              Positioned.fill(
-                child: MomentCard(
-                  moment: selected,
-                  repository: widget.repository,
-                  photoStore: _photoStore,
-                  onClose: () => setState(() => _selected = null),
+              Positioned(
+                left: 12,
+                right: 12,
+                bottom: navHeight + 8,
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: 520,
+                      maxHeight: size.height - navHeight - topOffset - 24,
+                    ),
+                    child: MomentCard(
+                      moment: selected,
+                      repository: widget.repository,
+                      photoStore: _photoStore,
+                      onClose: () => setState(() => _selected = null),
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -264,19 +277,11 @@ class _HomeMenuButton extends StatelessWidget {
   final VoidCallback onPressed;
 
   @override
-  Widget build(BuildContext context) => Material(
-    color: Theme.of(context).colorScheme.surface.withValues(alpha: .94),
-    shape: const CircleBorder(),
-    clipBehavior: Clip.antiAlias,
-    child: InkWell(
-      onTap: onPressed,
-      customBorder: const CircleBorder(),
-      child: const SizedBox(
-        width: 44,
-        height: 44,
-        child: Icon(Icons.menu, size: 21),
-      ),
-    ),
+  Widget build(BuildContext context) => WarangGlassIconButton(
+    icon: const Icon(Icons.menu),
+    onPressed: onPressed,
+    semanticLabel: 'Open navigation drawer',
+    tooltip: 'Menu',
   );
 }
 
@@ -586,21 +591,11 @@ class _RecenterButton extends StatelessWidget {
   final VoidCallback onPressed;
 
   @override
-  Widget build(BuildContext context) => Material(
-    color: Theme.of(context).colorScheme.surface,
-    shape: const CircleBorder(),
-    clipBehavior: Clip.antiAlias,
-    elevation: 0,
-    shadowColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: .14),
-    child: InkWell(
-      onTap: onPressed,
-      customBorder: const CircleBorder(),
-      child: const SizedBox(
-        width: 44,
-        height: 44,
-        child: Icon(Icons.gps_fixed, size: 20),
-      ),
-    ),
+  Widget build(BuildContext context) => WarangGlassIconButton(
+    icon: const Icon(Icons.gps_fixed),
+    onPressed: onPressed,
+    semanticLabel: 'Recenter map on current location',
+    tooltip: 'Recenter',
   );
 }
 
@@ -622,26 +617,27 @@ class MomentCard extends StatelessWidget {
     final future = moment.relPath == null
         ? Future<File?>.value(null)
         : photoStore.resolve(moment.relPath!).then<File?>((file) => file);
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: Container(
-        height: 472,
-        width: double.infinity,
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 30),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
-          boxShadow: [
-            BoxShadow(
-              color: Theme.of(
-                context,
-              ).colorScheme.onSurface.withValues(alpha: .28),
-              blurRadius: 40,
-              offset: const Offset(0, -14),
+    final theme = Theme.of(context);
+    final dark = theme.brightness == Brightness.dark;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.onSurface.withValues(
+              alpha: dark ? .35 : .22,
             ),
-          ],
-        ),
+            blurRadius: 28,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: SingleChildScrollView(
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Center(
@@ -649,7 +645,7 @@ class MomentCard extends StatelessWidget {
                 width: 44,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.outline,
+                  color: theme.colorScheme.outline,
                   borderRadius: BorderRadius.circular(3),
                 ),
               ),
@@ -675,9 +671,9 @@ class MomentCard extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 moment.caption!,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                style: theme.textTheme.bodyLarge?.copyWith(
                   fontSize: 16.5,
-                  color: Theme.of(context).colorScheme.onSurface,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
             ],
@@ -688,18 +684,16 @@ class MomentCard extends StatelessWidget {
                   fontFamily: 'DM Mono',
                   fontSize: 11,
                   letterSpacing: 1.6,
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withValues(alpha: .54),
+                  color: theme.colorScheme.onSurface.withValues(alpha: .54),
                 ),
                 children: [
                   if (moment.placeLabel == null)
                     TextSpan(
                       text: 'NO LOCATION',
                       style: TextStyle(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withValues(alpha: .72),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: .72,
+                        ),
                       ),
                     ),
                   if (moment.placeLabel != null)
@@ -712,7 +706,7 @@ class MomentCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 18),
-            Divider(height: 1, color: Theme.of(context).colorScheme.outline),
+            Divider(height: 1, color: theme.colorScheme.outline),
             const SizedBox(height: 16),
             WarangQuietButton(
               label: 'Delete',
@@ -721,7 +715,6 @@ class MomentCard extends StatelessWidget {
                 onClose();
               },
             ),
-            const Spacer(),
           ],
         ),
       ),
