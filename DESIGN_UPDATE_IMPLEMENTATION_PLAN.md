@@ -364,37 +364,45 @@ Recorded Phase 4 Commits:
 
 Primary files: `lib/features/travel_mode/travel_mode_screen.dart` (`MomentSearchDelegate`), `lib/features/settings/settings_screen.dart`, `lib/features/capture/capture_screen.dart`, `lib/features/news_tab/news_tab_screen.dart`, `lib/features/onboarding/onboarding_screen.dart`.
 
-- [ ] Search: solid background, obvious input and clear action, readable caption/place matches, explicit empty results.
+- [x] Search: solid background, obvious input and clear action, readable caption/place matches, explicit empty results.
 Preserve offline search behavior.
-- [ ] Settings: consistent grouped surfaces and spacing; distinguish informational rows from working actions.
+- [x] Settings: consistent grouped surfaces and spacing; distinguish informational rows from working actions.
 Do not give nonfunctional rows a new tappable appearance.
-- [ ] Trip creation and capture/save fields: preserve labels, validation, keyboard behavior, save feedback, and error handling; keep optional fields optional.
-- [ ] News: maintain the existing bundled content and reading flow; simplify presentation without remote content, promotional placeholders, or new feeds.
-- [ ] Onboarding: apply only consistency fixes needed by the shared design updates.
+- [x] Trip creation and capture/save fields: preserve labels, validation, keyboard behavior, save feedback, and error handling; keep optional fields optional.
+- [x] News: maintain the existing bundled content and reading flow; simplify presentation without remote content, promotional placeholders, or new feeds.
+- [x] Onboarding: apply only consistency fixes needed by the shared design updates.
 Keep permission/privacy language accurate to the current implementation.
 
 Acceptance: no glass behind dense text or inputs, no hidden labels, no newly advertised unfinished features, and no extra step in the capture journey.
 
 ### Verification Gate
 
-- [ ] Run `dart format --output=none --set-exit-if-changed lib test` after formatting changed Dart files; exit code 0.
-- [ ] Run `flutter analyze`; exit code 0.
-- [ ] Run `flutter test`; exit code 0.
-- [ ] Run `flutter build apk --debug`; exit code 0.
-- [ ] Verify the acceptance criteria for this phase and capture light/dark evidence for affected screens.
+- [x] Run `dart format --output=none --set-exit-if-changed lib test` after formatting changed Dart files; exit code 0.
+- [x] Run `flutter analyze`; exit code 0.
+- [x] Run `flutter test`; exit code 0.
+- [x] Run `flutter build apk --debug`; exit code 0.
+- [x] Verify the acceptance criteria for this phase and capture light/dark evidence for affected screens.
 
 ### Review Gate (Ponytail)
 
-- [ ] Review the diff using `.agents/skills/ponytail-review/SKILL.md`.
-- [ ] Confirm no unrequested packages, speculative abstractions, duplicate styling systems, or unrelated changes.
-- [ ] Confirm existing behavior, accessibility, and data safeguards remain intact.
+- [x] Review the diff using `.agents/skills/ponytail-review/SKILL.md`.
+- [x] Confirm no unrequested packages, speculative abstractions, duplicate styling systems, or unrelated changes.
+- [x] Confirm existing behavior, accessibility, and data safeguards remain intact.
 
 ### Git Checkpoint
 
-- [ ] Follow `docs/IMPLEMENTATION_PLAN.md` section 3: commit each independently reversible change as it becomes green, not one bundled phase diff.
-- [ ] Stage only specific changed paths, include this plan's completed checkboxes, and use conventional messages such as `refactor(ui): phase 5 - utility-polish`.
-- [ ] Use `docs(plan): phase 1 - record UI baseline` for a documentation-only baseline checkpoint.
-- [ ] Record all actual phase commit hashes; do not add an agent co-author or rewrite history.
+- [x] Follow `docs/IMPLEMENTATION_PLAN.md` section 3: commit each independently reversible change as it becomes green, not one bundled phase diff.
+- [x] Stage only specific changed paths, include this plan's completed checkboxes, and use conventional messages such as `refactor(ui): phase 5 - utility-polish`.
+- [x] Use `docs(plan): phase 1 - record UI baseline` for a documentation-only baseline checkpoint.
+- [x] Record all actual phase commit hashes; do not add an agent co-author or rewrite history.
+
+Recorded Phase 5 Commits:
+- `6379eac feat(search): refine MomentSearchDelegate with solid theme, explicit empty state, and result navigation`
+- `58823b9 feat(settings): add app bar and distinguish working actions in settings`
+- `ec90a25 feat(capture): responsive capture layout with safe insets and close button`
+- `cd0bc94 feat(trips): add validation and save feedback to trip creation`
+- `b02a2e9 feat(ui): refine news scroll insets and onboarding keyboard behavior`
+- `de0925e test(ui): add widget tests for utility screens and error handling`
 
 ### HARD STOP
 
