@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
@@ -53,13 +54,19 @@ class WarangPrimaryButton extends StatelessWidget {
 }
 
 class WarangQuietButton extends StatelessWidget {
-  const WarangQuietButton({super.key, required this.label, this.onPressed});
+  const WarangQuietButton({
+    super.key,
+    required this.label,
+    this.onPressed,
+    this.height = 48,
+  });
   final String label;
   final VoidCallback? onPressed;
+  final double height;
 
   @override
   Widget build(BuildContext context) => SizedBox(
-    height: 44,
+    height: height,
     child: OutlinedButton(
       onPressed: onPressed,
       clipBehavior: Clip.antiAlias,
@@ -134,28 +141,31 @@ class WarangToggle extends StatelessWidget {
   final ValueChanged<bool> onChanged;
 
   @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: () => onChanged(!value),
-    child: AnimatedContainer(
-      duration: const Duration(milliseconds: 160),
-      width: 46,
-      height: 27,
-      padding: const EdgeInsets.all(3),
-      alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-      decoration: BoxDecoration(
-        color: value
-            ? WarangColors.accent
-            : Theme.of(context).colorScheme.outline,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Container(
-        width: 21,
-        height: 21,
+  Widget build(BuildContext context) => Semantics(
+    toggled: value,
+    child: GestureDetector(
+      onTap: () => onChanged(!value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        width: 46,
+        height: 27,
+        padding: const EdgeInsets.all(3),
+        alignment: value ? Alignment.centerRight : Alignment.centerLeft,
         decoration: BoxDecoration(
           color: value
-              ? WarangColors.accentInk
-              : Theme.of(context).colorScheme.surface,
-          shape: BoxShape.circle,
+              ? WarangColors.accent
+              : Theme.of(context).colorScheme.outline,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Container(
+          width: 21,
+          height: 21,
+          decoration: BoxDecoration(
+            color: value
+                ? WarangColors.accentInk
+                : Theme.of(context).colorScheme.surface,
+            shape: BoxShape.circle,
+          ),
         ),
       ),
     ),
@@ -317,7 +327,18 @@ class _WarangPositionMarkerState extends State<WarangPositionMarker>
   late final AnimationController _controller = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 3400),
-  )..repeat(reverse: true);
+  );
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.of(context).disableAnimations) {
+      if (_controller.isAnimating) _controller.stop();
+      _controller.value = 1.0;
+    } else if (!_controller.isAnimating) {
+      _controller.repeat(reverse: true);
+    }
+  }
 
   @override
   void dispose() {
@@ -585,38 +606,44 @@ class WarangSettingsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) => InkWell(
     onTap: onTap,
-    child: Padding(
-      padding: EdgeInsets.symmetric(horizontal: 15, vertical: toggle ? 12 : 14),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 15.5,
-                fontWeight: emphasized ? FontWeight.w500 : FontWeight.w400,
-                color: emphasized
-                    ? (Theme.of(context).brightness == Brightness.dark
-                          ? WarangColors.darkAccentText
-                          : WarangColors.lightAccentText)
-                    : Theme.of(context).colorScheme.onSurface,
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 48),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: 15,
+          vertical: toggle ? 12 : 14,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 15.5,
+                  fontWeight: emphasized ? FontWeight.w500 : FontWeight.w400,
+                  color: emphasized
+                      ? (Theme.of(context).brightness == Brightness.dark
+                            ? WarangColors.darkAccentText
+                            : WarangColors.lightAccentText)
+                      : Theme.of(context).colorScheme.onSurface,
+                ),
               ),
             ),
-          ),
-          if (value != null)
-            Text(
-              value!,
-              style: TextStyle(
-                fontFamily: 'DM Mono',
-                fontSize: 12.5,
-                color: Theme.of(
-                  context,
-                ).colorScheme.onSurface.withValues(alpha: .70),
-                fontFeatures: const [FontFeature.tabularFigures()],
+            if (value != null)
+              Text(
+                value!,
+                style: TextStyle(
+                  fontFamily: 'DM Mono',
+                  fontSize: 12.5,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: .70),
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
               ),
-            ),
-          if (trailing != null) ...[const SizedBox(width: 10), trailing!],
-        ],
+            if (trailing != null) ...[const SizedBox(width: 10), trailing!],
+          ],
+        ),
       ),
     ),
   );
@@ -634,4 +661,158 @@ class WarangDivider extends StatelessWidget {
       color: Theme.of(context).colorScheme.outline,
     ),
   );
+}
+
+class WarangGlassSurface extends StatelessWidget {
+  const WarangGlassSurface({
+    super.key,
+    required this.child,
+    this.borderRadius,
+    this.shape = BoxShape.rectangle,
+    this.padding,
+    this.blurSigma = WarangGlass.blurSigma,
+    this.tintAlpha,
+    this.showShadow = true,
+  });
+
+  final Widget child;
+  final BorderRadius? borderRadius;
+  final BoxShape shape;
+  final EdgeInsetsGeometry? padding;
+  final double blurSigma;
+  final double? tintAlpha;
+  final bool showShadow;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final dark = theme.brightness == Brightness.dark;
+    final mediaQuery = MediaQuery.maybeOf(context);
+    final highContrast = mediaQuery?.highContrast ?? false;
+
+    final defaultRadius = shape == BoxShape.circle
+        ? null
+        : (borderRadius ?? BorderRadius.circular(14));
+    final defaultAlpha = dark ? WarangGlass.darkAlpha : WarangGlass.lightAlpha;
+    final alpha = tintAlpha ?? defaultAlpha;
+
+    final surfaceColor = highContrast
+        ? theme.colorScheme.surface
+        : theme.colorScheme.surface.withValues(alpha: alpha);
+
+    final outlineColor = highContrast
+        ? theme.colorScheme.outline
+        : (dark ? WarangColors.darkLine : WarangColors.lightLine).withValues(
+            alpha: dark ? 0.50 : 0.65,
+          );
+
+    final innerDecoration = BoxDecoration(
+      color: surfaceColor,
+      shape: shape,
+      borderRadius: defaultRadius,
+      border: Border.all(color: outlineColor, width: 1),
+    );
+
+    final outerDecoration = showShadow
+        ? BoxDecoration(
+            shape: shape,
+            borderRadius: defaultRadius,
+            boxShadow: [
+              BoxShadow(
+                color: (dark ? Colors.black : theme.colorScheme.onSurface)
+                    .withValues(alpha: dark ? 0.30 : 0.08),
+                blurRadius: dark ? 16 : 12,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          )
+        : null;
+
+    final content = padding == null
+        ? child
+        : Padding(padding: padding!, child: child);
+
+    if (highContrast) {
+      final solid = DecoratedBox(decoration: innerDecoration, child: content);
+      return outerDecoration == null
+          ? solid
+          : DecoratedBox(decoration: outerDecoration, child: solid);
+    }
+
+    final frosted = BackdropFilter(
+      filter: ui.ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
+      child: DecoratedBox(decoration: innerDecoration, child: content),
+    );
+
+    final clipped = shape == BoxShape.circle
+        ? ClipOval(child: frosted)
+        : ClipRRect(
+            borderRadius: defaultRadius ?? BorderRadius.circular(14),
+            child: frosted,
+          );
+
+    return outerDecoration == null
+        ? clipped
+        : DecoratedBox(decoration: outerDecoration, child: clipped);
+  }
+}
+
+class WarangGlassIconButton extends StatelessWidget {
+  const WarangGlassIconButton({
+    super.key,
+    required this.icon,
+    required this.onPressed,
+    required this.semanticLabel,
+    this.size = 48,
+    this.iconSize = 20,
+    this.tooltip,
+  });
+
+  final Widget icon;
+  final VoidCallback? onPressed;
+  final String semanticLabel;
+  final double size;
+  final double iconSize;
+  final String? tooltip;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final button = Semantics(
+      button: true,
+      label: semanticLabel,
+      child: WarangGlassSurface(
+        shape: BoxShape.circle,
+        child: SizedBox(
+          width: size,
+          height: size,
+          child: Material(
+            color: Colors.transparent,
+            shape: const CircleBorder(),
+            child: InkWell(
+              onTap: onPressed,
+              customBorder: const CircleBorder(),
+              focusColor: WarangColors.accent.withValues(alpha: 0.20),
+              hoverColor: theme.colorScheme.onSurface.withValues(alpha: 0.08),
+              splashColor: WarangColors.accent.withValues(alpha: 0.24),
+              child: Center(
+                child: IconTheme(
+                  data: IconThemeData(
+                    size: iconSize,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                  child: icon,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    if (tooltip != null && tooltip!.isNotEmpty) {
+      return Tooltip(message: tooltip!, child: button);
+    }
+    return button;
+  }
 }
