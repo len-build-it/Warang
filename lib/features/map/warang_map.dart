@@ -57,53 +57,50 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
     children: [
       FlutterMap(
         mapController: _mapController,
-      options: MapOptions(
-        initialCenter: _initialCenter,
-        initialZoom: 5.8,
-        minZoom: 2,
-        maxZoom: 18,
-        onTap: (_, _) => widget.onMapTap?.call(),
-        onMapReady: _restoreCamera,
-        onPositionChanged: (camera, hasGesture) {
-          _currentZoom = camera.zoom;
-          if (hasGesture) {
-            unawaited(_tileStore.saveCamera(camera.center, camera.zoom));
-            if (mounted) setState(() {});
-          }
-        },
-      ),
-      children: [
-        ColorFiltered(
-          colorFilter: _mapFilter(widget.dark),
-          child: TileLayer(
-            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            userAgentPackageName: 'ph.warang.app',
-            tileProvider: CachedTileProvider(
-              store: _tileStore,
-              layerId: 'osm-standard',
-              onStaleTile: (fetchedAt) {
-                if (mounted) setState(() => _staleSince = fetchedAt);
-              },
+        options: MapOptions(
+          initialCenter: _initialCenter,
+          initialZoom: 5.8,
+          minZoom: 2,
+          maxZoom: 18,
+          onTap: (_, _) => widget.onMapTap?.call(),
+          onMapReady: _restoreCamera,
+          onPositionChanged: (camera, hasGesture) {
+            _currentZoom = camera.zoom;
+            if (hasGesture) {
+              unawaited(_tileStore.saveCamera(camera.center, camera.zoom));
+              if (mounted) setState(() {});
+            }
+          },
+        ),
+        children: [
+          ColorFiltered(
+            colorFilter: _mapFilter(widget.dark),
+            child: TileLayer(
+              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              userAgentPackageName: 'ph.warang.app',
+              tileProvider: CachedTileProvider(
+                store: _tileStore,
+                layerId: 'osm-standard',
+                onStaleTile: (fetchedAt) {
+                  if (mounted) setState(() => _staleSince = fetchedAt);
+                },
+              ),
+              maxZoom: 19,
             ),
-            maxZoom: 19,
           ),
-        ),
-        MarkerLayer(
-          markers: [
-            if (_position != null) _positionMarker(_position!),
-            if (_showMoments || _showClusters) ..._momentMarkers(),
-          ],
-        ),
-        RichAttributionWidget(
-          alignment: AttributionAlignment.bottomLeft,
-          attributions: [
-            TextSourceAttribution(
-              'OpenStreetMap contributors',
-              onTap: () {},
-            ),
-          ],
-        ),
-      ],
+          MarkerLayer(
+            markers: [
+              if (_position != null) _positionMarker(_position!),
+              if (_showMoments || _showClusters) ..._momentMarkers(),
+            ],
+          ),
+          RichAttributionWidget(
+            alignment: AttributionAlignment.bottomLeft,
+            attributions: [
+              TextSourceAttribution('OpenStreetMap contributors', onTap: () {}),
+            ],
+          ),
+        ],
       ),
       Positioned(
         top: 52,
@@ -149,18 +146,25 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
           child: Center(
             child: DecoratedBox(
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface.withValues(alpha: .9),
+                color: Theme.of(
+                  context,
+                ).colorScheme.surface.withValues(alpha: .9),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 child: Text(
                   'MAP · CACHED ${_ageDays(_staleSince!)} DAYS AGO',
                   style: TextStyle(
                     fontFamily: 'DM Mono',
                     fontSize: 9,
                     letterSpacing: 1.2,
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .54),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: .54),
                   ),
                 ),
               ),
@@ -184,19 +188,16 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
     const distance = Distance();
     for (final moment in moments) {
       final point = LatLng(moment.latitude!, moment.longitude!);
-      final group = groups.cast<List<Moment>?>().firstWhere(
-        (candidate) {
-          if (candidate == null || candidate.isEmpty) return false;
-          final origin = candidate.first;
-          return distance.as(
-                LengthUnit.Meter,
-                LatLng(origin.latitude!, origin.longitude!),
-                point,
-              ) <=
-              threshold;
-        },
-        orElse: () => null,
-      );
+      final group = groups.cast<List<Moment>?>().firstWhere((candidate) {
+        if (candidate == null || candidate.isEmpty) return false;
+        final origin = candidate.first;
+        return distance.as(
+              LengthUnit.Meter,
+              LatLng(origin.latitude!, origin.longitude!),
+              point,
+            ) <=
+            threshold;
+      }, orElse: () => null);
       if (group == null) {
         groups.add([moment]);
       } else {
@@ -205,30 +206,40 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
     }
     return [
       for (final group in groups)
-        if (group.length == 1 && _showMoments) _markerFor(group.single)
-        else if (group.length > 1 && _showClusters) _clusterMarker(group),
+        if (group.length == 1 && _showMoments)
+          _markerFor(group.single)
+        else if (group.length > 1 && _showClusters)
+          _clusterMarker(group),
     ];
   }
 
   Marker _clusterMarker(List<Moment> group) {
-    final latitude = group.map((moment) => moment.latitude!).reduce((a, b) => a + b) / group.length;
-    final longitude = group.map((moment) => moment.longitude!).reduce((a, b) => a + b) / group.length;
+    final latitude =
+        group.map((moment) => moment.latitude!).reduce((a, b) => a + b) /
+        group.length;
+    final longitude =
+        group.map((moment) => moment.longitude!).reduce((a, b) => a + b) /
+        group.length;
     return Marker(
       point: LatLng(latitude, longitude),
       width: 52,
       height: 52,
       child: GestureDetector(
-        onTap: () => _mapController.move(LatLng(latitude, longitude), _currentZoom + 2),
+        onTap: () =>
+            _mapController.move(LatLng(latitude, longitude), _currentZoom + 2),
         child: WarangClusterPin(count: group.length),
       ),
     );
   }
 
   LatLng get _initialCenter {
-    final withCoordinates = widget.moments
-        .where((moment) => moment.latitude != null && moment.longitude != null)
-        .toList()
-      ..sort((a, b) => b.capturedAt.compareTo(a.capturedAt));
+    final withCoordinates =
+        widget.moments
+            .where(
+              (moment) => moment.latitude != null && moment.longitude != null,
+            )
+            .toList()
+          ..sort((a, b) => b.capturedAt.compareTo(a.capturedAt));
     final latest = withCoordinates.isEmpty ? null : withCoordinates.first;
     return latest == null
         ? const LatLng(11.55, 122.0)
@@ -347,23 +358,53 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
   }
 }
 
-Iterable<Moment> momentsWithMapCoordinates(Iterable<Moment> moments) =>
-    moments.where(
-      (moment) => moment.latitude != null && moment.longitude != null,
-    );
+Iterable<Moment> momentsWithMapCoordinates(Iterable<Moment> moments) => moments
+    .where((moment) => moment.latitude != null && moment.longitude != null);
 
 ColorFilter _mapFilter(bool dark) => ColorFilter.matrix(
   dark
       ? const [
-          .26, .58, .16, 0, 0,
-          .24, .54, .14, 0, 0,
-          .18, .42, .12, 0, 0,
-          0, 0, 0, 1, 0,
+          .26,
+          .58,
+          .16,
+          0,
+          0,
+          .24,
+          .54,
+          .14,
+          0,
+          0,
+          .18,
+          .42,
+          .12,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
         ]
       : const [
-          .62, .34, .04, 0, 8,
-          .56, .38, .06, 0, 8,
-          .48, .34, .08, 0, 4,
-          0, 0, 0, 1, 0,
+          .62,
+          .34,
+          .04,
+          0,
+          8,
+          .56,
+          .38,
+          .06,
+          0,
+          8,
+          .48,
+          .34,
+          .08,
+          0,
+          4,
+          0,
+          0,
+          0,
+          1,
+          0,
         ],
 );

@@ -26,7 +26,9 @@ void main() {
   });
 
   test('cache hits return bytes and stale tiles remain usable', () async {
-    final store = MapTileStore(databasePath: p.join(directory.path, 'tiles.db'));
+    final store = MapTileStore(
+      databasePath: p.join(directory.path, 'tiles.db'),
+    );
     final bytes = Uint8List.fromList([1, 2, 3]);
     final fetchedAt = DateTime.now().subtract(const Duration(days: 31));
     await store.put(
@@ -54,16 +56,15 @@ void main() {
     );
 
     expect(loaded, bytes);
-    expect(
-      staleAt?.millisecondsSinceEpoch,
-      fetchedAt.millisecondsSinceEpoch,
-    );
+    expect(staleAt?.millisecondsSinceEpoch, fetchedAt.millisecondsSinceEpoch);
     await Future<void>.delayed(const Duration(milliseconds: 250));
     await store.close();
   });
 
   test('LRU eviction removes the oldest tile first', () async {
-    final store = MapTileStore(databasePath: p.join(directory.path, 'tiles.db'));
+    final store = MapTileStore(
+      databasePath: p.join(directory.path, 'tiles.db'),
+    );
     final now = DateTime.now();
     await store.put(
       MapTileRecord(
@@ -87,14 +88,8 @@ void main() {
     );
 
     await store.evictToLimit(3);
-    expect(
-      await store.get(z: 1, x: 1, y: 1, layerId: 'osm'),
-      isNull,
-    );
-    expect(
-      await store.get(z: 1, x: 1, y: 2, layerId: 'osm'),
-      isNotNull,
-    );
+    expect(await store.get(z: 1, x: 1, y: 1, layerId: 'osm'), isNull);
+    expect(await store.get(z: 1, x: 1, y: 2, layerId: 'osm'), isNotNull);
     await store.close();
   });
 
@@ -114,9 +109,8 @@ void main() {
       ),
     ];
 
-    expect(
-      momentsWithMapCoordinates(moments).map((moment) => moment.id),
-      ['with-coordinate'],
-    );
+    expect(momentsWithMapCoordinates(moments).map((moment) => moment.id), [
+      'with-coordinate',
+    ]);
   });
 }

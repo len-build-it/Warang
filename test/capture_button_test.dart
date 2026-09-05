@@ -9,9 +9,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: buildWarangTheme(Brightness.light),
-        home: Scaffold(
-          body: WarangCaptureButton(onPressed: () => taps++),
-        ),
+        home: Scaffold(body: WarangCaptureButton(onPressed: () => taps++)),
       ),
     );
 
