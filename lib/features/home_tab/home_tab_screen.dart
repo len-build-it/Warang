@@ -40,37 +40,82 @@ class _HomeTabContentState extends State<_HomeTabContent> {
   Future<void> _createTrip() async {
     final title = TextEditingController();
     final place = TextEditingController();
+    String? titleError;
+
     final created = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('New trip'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: title,
-              decoration: const InputDecoration(labelText: 'Trip name'),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          void submit() {
+            if (title.text.trim().isEmpty) {
+              setDialogState(() {
+                titleError = 'Trip name is required';
+              });
+            } else {
+              Navigator.pop(context, true);
+            }
+          }
+
+          return AlertDialog(
+            title: const Text('New trip'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: title,
+                  autofocus: true,
+                  textCapitalization: TextCapitalization.words,
+                  textInputAction: TextInputAction.next,
+                  onChanged: (_) {
+                    if (titleError != null) {
+                      setDialogState(() => titleError = null);
+                    }
+                  },
+                  decoration: InputDecoration(
+                    labelText: 'Trip name',
+                    errorText: titleError,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: place,
+                  textCapitalization: TextCapitalization.words,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => submit(),
+                  decoration: const InputDecoration(
+                    labelText: 'Place (optional)',
+                  ),
+                ),
+              ],
             ),
-            TextField(
-              controller: place,
-              decoration: const InputDecoration(labelText: 'Place (optional)'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Create'),
-          ),
-        ],
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(onPressed: submit, child: const Text('Create')),
+            ],
+          );
+        },
       ),
     );
     if (created == true && title.text.trim().isNotEmpty) {
-      await widget.repository.addTrip(title.text, place.text, null, null);
+      final name = title.text.trim();
+      final placeName = place.text.trim().isEmpty ? null : place.text.trim();
+      try {
+        await widget.repository.addTrip(name, placeName, null, null);
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Trip "$name" created.')));
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Failed to create trip: $e')));
+        }
+      }
     }
     title.dispose();
     place.dispose();
