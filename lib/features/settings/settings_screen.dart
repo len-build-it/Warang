@@ -9,7 +9,8 @@ import '../../data/files/photo_store.dart';
 import '../map/map_tile_store.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
-  const SettingsScreen({super.key});
+  const SettingsScreen({super.key, this.mapTileStore});
+  final MapTileStore? mapTileStore;
 
   @override
   ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
@@ -18,11 +19,26 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _copyCaption = true;
   bool _cornerMark = true;
-  late final MapTileStore _mapTileStore = MapTileStore();
+  late final MapTileStore _mapTileStore;
+  late final bool _ownsMapTileStore;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.mapTileStore != null) {
+      _mapTileStore = widget.mapTileStore!;
+      _ownsMapTileStore = false;
+    } else {
+      _mapTileStore = MapTileStore();
+      _ownsMapTileStore = true;
+    }
+  }
 
   @override
   void dispose() {
-    _mapTileStore.close();
+    if (_ownsMapTileStore) {
+      _mapTileStore.close();
+    }
     super.dispose();
   }
 

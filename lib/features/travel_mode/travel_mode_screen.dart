@@ -872,7 +872,7 @@ class MomentSearchDelegate extends SearchDelegate<Moment?> {
 
   Widget _results(BuildContext context) {
     final theme = Theme.of(context);
-    return ColoredBox(
+    return Material(
       color: theme.scaffoldBackgroundColor,
       child: FutureBuilder<List<Moment>>(
         future: repository.searchAsync(query),
@@ -939,7 +939,7 @@ class MomentSearchDelegate extends SearchDelegate<Moment?> {
                 'dd MMM yyyy',
               ).format(moment.capturedAt);
               final subtitle = hasCaption && hasPlace
-                  ? '$hasPlace - $dateStr'
+                  ? '${moment.placeLabel} - $dateStr'
                   : dateStr;
               return ListTile(
                 contentPadding: const EdgeInsets.symmetric(

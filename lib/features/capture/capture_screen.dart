@@ -15,8 +15,13 @@ import '../../app/theme/tokens.dart';
 import '../../data/files/photo_store.dart';
 
 class CaptureScreen extends ConsumerStatefulWidget {
-  const CaptureScreen({super.key, this.initialPhoto});
+  const CaptureScreen({
+    super.key,
+    this.initialPhoto,
+    this.fetchLocation = true,
+  });
   final XFile? initialPhoto;
+  final bool fetchLocation;
 
   @override
   ConsumerState<CaptureScreen> createState() => _CaptureScreenState();
@@ -38,7 +43,9 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
     } else {
       _openCamera();
     }
-    _getPosition();
+    if (widget.fetchLocation) {
+      _getPosition();
+    }
   }
 
   Future<void> _openCamera() async {
@@ -56,9 +63,9 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
   }
 
   Future<void> _getPosition() async {
-    final permission = await Permission.location.request();
-    if (!permission.isGranted) return;
     try {
+      final permission = await Permission.location.request();
+      if (!permission.isGranted) return;
       _position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.medium,

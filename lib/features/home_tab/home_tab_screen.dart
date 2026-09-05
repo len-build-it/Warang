@@ -51,9 +51,9 @@ class _HomeTabContentState extends State<_HomeTabContent> {
               setDialogState(() {
                 titleError = 'Trip name is required';
               });
-            } else {
-              Navigator.pop(context, true);
+              return;
             }
+            Navigator.pop(context, true);
           }
 
           return AlertDialog(
