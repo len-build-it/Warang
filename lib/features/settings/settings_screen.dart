@@ -45,121 +45,120 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             : Brightness.dark,
       ),
       child: Scaffold(
-        body: SafeArea(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 14, 20, 34),
-            children: [
-              Text('Settings', style: Theme.of(context).textTheme.displaySmall),
-              const SizedBox(height: 22),
-              const WarangSectionLabel('You'),
-              const SizedBox(height: 9),
-              WarangSettingsCard(
-                children: [_ProfileRow(name: repository.profile.name)],
-              ),
-              const SizedBox(height: 20),
-              const WarangSectionLabel('Storage'),
-              const SizedBox(height: 9),
-              WarangSettingsCard(
-                children: [
-                  FutureBuilder<int>(
-                    future: PhotoStore().storageBytes(),
-                    builder: (context, snapshot) => WarangSettingsRow(
-                      label: 'Photos on this phone',
-                      value: _formatBytes(snapshot.data ?? 0),
-                    ),
+        appBar: AppBar(
+          title: const Text('Settings'),
+          scrolledUnderElevation: 0,
+          backgroundColor: Theme.of(context).colorScheme.surface,
+        ),
+        body: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 34),
+          children: [
+            const WarangSectionLabel('You'),
+            const SizedBox(height: 9),
+            WarangSettingsCard(
+              children: [_ProfileRow(name: repository.profile.name)],
+            ),
+            const SizedBox(height: 20),
+            const WarangSectionLabel('Storage'),
+            const SizedBox(height: 9),
+            WarangSettingsCard(
+              children: [
+                FutureBuilder<int>(
+                  future: PhotoStore().storageBytes(),
+                  builder: (context, snapshot) => WarangSettingsRow(
+                    label: 'Photos on this phone',
+                    value: _formatBytes(snapshot.data ?? 0),
                   ),
-                  const WarangSettingsRow(label: 'Clean up', value: '0 B'),
-                ],
-              ),
-              const SizedBox(height: 20),
-              const WarangSectionLabel('Map'),
-              const SizedBox(height: 9),
-              WarangSettingsCard(
-                children: [
-                  const WarangSettingsRow(
-                    label: 'Theme',
-                    value: 'FOLLOWS PHONE',
-                  ),
-                  const WarangDivider(),
-                  FutureBuilder<int>(
-                    future: _mapTileStore.totalBytes(),
-                    builder: (context, snapshot) => WarangSettingsRow(
-                      label: 'Offline map cache',
-                      value: _formatBytes(snapshot.data ?? 0),
-                      trailing: Text(
-                        'Clear',
-                        style: TextStyle(
-                          fontFamily: 'Public Sans',
-                          fontSize: 13,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withValues(alpha: .58),
+                ),
+                const WarangSettingsRow(label: 'Clean up', value: '0 B'),
+              ],
+            ),
+            const SizedBox(height: 20),
+            const WarangSectionLabel('Map'),
+            const SizedBox(height: 9),
+            WarangSettingsCard(
+              children: [
+                const WarangSettingsRow(label: 'Theme', value: 'FOLLOWS PHONE'),
+                const WarangDivider(),
+                FutureBuilder<int>(
+                  future: _mapTileStore.totalBytes(),
+                  builder: (context, snapshot) => WarangSettingsRow(
+                    label: 'Offline map cache',
+                    value: _formatBytes(snapshot.data ?? 0),
+                    trailing: TextButton(
+                      style: TextButton.styleFrom(
+                        visualDensity: VisualDensity.compact,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
                         ),
+                        minimumSize: const Size(48, 36),
                       ),
-                      onTap: _clearMapCache,
+                      onPressed: _clearMapCache,
+                      child: const Text('Clear'),
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              const WarangSectionLabel('Sharing'),
-              const SizedBox(height: 9),
-              WarangSettingsCard(
-                children: [
-                  WarangSettingsRow(
-                    label: 'Copy caption on share',
-                    toggle: true,
-                    trailing: WarangToggle(
-                      value: _copyCaption,
-                      onChanged: _setCopyCaption,
-                    ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            const WarangSectionLabel('Sharing'),
+            const SizedBox(height: 9),
+            WarangSettingsCard(
+              children: [
+                WarangSettingsRow(
+                  label: 'Copy caption on share',
+                  toggle: true,
+                  trailing: WarangToggle(
+                    value: _copyCaption,
+                    onChanged: _setCopyCaption,
                   ),
-                  const WarangDivider(),
-                  WarangSettingsRow(
-                    label: 'Corner mark on images',
-                    toggle: true,
-                    trailing: WarangToggle(
-                      value: _cornerMark,
-                      onChanged: _setCornerMark,
-                    ),
+                ),
+                const WarangDivider(),
+                WarangSettingsRow(
+                  label: 'Corner mark on images',
+                  toggle: true,
+                  trailing: WarangToggle(
+                    value: _cornerMark,
+                    onChanged: _setCornerMark,
                   ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              const WarangSectionLabel('About'),
-              const SizedBox(height: 9),
-              WarangSettingsCard(
-                children: [
-                  const WarangSettingsRow(label: 'Version', value: '1.0.0'),
-                  const WarangDivider(),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(15, 14, 15, 14),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('warang', style: TextStyle(fontSize: 15.5)),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Aklanon. To go out and explore.',
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodySmall?.copyWith(fontSize: 13),
-                        ),
-                      ],
-                    ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            const WarangSectionLabel('About'),
+            const SizedBox(height: 9),
+            WarangSettingsCard(
+              children: [
+                const WarangSettingsRow(label: 'Version', value: '1.0.0'),
+                const WarangDivider(),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(15, 14, 15, 14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('warang', style: TextStyle(fontSize: 15.5)),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Aklanon. To go out and explore.',
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.copyWith(fontSize: 13),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              const SizedBox(height: 28),
-              Text(
-                'Everything stays on this phone.',
-                textAlign: TextAlign.center,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(fontSize: 12.5),
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 28),
+            Text(
+              'Everything stays on this phone.',
+              textAlign: TextAlign.center,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(fontSize: 12.5),
+            ),
+          ],
         ),
       ),
     );
@@ -170,7 +169,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Future<void> _clearMapCache() async {
     await _mapTileStore.clear();
-    if (mounted) setState(() {});
+    if (mounted) {
+      setState(() {});
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Offline map cache cleared.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 }
 
