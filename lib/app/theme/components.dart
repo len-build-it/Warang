@@ -199,50 +199,6 @@ class WarangTopScrim extends StatelessWidget {
   }
 }
 
-class WarangSheetPeek extends StatelessWidget {
-  const WarangSheetPeek({super.key, this.onTap});
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: Container(
-      height: 34,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
-        boxShadow: [
-          BoxShadow(
-            color:
-                (Theme.of(context).brightness == Brightness.dark
-                        ? Colors.black
-                        : Theme.of(context).colorScheme.onSurface)
-                    .withValues(
-                      alpha: Theme.of(context).brightness == Brightness.dark
-                          ? .45
-                          : .10,
-                    ),
-            blurRadius: Theme.of(context).brightness == Brightness.dark
-                ? 24
-                : 22,
-            offset: const Offset(0, -8),
-          ),
-        ],
-      ),
-      child: Center(
-        child: Container(
-          width: 44,
-          height: 5,
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.outline,
-            borderRadius: BorderRadius.circular(3),
-          ),
-        ),
-      ),
-    ),
-  );
-}
-
 class WarangCaptureButton extends StatefulWidget {
   const WarangCaptureButton({super.key, required this.onPressed});
   final VoidCallback onPressed;

@@ -24,10 +24,7 @@ Future<void> main() async {
   await photoStore.sweepOrphans(database);
   runApp(
     ProviderScope(
-      overrides: [
-        databaseProvider.overrideWithValue(database),
-        repositoryProvider.overrideWithValue(repository),
-      ],
+      overrides: [repositoryProvider.overrideWithValue(repository)],
       child: const WarangApp(),
     ),
   );

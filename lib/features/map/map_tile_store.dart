@@ -36,24 +36,7 @@ class MapTileRecord {
   bool get isStale => DateTime.now().difference(fetchedAt) > mapTileMaxAge;
 }
 
-abstract interface class TileCache {
-  Future<MapTileRecord?> get({
-    required int z,
-    required int x,
-    required int y,
-    required String layerId,
-  });
-
-  Future<void> put(MapTileRecord tile);
-
-  Future<void> evictOlderThan(DateTime cutoff);
-
-  Future<int> totalBytes();
-
-  Future<void> clear();
-}
-
-class MapTileStore implements TileCache {
+class MapTileStore {
   MapTileStore({this.databasePath});
   final String? databasePath;
   sqflite.Database? _database;
@@ -127,7 +110,6 @@ class MapTileStore implements TileCache {
     );
   }
 
-  @override
   Future<MapTileRecord?> get({
     required int z,
     required int x,
@@ -160,7 +142,6 @@ class MapTileStore implements TileCache {
     }
   }
 
-  @override
   Future<void> put(MapTileRecord tile) async {
     await (await _db).insert('tiles', {
       'z': tile.z,
@@ -172,15 +153,6 @@ class MapTileStore implements TileCache {
       'etag': tile.etag,
     }, conflictAlgorithm: sqflite.ConflictAlgorithm.replace);
     await evictToLimit(mapTileMaxBytes);
-  }
-
-  @override
-  Future<void> evictOlderThan(DateTime cutoff) async {
-    await (await _db).delete(
-      'tiles',
-      where: 'fetchedAt < ?',
-      whereArgs: [cutoff.millisecondsSinceEpoch],
-    );
   }
 
   Future<void> evictToLimit(int maxBytes) async {
@@ -205,7 +177,6 @@ class MapTileStore implements TileCache {
     }
   }
 
-  @override
   Future<int> totalBytes() async {
     final rows = await (await _db).rawQuery(
       'SELECT COALESCE(SUM(length(bytes)), 0) AS total FROM tiles',
@@ -213,7 +184,6 @@ class MapTileStore implements TileCache {
     return (rows.single['total'] as num?)?.toInt() ?? 0;
   }
 
-  @override
   Future<void> clear() async => (await _db).delete('tiles');
 
   Future<MapCameraSnapshot?> loadCamera() async {
@@ -319,7 +289,7 @@ class CachedTileProvider extends TileProvider {
     super.headers,
   });
 
-  final TileCache store;
+  final MapTileStore store;
   final String layerId;
   final HttpClient? client;
   final ValueChanged<DateTime>? onStaleTile;

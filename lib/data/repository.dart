@@ -237,24 +237,6 @@ class WarangRepository extends ChangeNotifier {
     await _refreshAll();
   }
 
-  /// Synchronous snapshot search retained for existing export/UI callers.
-  List<Moment> search(String query) {
-    final needle = query.trim().toLowerCase();
-    if (needle.isEmpty) return moments;
-    return moments.where((moment) {
-      final trip = _trips.firstWhere(
-        (item) => item.id == moment.tripId,
-        orElse: () => everyday,
-      );
-      return [
-        moment.caption,
-        moment.placeLabel,
-        trip.title,
-        trip.place,
-      ].whereType<String>().any((text) => text.toLowerCase().contains(needle));
-    }).toList();
-  }
-
   Future<List<Moment>> searchAsync(String query) async {
     final hits = await database.searchDao.search(query);
     if (hits.isEmpty) return query.trim().isEmpty ? moments : const [];

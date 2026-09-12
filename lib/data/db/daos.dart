@@ -114,22 +114,6 @@ class MomentsDao extends DatabaseAccessor<WarangDatabase>
             ]))
           .watch();
 
-  Stream<List<MomentRow>> watchMapPins() =>
-      (select(moments)
-            ..where(
-              (moment) =>
-                  moment.deletedAt.isNull() &
-                  moment.latitude.isNotNull() &
-                  moment.longitude.isNotNull(),
-            )
-            ..orderBy([
-              (moment) => OrderingTerm(
-                expression: moment.capturedAt,
-                mode: OrderingMode.desc,
-              ),
-            ]))
-          .watch();
-
   Future<List<MomentRow>> getActive() =>
       (select(moments)
             ..where((moment) => moment.deletedAt.isNull())
@@ -199,16 +183,6 @@ class PhotosDao extends DatabaseAccessor<WarangDatabase> with _$PhotosDaoMixin {
         ),
       );
 
-  Future<List<PhotoRow>> getOrphans() async {
-    final rows = await customSelect(
-      '''SELECT p.* FROM photos p
-         LEFT JOIN moments m ON m.id = p.moment_id
-         WHERE p.deleted_at IS NULL AND (m.id IS NULL OR m.deleted_at IS NOT NULL)''',
-      readsFrom: {photos, moments},
-    ).get();
-    return rows.map(_photoFromRow).toList();
-  }
-
   PhotoRow _photoFromRow(QueryRow row) => PhotoRow(
     id: row.read<String>('id'),
     momentId: row.read<String>('moment_id'),
@@ -229,13 +203,6 @@ class PhotosDao extends DatabaseAccessor<WarangDatabase> with _$PhotosDaoMixin {
 class AppMetaDao extends DatabaseAccessor<WarangDatabase>
     with _$AppMetaDaoMixin {
   AppMetaDao(super.attachedDatabase);
-
-  Future<String?> readValue(String key) async =>
-      (select(appMeta)
-            ..where((meta) => meta.key.equals(key) & meta.deletedAt.isNull())
-            ..limit(1))
-          .getSingleOrNull()
-          .then((row) => row?.value);
 
   Future<void> writeValue(String key, String value, DateTime now) async {
     await into(appMeta).insertOnConflictUpdate(

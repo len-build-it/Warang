@@ -192,35 +192,5 @@ class Moment {
   );
 }
 
-class Photo {
-  const Photo({
-    required this.id,
-    required this.momentId,
-    required this.relPath,
-    required this.thumbRelPath,
-    required this.width,
-    required this.height,
-    required this.bytes,
-    this.position = 0,
-    this.createdAt,
-    this.updatedAt,
-    this.deletedAt,
-    this.authorId = 'local',
-  });
-
-  final String id;
-  final String momentId;
-  final String relPath;
-  final String thumbRelPath;
-  final int width;
-  final int height;
-  final int bytes;
-  final int position;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
-  final DateTime? deletedAt;
-  final String authorId;
-}
-
 DateTime? _date(dynamic value) =>
     value == null ? null : DateTime.tryParse(value as String);

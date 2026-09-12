@@ -45,14 +45,6 @@ class PhotoStore {
   Future<Directory> get _root async => _documentsDirectory ??=
       documentsDirectory ?? await getApplicationDocumentsDirectory();
 
-  /// Imports an image and returns its database-ready relative path.
-  ///
-  /// [importPhotoAsset] should be used by new callers that also need the
-  /// generated thumbnail and dimensions.
-  Future<String> importPhoto(File source, {DateTime? now}) async {
-    return (await importPhotoAsset(source, now: now)).relPath;
-  }
-
   Future<StoredPhoto> importPhotoAsset(File source, {DateTime? now}) async {
     return _storeDecoded(await source.readAsBytes(), now: now);
   }
@@ -117,10 +109,6 @@ class PhotoStore {
       if (entity is File) total += await entity.length();
     }
     return total;
-  }
-
-  Future<String> storeBytes(Uint8List bytes, {String extension = 'jpg'}) async {
-    return (await storeBytesAsset(bytes)).relPath;
   }
 
   Future<StoredPhoto> storeBytesAsset(Uint8List bytes, {DateTime? now}) async {
