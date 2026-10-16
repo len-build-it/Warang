@@ -8,11 +8,13 @@ import '../../app/app.dart';
 import '../../app/app_state.dart';
 import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
+import '../../core/formatting.dart';
 import '../../core/models.dart';
 import '../../data/files/photo_store.dart';
 import '../../data/repository.dart';
 import 'analytics_charts.dart';
 import 'trip_detail_screen.dart';
+import 'trip_form_screen.dart';
 
 class HomeTabScreen extends ConsumerWidget {
   const HomeTabScreen({super.key, this.onSearch});
@@ -53,87 +55,10 @@ class _HomeTabContentState extends State<_HomeTabContent> {
   PhotoStore get _photoStore => widget.photoStore;
 
   Future<void> _createTrip() async {
-    final title = TextEditingController();
-    final place = TextEditingController();
-    String? titleError;
-
-    final created = await showDialog<bool>(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) {
-          void submit() {
-            if (title.text.trim().isEmpty) {
-              setDialogState(() {
-                titleError = 'Trip name is required';
-              });
-              return;
-            }
-            Navigator.pop(context, true);
-          }
-
-          return AlertDialog(
-            title: const Text('New trip'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: title,
-                  autofocus: true,
-                  textCapitalization: TextCapitalization.words,
-                  textInputAction: TextInputAction.next,
-                  onChanged: (_) {
-                    if (titleError != null) {
-                      setDialogState(() => titleError = null);
-                    }
-                  },
-                  decoration: InputDecoration(
-                    labelText: 'Trip name',
-                    errorText: titleError,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: place,
-                  textCapitalization: TextCapitalization.words,
-                  textInputAction: TextInputAction.done,
-                  onSubmitted: (_) => submit(),
-                  decoration: const InputDecoration(
-                    labelText: 'Place (optional)',
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancel'),
-              ),
-              FilledButton(onPressed: submit, child: const Text('Create')),
-            ],
-          );
-        },
-      ),
-    );
-    if (created == true && title.text.trim().isNotEmpty) {
-      final name = title.text.trim();
-      final placeName = place.text.trim().isEmpty ? null : place.text.trim();
-      try {
-        await widget.repository.addTrip(name, placeName, null, null);
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Trip "$name" created.')));
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Failed to create trip: $e')));
-        }
-      }
+    final title = await TripFormScreen.open(context);
+    if (title != null && mounted) {
+      showWarangSnackBar(context, 'Trip "$title" created.');
     }
-    title.dispose();
-    place.dispose();
   }
 
   String? _findTripCoverPath(Trip trip, List<Moment> tripMoments) {
@@ -266,15 +191,7 @@ class _HomeTabContentState extends State<_HomeTabContent> {
 
   void _openTrip(Trip trip) {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => TripDetailScreen(
-          trip: trip,
-          moments: widget.repository.moments
-              .where((moment) => moment.tripId == trip.id)
-              .toList(growable: false),
-          photoStore: _photoStore,
-        ),
-      ),
+      MaterialPageRoute(builder: (_) => TripDetailScreen(tripId: trip.id)),
     );
   }
 }
@@ -655,9 +572,11 @@ class _TripCard extends StatelessWidget {
     final store = photoStore ?? PhotoStore();
     final planned =
         trip.startDate != null && trip.startDate!.isAfter(DateTime.now());
-    final range = trip.startDate == null
+    final start = trip.startDate;
+    final end = trip.endDate ?? start;
+    final range = start == null || end == null
         ? 'NO DATES · $count MOMENTS'
-        : '${DateFormat('MMM d').format(trip.startDate!).toUpperCase()}${trip.endDate == null ? '' : '-${DateFormat('d').format(trip.endDate!)}'} · $count MOMENTS';
+        : '${formatTripRange(start, end)} · $count MOMENTS';
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
@@ -765,6 +684,8 @@ class _TripBannerImageState extends State<_TripBannerImage> {
           return Image.file(
             file,
             fit: BoxFit.cover,
+            frameBuilder: (context, child, frame, sync) =>
+                sync || frame != null ? child : _fallback(context),
             errorBuilder: (_, _, _) => _fallback(context),
           );
         }

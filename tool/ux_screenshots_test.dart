@@ -122,6 +122,12 @@ void main() {
   Future<void> seed(WidgetTester tester) async {
     await tester.runAsync(() async {
       await repository.setName('Len');
+      await repository.addTrip(
+        'Boracay long weekend',
+        'Malay, Aklan',
+        DateTime(2026, 9, 6),
+        DateTime(2026, 9, 14),
+      );
       final moments = <(double, double, String?)>[
         (11.9686, 121.9180, 'Sunset at White Beach'),
         (11.9600, 121.9300, null),
@@ -143,12 +149,6 @@ void main() {
           capturedAt: DateTime(2026, 9, 1 + index * 6, 16, 42),
         );
       }
-      await repository.addTrip(
-        'Boracay long weekend',
-        'Malay, Aklan',
-        null,
-        null,
-      );
     });
   }
 
@@ -236,6 +236,10 @@ void main() {
 
       await tester.tap(find.text('Home'));
       await shot(tester, '07_home_$theme');
+      await tester.tap(find.text('New trip'));
+      await shot(tester, '15_trip_form_$theme');
+      await tester.tap(find.byType(CloseButton));
+      await settle(tester);
       await tester.drag(find.byType(ListView).last, const Offset(0, -600));
       await shot(tester, '08_home_scrolled_$theme');
       await tester.drag(find.byType(ListView).last, const Offset(0, 600));

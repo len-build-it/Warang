@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:warang/app/app.dart';
+import 'package:warang/app/app_state.dart';
 import 'package:warang/app/theme/tokens.dart';
 import 'package:warang/core/models.dart';
 import 'package:warang/data/db/database.dart';
@@ -114,31 +115,29 @@ void main() {
       final photoFile = File('${tempDir.path}/test_cover.png');
       photoFile.writeAsBytesSync([1, 2, 3]);
 
-      final trip = Trip(
-        id: 'trip_1',
-        title: 'Batanes Adventure',
-        place: 'Basco',
-        startDate: DateTime(2026, 3, 1),
-        endDate: DateTime(2026, 3, 5),
-      );
-
-      final momentWithPhoto = Moment(
-        id: 'm1',
-        tripId: trip.id,
-        capturedAt: DateTime(2026, 3, 2, 10, 15),
-        caption: 'Lighthouse on the hill',
-        relPath: 'test_cover.png',
+      late Trip trip;
+      late Trip emptyTrip;
+      await tester.runAsync(() async {
+        await repository.addTrip(
+          'Batanes Adventure',
+          'Basco',
+          DateTime(2026, 3, 1),
+          DateTime(2026, 3, 5),
+        );
+        await repository.addTrip('Empty Journey', null, null, null);
+        await repository.addMoment(
+          capturedAt: DateTime(2026, 3, 2, 10, 15),
+          caption: 'Lighthouse on the hill',
+          relPath: 'test_cover.png',
+        );
+      });
+      trip = repository.trips.firstWhere((t) => t.title == 'Batanes Adventure');
+      emptyTrip = repository.trips.firstWhere(
+        (t) => t.title == 'Empty Journey',
       );
 
       await tester.pumpWidget(
-        _app(
-          repository,
-          TripDetailScreen(
-            trip: trip,
-            moments: [momentWithPhoto],
-            photoStore: photoStore,
-          ),
-        ),
+        _app(repository, TripDetailScreen(tripId: trip.id), photoStore),
       );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
@@ -159,21 +158,8 @@ void main() {
       expect(find.byType(Image), findsAtLeastNWidgets(1));
 
       // Test with an empty trip without moments
-      final emptyTrip = Trip(
-        id: 'trip_empty',
-        title: 'Empty Journey',
-        startDate: DateTime(2026, 5, 1),
-      );
-
       await tester.pumpWidget(
-        _app(
-          repository,
-          TripDetailScreen(
-            trip: emptyTrip,
-            moments: const [],
-            photoStore: photoStore,
-          ),
-        ),
+        _app(repository, TripDetailScreen(tripId: emptyTrip.id), photoStore),
       );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
@@ -181,7 +167,7 @@ void main() {
       // Fallback landscape icon is present
       expect(find.byIcon(Icons.landscape_outlined), findsOneWidget);
       expect(
-        find.text('Your moments from this trip will appear here.'),
+        find.textContaining('Your moments from this trip will appear here.'),
         findsOneWidget,
       );
     },
@@ -271,7 +257,14 @@ void main() {
   });
 }
 
-Widget _app(WarangRepository repository, Widget child) => ProviderScope(
-  overrides: [repositoryProvider.overrideWithValue(repository)],
+Widget _app(
+  WarangRepository repository,
+  Widget child, [
+  PhotoStore? photoStore,
+]) => ProviderScope(
+  overrides: [
+    repositoryProvider.overrideWithValue(repository),
+    if (photoStore != null) photoStoreProvider.overrideWithValue(photoStore),
+  ],
   child: MaterialApp(theme: buildWarangTheme(Brightness.light), home: child),
 );
