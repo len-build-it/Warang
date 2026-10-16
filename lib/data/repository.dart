@@ -205,6 +205,64 @@ class WarangRepository extends ChangeNotifier {
     await _refreshAll();
   }
 
+  /// Brings back a moment deleted earlier in this session. Photos stay on
+  /// disk until the next launch's orphan sweep, so an undo is lossless.
+  Future<void> restoreMoment(String id) async {
+    await database.momentsDao.updateMoment(
+      id,
+      MomentsCompanion(
+        deletedAt: const Value(null),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+    await _refreshAll();
+  }
+
+  /// Replaces the editable text and trip of a moment. Blank text clears the
+  /// field.
+  Future<void> updateMoment(
+    String id, {
+    required String caption,
+    required String placeLabel,
+    required String tripId,
+  }) async {
+    if (!_trips.any((trip) => trip.id == tripId)) {
+      throw ArgumentError.value(tripId, 'tripId', 'Unknown trip');
+    }
+    String? clean(String value) => value.trim().isEmpty ? null : value.trim();
+    await database.momentsDao.updateMoment(
+      id,
+      MomentsCompanion(
+        caption: Value(clean(caption)),
+        placeLabel: Value(clean(placeLabel)),
+        tripId: Value(tripId),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+    await _refreshAll();
+  }
+
+  /// Pins a moment to a manually chosen spot.
+  Future<void> setMomentLocation(
+    String id,
+    double latitude,
+    double longitude,
+  ) async {
+    if (latitude.abs() > 90 || longitude.abs() > 180) {
+      throw RangeError('Coordinates out of range: $latitude, $longitude');
+    }
+    await database.momentsDao.updateMoment(
+      id,
+      MomentsCompanion(
+        latitude: Value(latitude),
+        longitude: Value(longitude),
+        accuracyM: const Value(null),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+    await _refreshAll();
+  }
+
   Future<void> upsertImportedTrip(
     Trip trip,
     List<Moment> importedMoments,

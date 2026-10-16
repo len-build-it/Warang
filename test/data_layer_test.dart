@@ -147,6 +147,68 @@ void main() {
     failing.dispose();
   });
 
+  test('updateMoment edits text and trip, clearing blanks to null', () async {
+    final moment = await repository.addMoment(caption: 'Old caption');
+    final trip = await _insertTrip(repository, 'Antique');
+
+    await repository.updateMoment(
+      moment.id,
+      caption: '  New caption ',
+      placeLabel: 'White Beach',
+      tripId: trip.id,
+    );
+    var saved = repository.moments.single;
+    expect(saved.caption, 'New caption');
+    expect(saved.placeLabel, 'White Beach');
+    expect(saved.tripId, trip.id);
+    expect(await repository.searchAsync('White'), hasLength(1));
+
+    await repository.updateMoment(
+      moment.id,
+      caption: ' ',
+      placeLabel: '',
+      tripId: repository.everyday.id,
+    );
+    saved = repository.moments.single;
+    expect(saved.caption, isNull);
+    expect(saved.placeLabel, isNull);
+    expect(saved.tripId, repository.everyday.id);
+
+    await expectLater(
+      repository.updateMoment(
+        moment.id,
+        caption: '',
+        placeLabel: '',
+        tripId: 'missing',
+      ),
+      throwsArgumentError,
+    );
+  });
+
+  test('setMomentLocation pins a moment and rejects bad values', () async {
+    final moment = await repository.addMoment();
+    await repository.setMomentLocation(moment.id, 11.9686, 121.918);
+    expect(repository.moments.single.latitude, 11.9686);
+    expect(repository.moments.single.longitude, 121.918);
+
+    await expectLater(
+      repository.setMomentLocation(moment.id, 91, 0),
+      throwsRangeError,
+    );
+  });
+
+  test('restoreMoment undoes a soft delete', () async {
+    final moment = await repository.addMoment(caption: 'Keep me');
+    await repository.softDeleteMoment(moment.id);
+    expect(repository.moments, isEmpty);
+
+    await repository.restoreMoment(moment.id);
+
+    expect(repository.moments.single.id, moment.id);
+    expect(repository.moments.single.caption, 'Keep me');
+    expect(await repository.searchAsync('Keep'), hasLength(1));
+  });
+
   test('UUID v4 identifiers are unique across ten thousand values', () {
     final ids = {for (var index = 0; index < 10000; index++) newId()};
     expect(ids, hasLength(10000));
