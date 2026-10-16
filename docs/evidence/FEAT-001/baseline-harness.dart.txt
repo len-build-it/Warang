@@ -1,0 +1,273 @@
+// Scratch UX audit harness: renders real screens to PNG via golden capture.
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:image/image.dart' as img;
+import 'package:image_picker/image_picker.dart';
+import 'package:sqflite/sqflite.dart' as sqflite;
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:warang/app/app.dart';
+import 'package:warang/app/shell/app_shell.dart';
+import 'package:warang/features/onboarding/onboarding_screen.dart';
+import 'package:warang/app/theme/components.dart';
+import 'package:warang/app/theme/tokens.dart';
+import 'package:warang/data/db/database.dart';
+import 'package:warang/data/files/photo_store.dart';
+import 'package:warang/data/repository.dart';
+import 'package:warang/features/capture/capture_screen.dart';
+
+const projectRoot =
+    r'C:\Users\User\Desktop\PersonalProjects\04-FUN-STUFF\WARANG\Warang';
+const flutterRoot = r'C:\Users\User\flutter';
+
+Future<void> loadFont(String family, List<String> files) async {
+  final loader = FontLoader(family);
+  for (final f in files) {
+    final bytes = File(f).readAsBytesSync();
+    loader.addFont(Future.value(ByteData.view(bytes.buffer)));
+  }
+  await loader.load();
+}
+
+Uint8List makePhoto(int seed) {
+  final image = img.Image(width: 400, height: 300);
+  final palettes = [
+    [img.ColorRgb8(40, 120, 180), img.ColorRgb8(240, 200, 120)],
+    [img.ColorRgb8(30, 140, 90), img.ColorRgb8(200, 230, 160)],
+    [img.ColorRgb8(200, 90, 60), img.ColorRgb8(250, 210, 150)],
+    [img.ColorRgb8(90, 60, 140), img.ColorRgb8(240, 150, 120)],
+  ];
+  final p = palettes[seed % palettes.length];
+  for (var y = 0; y < 300; y++) {
+    final t = y / 300;
+    final c = img.ColorRgb8(
+      (p[0].r * (1 - t) + p[1].r * t).round(),
+      (p[0].g * (1 - t) + p[1].g * t).round(),
+      (p[0].b * (1 - t) + p[1].b * t).round(),
+    );
+    for (var x = 0; x < 400; x++) {
+      image.setPixel(x, y, c);
+    }
+  }
+  return img.encodeJpg(image);
+}
+
+void main() {
+  late Directory docs;
+  late WarangDatabase database;
+  late WarangRepository repository;
+  late PhotoStore store;
+
+  setUpAll(() async {
+    sqfliteFfiInit();
+    sqflite.databaseFactory = databaseFactoryFfi;
+    final fonts = '$projectRoot\\assets\\fonts';
+    await loadFont('Bricolage Grotesque', [
+      '$fonts\\BricolageGrotesque-Bold.ttf',
+      '$fonts\\BricolageGrotesque-ExtraBold.ttf',
+    ]);
+    await loadFont('Public Sans', [
+      '$fonts\\PublicSans-Regular.ttf',
+      '$fonts\\PublicSans-Medium.ttf',
+      '$fonts\\PublicSans-SemiBold.ttf',
+    ]);
+    await loadFont('DM Mono', [
+      '$fonts\\DMMono-Regular.ttf',
+      '$fonts\\DMMono-Medium.ttf',
+    ]);
+    final mf = '$flutterRoot\\bin\\cache\\artifacts\\material_fonts';
+    await loadFont('MaterialIcons', ['$mf\\materialicons-regular.otf']);
+    final roboto = [
+      '$mf/roboto-regular.ttf',
+      '$mf/roboto-medium.ttf',
+      '$mf/roboto-bold.ttf',
+    ];
+    await loadFont('Roboto', roboto);
+    await loadFont('FlutterTest', roboto);
+  });
+
+  setUp(() async {
+    docs = Directory.systemTemp.createTempSync('warang_audit_');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+          const MethodChannel('plugins.flutter.io/path_provider'),
+          (call) async => docs.path,
+        );
+    database = WarangDatabase.memory();
+    store = PhotoStore(documentsDirectory: docs);
+    repository = WarangRepository(database, photoStore: store);
+    await repository.initialize();
+  });
+
+  tearDown(() async {
+    repository.dispose();
+    await database.close();
+  });
+
+  Future<void> seed(WidgetTester tester) async {
+    await tester.runAsync(() async {
+      await repository.setName('Len');
+      final coords = [
+        [11.9686, 121.9180, 'Sunset at White Beach'],
+        [11.9600, 121.9300, null],
+        [11.9750, 121.9250, 'Breakfast by the water'],
+        [11.9690, 121.9182, 'Second visit'],
+      ];
+      for (var i = 0; i < coords.length; i++) {
+        final stored = await store.storeBytesAsset(makePhoto(i));
+        await repository.addMoment(
+          caption: coords[i][2] as String?,
+          latitude: coords[i][0] as double,
+          longitude: coords[i][1] as double,
+          relPath: stored.relPath,
+          thumbRelPath: stored.thumbRelPath,
+          width: stored.width,
+          height: stored.height,
+          bytes: stored.bytes,
+          capturedAt: DateTime(2026, 9, 1 + i * 6, 16, 42),
+        );
+      }
+      await repository.addTrip('Boracay long weekend', 'Malay, Aklan', null, null);
+    });
+  }
+
+  Future<void> settle(WidgetTester tester) async {
+    for (var i = 0; i < 6; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 120)),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+    }
+  }
+
+  Widget host(Widget home, Brightness b) => ProviderScope(
+    overrides: [repositoryProvider.overrideWithValue(repository)],
+    child: MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: buildWarangTheme(Brightness.light),
+      darkTheme: buildWarangTheme(Brightness.dark),
+      themeMode: b == Brightness.dark ? ThemeMode.dark : ThemeMode.light,
+      home: home,
+    ),
+  );
+
+  void phone(WidgetTester tester) {
+    tester.view.physicalSize = const Size(780, 1688);
+    tester.view.devicePixelRatio = 2;
+    tester.view.padding = const FakeViewPadding(top: 96, bottom: 68);
+    tester.view.viewPadding = const FakeViewPadding(top: 96, bottom: 68);
+    addTearDown(tester.view.reset);
+  }
+
+  Future<void> shot(WidgetTester tester, String name) async {
+    await settle(tester);
+    await expectLater(
+      find.byType(MaterialApp),
+      matchesGoldenFile('shots/$name.png'),
+    );
+  }
+
+  for (final b in [Brightness.light, Brightness.dark]) {
+    final t = b == Brightness.dark ? 'dark' : 'light';
+
+    testWidgets('onboarding $t', (tester) async {
+      phone(tester);
+      await tester.pumpWidget(host(const _AppHome(), b));
+      await shot(tester, '01_onboarding_$t');
+    });
+
+    testWidgets('travel empty $t', (tester) async {
+      phone(tester);
+      await tester.runAsync(() => repository.setName('Len'));
+      await tester.pumpWidget(host(const _AppHome(), b));
+      await shot(tester, '02_travel_empty_$t');
+    });
+
+    testWidgets('filled flows $t', (tester) async {
+      phone(tester);
+      await seed(tester);
+      await tester.pumpWidget(host(const _AppHome(), b));
+      await shot(tester, '03_travel_filled_$t');
+
+      final pins = find.byType(WarangPhotoPin);
+      if (pins.evaluate().isNotEmpty) {
+        await tester.tap(pins.first, warnIfMissed: false);
+        await shot(tester, '04_moment_open_$t');
+        await tester.tapAt(const Offset(200, 80));
+        await settle(tester);
+      }
+
+      await tester.tap(find.byTooltip('Menu'));
+      await shot(tester, '05_drawer_$t');
+      await tester.tap(find.text('Search'));
+      await settle(tester);
+      await tester.enterText(find.byType(TextField), 'beach');
+      await shot(tester, '06_search_$t');
+      await tester.tap(find.byType(ListTile).first);
+      await shot(tester, '04_moment_open_$t');
+      await tester.tapAt(const Offset(200, 120));
+      await settle(tester);
+
+      await tester.tap(find.text('Home'));
+      await shot(tester, '07_home_$t');
+      await tester.drag(find.byType(ListView).last, const Offset(0, -600));
+      await shot(tester, '08_home_scrolled_$t');
+      await tester.drag(find.byType(ListView).last, const Offset(0, 600));
+      await settle(tester);
+      await tester.tap(find.text('Everyday'));
+      await shot(tester, '09_trip_detail_$t');
+      await tester.pageBack();
+      await settle(tester);
+
+      await tester.tap(find.text('News'));
+      await shot(tester, '10_news_$t');
+
+      await tester.tap(find.text('Travel Mode'));
+      await settle(tester);
+      await tester.tap(find.byTooltip('Menu'));
+      await settle(tester);
+      await tester.tap(find.text('Settings'));
+      await shot(tester, '11_settings_$t');
+    });
+
+    testWidgets('capture $t', (tester) async {
+      phone(tester);
+      late File f;
+      await tester.runAsync(() async {
+        f = File('${docs.path}\\shot.jpg')..writeAsBytesSync(makePhoto(2));
+      });
+      await tester.pumpWidget(
+        host(
+          CaptureScreen(initialPhoto: XFile(f.path), fetchLocation: false),
+          b,
+        ),
+      );
+      await shot(tester, '12_capture_$t');
+    });
+  }
+}
+
+class _AppHome extends StatelessWidget {
+  const _AppHome();
+  @override
+  Widget build(BuildContext context) => const _Inner();
+}
+
+class _Inner extends ConsumerWidget {
+  const _Inner();
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Reuse WarangApp's home switch without its own MaterialApp.
+    final repository = ref.watch(repositoryProvider);
+    return AnimatedBuilder(
+      animation: repository,
+      builder: (context, _) => repository.profile.name.isEmpty
+          ? const OnboardingScreen()
+          : const AppShell(),
+    );
+  }
+}
