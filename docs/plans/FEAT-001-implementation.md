@@ -75,36 +75,36 @@ Continue automatically to Phase 2.
 ## Phase 2: Shell navigation and shared app state
 
 Requirements: REQ-004, REQ-005, REQ-006, REQ-022; findings F-01, F-07, F-16, F-20
-State: Not started
+State: Complete
 
 ### Tasks
 
-- [ ] Add `photoStoreProvider` and `mapTileStoreProvider`, overridden in `main.dart` with the instances already built there.
+- [x] Add `photoStoreProvider` and `mapTileStoreProvider`, overridden in `main.dart` with the instances already built there.
   Replace the direct `PhotoStore()` and `MapTileStore()` constructions in widgets with `ref.watch` (tests override them).
-- [ ] Add `shellTabProvider` and `selectedMomentProvider` (Riverpod `Notifier`s).
+- [x] Add `shellTabProvider` and `selectedMomentProvider` (Riverpod `Notifier`s).
   `AppShell` reads the tab from `shellTabProvider`, and Travel Mode reads the selection from `selectedMomentProvider`.
   Add one `showMomentOnMap(ref, moment)` helper that sets the tab to 0, selects the moment, and asks the map to move.
-- [ ] Move `WarangDrawer` to `AppShell`'s `Scaffold.drawer`, with width 82%, `drawerScrimColor` set to the scrim token, and `drawerEdgeDragWidth: 24`; enable edge drag only on Travel Mode.
+- [x] Move `WarangDrawer` to `AppShell`'s `Scaffold.drawer`, with width 82%, `drawerScrimColor` set to the scrim token, and `drawerEdgeDragWidth: 24`; enable edge drag only on Travel Mode.
   Remove the custom `AnimatedPositioned` drawer, its scrim, and its edge detector from Travel Mode.
   The Travel Mode hamburger opens the shell drawer through a callback.
-- [ ] Wrap the shell in `PopScope` with this order: deselect the moment, then return to Travel Mode from Home or News, then allow the pop.
+- [x] Wrap the shell in `PopScope` with this order: deselect the moment, then return to Travel Mode from Home or News, then allow the pop.
   The drawer and dialogs keep their built-in back handling.
-- [ ] Make the drawer's search open from any tab; a selected result calls `showMomentOnMap`.
-- [ ] Add a search icon button to the Home header (48 x 48, tooltip "Search moments").
-- [ ] Drawer counts: Trips excludes Everyday.
+- [x] Make the drawer's search open from any tab; a selected result calls `showMomentOnMap`.
+- [x] Add a search icon button to the Home header (48 x 48, tooltip "Search moments").
+- [x] Drawer counts: Trips excludes Everyday.
 
 ### Verification
 
-- [ ] New `test/shell_navigation_test.dart` covers: back with a moment selected deselects it; back on Home or News selects Travel Mode; back on Travel Mode with nothing open allows the pop; with the drawer open, tapping the Home nav item does not change the tab; the closed drawer has no semantics in the tree; the search result opens on Travel Mode from Home.
-- [ ] Update `test/map_navigation_test.dart` and `test/unavailable_actions_test.dart` for the drawer host change without weakening their assertions.
-- [ ] Gates 1-5 pass; the drawer render covers the bottom navigation in both themes.
+- [x] New `test/shell_navigation_test.dart` covers: back with a moment selected deselects it; back on Home or News selects Travel Mode; back on Travel Mode with nothing open allows the pop; with the drawer open, tapping the Home nav item does not change the tab; the closed drawer has no semantics in the tree; the search result opens on Travel Mode from Home.
+- [x] Update `test/map_navigation_test.dart` and `test/unavailable_actions_test.dart` for the drawer host change without weakening their assertions.
+- [x] Gates 1-5 pass; the drawer render covers the bottom navigation in both themes.
 
 ### Review and checkpoint
 
-- [ ] Review correctness, scope, dependencies, and unrelated changes (Ponytail review).
-- [ ] Update plan, evidence, and `HANDOFF.md`.
-- [ ] Stage only reviewed phase paths and verify the staged diff.
-- [ ] Commit and verify that Git reports success.
+- [x] Review correctness, scope, dependencies, and unrelated changes (Ponytail review).
+- [x] Update plan, evidence, and `HANDOFF.md`.
+- [x] Stage only reviewed phase paths and verify the staged diff.
+- [x] Commit and verify that Git reports success.
 
 Checkpoint message: `docs(plan): FEAT-001 phase 2 - shell navigation`
 Continue automatically to Phase 3.
