@@ -23,6 +23,15 @@ abstract final class WarangColors {
   static const darkMapLabel = Color(0xFF767C6D);
   static const lightMapLabelWater = Color(0xFF93A2A4);
   static const darkMapLabelWater = Color(0xFF5D6A6B);
+
+  /// Dimmer behind modal cards and the drawer. Dark uses black, never the
+  /// light ink, so the map underneath always darkens.
+  static Color scrim(Brightness brightness) => brightness == Brightness.dark
+      ? Colors.black.withValues(alpha: .55)
+      : lightInk.withValues(alpha: .42);
+
+  static Color accentText(Brightness brightness) =>
+      brightness == Brightness.dark ? darkAccentText : lightAccentText;
 }
 
 abstract final class WarangGlass {
@@ -111,6 +120,8 @@ class MapPalette extends ThemeExtension<MapPalette> {
   }
 }
 
+const _body = 'Public Sans';
+
 ThemeData buildWarangTheme(Brightness brightness) {
   final dark = brightness == Brightness.dark;
   final ink = dark ? WarangColors.darkInk : WarangColors.lightInk;
@@ -129,12 +140,13 @@ ThemeData buildWarangTheme(Brightness brightness) {
     surface: surface,
     onSurface: ink,
     outline: line,
+    outlineVariant: line,
   );
   final base = ThemeData(
     brightness: brightness,
     colorScheme: scheme,
     scaffoldBackgroundColor: ground,
-    fontFamily: 'Public Sans',
+    fontFamily: _body,
     useMaterial3: true,
   );
   return base.copyWith(
@@ -172,16 +184,37 @@ ThemeData buildWarangTheme(Brightness brightness) {
         color: ink,
         letterSpacing: -0.525,
       ),
-      bodyLarge: TextStyle(fontSize: 17, height: 1.45, color: ink),
-      bodyMedium: TextStyle(fontSize: 15.5, height: 1.45, color: soft),
-      bodySmall: TextStyle(fontSize: 12.5, height: 1.6, color: soft),
+      bodyLarge: TextStyle(
+        fontFamily: _body,
+        fontSize: 17,
+        height: 1.45,
+        color: ink,
+      ),
+      bodyMedium: TextStyle(
+        fontFamily: _body,
+        fontSize: 15.5,
+        height: 1.45,
+        color: soft,
+      ),
+      bodySmall: TextStyle(
+        fontFamily: _body,
+        fontSize: 12.5,
+        height: 1.6,
+        color: soft,
+      ),
       labelLarge: TextStyle(
+        fontFamily: _body,
         fontSize: 16.5,
         fontWeight: FontWeight.w600,
         color: ink,
       ),
-      labelMedium: TextStyle(fontSize: 13.5, color: soft),
-      labelSmall: TextStyle(fontSize: 10, color: soft),
+      labelMedium: TextStyle(fontFamily: _body, fontSize: 13.5, color: soft),
+      labelSmall: TextStyle(fontFamily: _body, fontSize: 10, color: soft),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: WarangColors.accentText(brightness),
+      ),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
