@@ -220,6 +220,17 @@ ThemeData buildWarangTheme(Brightness brightness) {
       filled: true,
       fillColor: surface,
       hintStyle: TextStyle(color: soft),
+      // Amber fails contrast as text on light surfaces, so a focused label
+      // uses the darker accent text token instead of the primary colour.
+      floatingLabelStyle: WidgetStateTextStyle.resolveWith(
+        (states) => TextStyle(
+          color: states.contains(WidgetState.error)
+              ? scheme.error
+              : states.contains(WidgetState.focused)
+              ? WarangColors.accentText(brightness)
+              : soft,
+        ),
+      ),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: BorderSide(color: line),

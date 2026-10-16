@@ -57,6 +57,18 @@ void main() {
         }
       });
 
+      test('focused field labels use readable accent text', () {
+        final style = theme.inputDecorationTheme.floatingLabelStyle;
+        final focused = WidgetStateProperty.resolveAs<TextStyle?>(style, {
+          WidgetState.focused,
+        });
+        expect(focused?.color, WarangColors.accentText(brightness));
+        expect(
+          _contrast(focused!.color!, theme.colorScheme.surface),
+          greaterThanOrEqualTo(4.5),
+        );
+      });
+
       test('dividers use the line token', () {
         expect(theme.colorScheme.outlineVariant, theme.colorScheme.outline);
       });
