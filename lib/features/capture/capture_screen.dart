@@ -4,16 +4,19 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 import '../../app/app.dart';
+import '../../app/device_providers.dart';
 import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
-import '../../data/files/photo_store.dart';
+import '../../core/formatting.dart';
 
+enum _LocationState { locating, located, unavailable }
+
+/// Reviews a fresh photo and saves it as a moment. Pops with the saved
+/// [Moment], or null when the capture is cancelled.
 class CaptureScreen extends ConsumerStatefulWidget {
   const CaptureScreen({
     super.key,
@@ -29,10 +32,10 @@ class CaptureScreen extends ConsumerStatefulWidget {
 
 class _CaptureScreenState extends ConsumerState<CaptureScreen> {
   final _captionController = TextEditingController();
-  final _picker = ImagePicker();
-  final _photoStore = PhotoStore();
+  final _capturedAt = DateTime.now();
   XFile? _photo;
-  Position? _position;
+  ({double latitude, double longitude})? _position;
+  var _location = _LocationState.unavailable;
   bool _saving = false;
 
   @override
@@ -44,38 +47,31 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
       _openCamera();
     }
     if (widget.fetchLocation) {
+      _location = _LocationState.locating;
       _getPosition();
     }
   }
 
   Future<void> _openCamera() async {
-    final photo = await _picker.pickImage(
-      source: ImageSource.camera,
-      maxWidth: 2000,
-      imageQuality: 85,
-    );
+    final photo = await ref.read(cameraPickerProvider)();
     if (!mounted) return;
     if (photo == null) {
-      Navigator.of(context).pop(false);
+      // A cancelled retake keeps the photo already on screen.
+      if (_photo == null) Navigator.of(context).pop();
       return;
     }
     setState(() => _photo = photo);
   }
 
   Future<void> _getPosition() async {
-    try {
-      final permission = await Permission.location.request();
-      if (!permission.isGranted) return;
-      _position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.medium,
-          timeLimit: Duration(seconds: 3),
-        ),
-      );
-    } catch (_) {
-      // Location is optional; a capture must never wait for it or fail without it.
-    }
-    if (mounted) setState(() {});
+    final position = await ref.read(locationReaderProvider)();
+    if (!mounted) return;
+    setState(() {
+      _position = position;
+      _location = position == null
+          ? _LocationState.unavailable
+          : _LocationState.located;
+    });
   }
 
   Future<void> _save() async {
@@ -83,30 +79,39 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
     if (photo == null || _saving) return;
     setState(() => _saving = true);
     try {
-      final stored = await _photoStore.importPhotoAsset(File(photo.path));
       final caption = _captionController.text.trim();
-      await ref
+      final moment = await ref
           .read(repositoryProvider)
-          .addMoment(
+          .captureMoment(
+            photo: File(photo.path),
             caption: caption.isEmpty ? null : caption,
             latitude: _position?.latitude,
             longitude: _position?.longitude,
-            relPath: stored.relPath,
-            thumbRelPath: stored.thumbRelPath,
-            width: stored.width,
-            height: stored.height,
-            bytes: stored.bytes,
-            capturedAt: DateTime.now(),
+            capturedAt: _capturedAt,
           );
-      if (mounted) Navigator.of(context).pop(true);
-    } catch (e) {
-      if (mounted) {
-        setState(() => _saving = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save photograph: $e')),
-        );
-      }
+      if (mounted) Navigator.of(context).pop(moment);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _saving = false);
+      showWarangSnackBar(
+        context,
+        "Couldn't save this photo. It's still here - try again.",
+        aboveNavigation: false,
+        duration: const Duration(seconds: 8),
+        action: SnackBarAction(label: 'Retry', onPressed: _save),
+      );
     }
+  }
+
+  String get _locationLine {
+    final time = DateFormat('h:mm a').format(_capturedAt);
+    final position = _position;
+    return switch (_location) {
+      _LocationState.locating => 'LOCATING… · $time',
+      _LocationState.located =>
+        '${formatCoordinates(position!.latitude, position.longitude)} · $time',
+      _LocationState.unavailable => 'NO LOCATION YET · $time',
+    };
   }
 
   @override
@@ -151,7 +156,18 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
                                 theme.extension<MapPalette>()?.landAlt ??
                                 theme.colorScheme.surfaceContainerHighest,
                           )
-                        : Image.file(File(_photo!.path), fit: BoxFit.cover),
+                        : Image.file(
+                            File(_photo!.path),
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, _, _) => ColoredBox(
+                              color:
+                                  theme.extension<MapPalette>()?.landAlt ??
+                                  theme.colorScheme.surfaceContainerHighest,
+                              child: const Center(
+                                child: Icon(Icons.photo_outlined, size: 36),
+                              ),
+                            ),
+                          ),
                     Positioned(
                       top: 0,
                       left: 0,
@@ -227,7 +243,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
                         button: true,
                         label: 'Cancel capture',
                         child: InkWell(
-                          onTap: () => Navigator.of(context).maybePop(false),
+                          onTap: () => Navigator.of(context).maybePop(),
                           borderRadius: BorderRadius.circular(24),
                           child: Container(
                             width: 48,
@@ -256,7 +272,14 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    WarangMetadata(DateFormat('h:mm a').format(DateTime.now())),
+                    Semantics(
+                      liveRegion: true,
+                      child: WarangMetadata(_locationLine),
+                    ),
+                    const SizedBox(height: 6),
+                    WarangMetadata(
+                      'SAVING TO ${ref.watch(repositoryProvider).tripForCapture(_capturedAt).title}',
+                    ),
                     const SizedBox(height: 14),
                     TextField(
                       controller: _captionController,
