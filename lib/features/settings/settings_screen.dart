@@ -86,6 +86,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     value: _formatBytes(snapshot.data ?? 0),
                   ),
                 ),
+                const WarangDivider(),
                 const WarangSettingsRow(label: 'Clean up', value: '0 B'),
               ],
             ),
