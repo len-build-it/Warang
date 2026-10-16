@@ -9,6 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import '../../app/app.dart';
 import '../../app/app_state.dart';
+import '../../app/device_providers.dart';
 import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
 import '../../core/models.dart';
@@ -31,19 +32,38 @@ class _TravelModeScreenState extends ConsumerState<TravelModeScreen> {
   final _mapKey = GlobalKey<WarangMapSurfaceState>();
 
   Future<void> _capture() async {
-    final camera = await Permission.camera.request();
-    if (!camera.isGranted && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Camera access is needed to save a photograph.'),
+    final camera = await ref.read(cameraPermissionProvider)();
+    if (!mounted) return;
+    if (camera.isPermanentlyDenied) {
+      showWarangSnackBar(
+        context,
+        'Camera access is off for Warang.',
+        duration: const Duration(seconds: 8),
+        action: const SnackBarAction(
+          label: 'Open settings',
+          onPressed: openAppSettings,
         ),
       );
       return;
     }
-    if (!mounted) return;
-    await Navigator.of(
+    if (!camera.isGranted) {
+      showWarangSnackBar(
+        context,
+        'Camera access is needed to save a photograph.',
+      );
+      return;
+    }
+    final moment = await Navigator.of(
       context,
-    ).push<bool>(MaterialPageRoute(builder: (_) => const CaptureScreen()));
+    ).push<Moment>(MaterialPageRoute(builder: (_) => const CaptureScreen()));
+    if (moment == null || !mounted) return;
+    _focus(moment);
+    final repository = ref.read(repositoryProvider);
+    final trip = repository.trips.where((trip) => trip.id == moment.tripId);
+    showWarangSnackBar(
+      context,
+      'Saved to ${trip.isEmpty ? 'Everyday' : trip.first.title}',
+    );
   }
 
   void _focus(Moment moment) {

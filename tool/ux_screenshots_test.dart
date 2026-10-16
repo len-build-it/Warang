@@ -18,6 +18,7 @@ import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart' as sqflite;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:warang/app/app.dart';
+import 'package:warang/app/device_providers.dart';
 import 'package:warang/app/theme/tokens.dart';
 import 'package:warang/data/db/database.dart';
 import 'package:warang/data/files/photo_store.dart';
@@ -161,7 +162,12 @@ void main() {
   }
 
   Widget host(Widget home, Brightness brightness) => ProviderScope(
-    overrides: [repositoryProvider.overrideWithValue(repository)],
+    overrides: [
+      repositoryProvider.overrideWithValue(repository),
+      locationReaderProvider.overrideWithValue(
+        () async => (latitude: 11.9686, longitude: 121.918),
+      ),
+    ],
     child: MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: buildWarangTheme(Brightness.light),
@@ -252,10 +258,7 @@ void main() {
           ..writeAsBytesSync(_photo(2));
       });
       await tester.pumpWidget(
-        host(
-          CaptureScreen(initialPhoto: XFile(file.path), fetchLocation: false),
-          brightness,
-        ),
+        host(CaptureScreen(initialPhoto: XFile(file.path)), brightness),
       );
       await shot(tester, '12_capture_$theme');
     });
