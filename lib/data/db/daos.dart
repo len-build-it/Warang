@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+import '../../core/trip_rules.dart';
 import 'database.dart';
 import 'tables.dart';
 
@@ -66,25 +67,29 @@ class TripsDao extends DatabaseAccessor<WarangDatabase> with _$TripsDaoMixin {
             ..limit(1))
           .getSingleOrNull();
 
-  Future<TripRow?> findActiveFor(DateTime date) =>
-      (select(trips)
-            ..where(
-              (trip) =>
-                  trip.isEveryday.equals(false) &
-                  trip.deletedAt.isNull() &
-                  trip.startDate.isNotNull() &
-                  trip.endDate.isNotNull() &
-                  trip.startDate.isSmallerOrEqualValue(date) &
-                  trip.endDate.isBiggerOrEqualValue(date),
-            )
-            ..orderBy([
-              (trip) => OrderingTerm(
-                expression: trip.updatedAt,
-                mode: OrderingMode.desc,
-              ),
-            ])
-            ..limit(1))
-          .getSingleOrNull();
+  /// The dated trip a capture at [date] belongs to; see [coversDay].
+  Future<TripRow?> findActiveFor(DateTime date) async {
+    final dated =
+        await (select(trips)
+              ..where(
+                (trip) =>
+                    trip.isEveryday.equals(false) &
+                    trip.deletedAt.isNull() &
+                    trip.startDate.isNotNull() &
+                    trip.endDate.isNotNull(),
+              )
+              ..orderBy([
+                (trip) => OrderingTerm(
+                  expression: trip.updatedAt,
+                  mode: OrderingMode.desc,
+                ),
+              ]))
+            .get();
+    for (final trip in dated) {
+      if (coversDay(trip.startDate!, trip.endDate!, date)) return trip;
+    }
+    return null;
+  }
 
   Future<int> insertTrip(TripsCompanion entry) => into(trips).insert(entry);
 
