@@ -154,7 +154,12 @@ class _HomeTabContentState extends State<_HomeTabContent> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 22, 20, 108),
+          padding: EdgeInsets.fromLTRB(
+            20,
+            22,
+            20,
+            WarangLayout.navigationHeight(context) + 24,
+          ),
           children: [
             Text('Home', style: Theme.of(context).textTheme.displaySmall),
             const SizedBox(height: 7),
