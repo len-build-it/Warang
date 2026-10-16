@@ -99,7 +99,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 WarangPrimaryButton(label: 'Start', onPressed: start),
                 const SizedBox(height: 26),
                 Text(
-                  'Warang asks for your camera to take photos and your location to place them on the map. Your name, photos and pins are stored on this phone. Nothing leaves it.',
+                  'Warang asks for your camera to take photos and your location to place them on the map. Your name, photos and pins stay on this phone. Map tiles are downloaded from OpenStreetMap.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(
                       context,

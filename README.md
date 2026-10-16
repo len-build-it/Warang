@@ -29,16 +29,21 @@ lock never blocks saving the photograph.
 **A map, not a grid.** The home screen is the map. Pins are your photos. Repeat visits to the same spot cluster into one pin with a count, so a favourite café doesn't bury a whole city.
 
 **Moments over the map.** Tapping a pin opens its photograph, caption, place,
-and date over the live map. Moments can be deleted from this card.
+and date over the live map.
+Edit adds or changes the caption, a place name, and the trip, and a photo taken without GPS can be pinned by hand.
+Delete can be undone for a few seconds.
+
+**Trips.** Give a trip dates and every photo taken on those days goes into it; the capture screen says which trip a photo will join.
+Moments can also be moved into a trip by hand, and deleting a trip moves its moments back to Everyday.
 
 **Home.** The Home tab lists Everyday and user-created trips, with local
-moments, places, and capture-trend summaries.
+moment, place, and day counts and capture-trend charts.
 
 **News.** The News tab contains a small bundled set of offline travel notes.
 
 **Search.** Full-text search across captions and places, offline.
 
-Backup, restore, moment editing/sharing, trip organization, and `.travelbook`
+Backup, restore, sharing, and `.travelbook`
 import/export are tracked in
 [`docs/REMEDIATION_IMPLEMENTATION_PLAN.md`](docs/REMEDIATION_IMPLEMENTATION_PLAN.md)
 and are not exposed as finished features yet.
@@ -119,9 +124,8 @@ test/             Widget and data-layer tests
 
 Warang makes no account, no sync, no telemetry, and no geocoding calls. Photos
 and locations live in the app's own storage and are never uploaded by Warang.
-OpenStreetMap tiles are the only network fetch and are cached for revisiting
-areas offline. Android backup hardening is still a release blocker tracked in
-the remediation plan.
+OpenStreetMap tiles are the only network fetch, which means OpenStreetMap's servers see which map areas you view; tiles are cached for revisiting
+areas offline. Android cloud backup and device transfer are disabled for the app's data.
 
 ## License
 
