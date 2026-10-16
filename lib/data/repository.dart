@@ -185,6 +185,7 @@ class WarangRepository extends ChangeNotifier {
     DateTime? start,
     DateTime? end,
   ) async {
+    _checkTripFields(title, start, end);
     final now = DateTime.now();
     await database.tripsDao.insertTrip(
       TripsCompanion.insert(
@@ -198,6 +199,66 @@ class WarangRepository extends ChangeNotifier {
       ),
     );
     await _refreshAll();
+  }
+
+  /// Changes a user trip's details. Everyday cannot be edited.
+  Future<void> updateTrip(
+    String id, {
+    required String title,
+    String? place,
+    DateTime? start,
+    DateTime? end,
+  }) async {
+    _userTrip(id);
+    _checkTripFields(title, start, end);
+    final cleanPlace = place?.trim();
+    await database.tripsDao.updateTrip(
+      id,
+      TripsCompanion(
+        title: Value(title.trim()),
+        place: Value(
+          cleanPlace == null || cleanPlace.isEmpty ? null : cleanPlace,
+        ),
+        startDate: Value(start),
+        endDate: Value(end),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+    await _refreshAll();
+  }
+
+  /// Soft-deletes a user trip and moves its moments to Everyday, so no
+  /// photograph is lost with the trip.
+  Future<void> deleteTrip(String id) async {
+    _userTrip(id);
+    final now = DateTime.now();
+    final everydayId = everyday.id;
+    await database.transaction(() async {
+      await database.momentsDao.reassignTrip(id, everydayId, now);
+      await database.tripsDao.softDelete(id, now);
+    });
+    await _refreshAll();
+  }
+
+  Trip _userTrip(String id) {
+    final trip = _trips.where((trip) => trip.id == id).firstOrNull;
+    if (trip == null) throw ArgumentError.value(id, 'id', 'Unknown trip');
+    if (trip.isEveryday) {
+      throw ArgumentError.value(id, 'id', 'Everyday cannot be changed');
+    }
+    return trip;
+  }
+
+  void _checkTripFields(String title, DateTime? start, DateTime? end) {
+    if (title.trim().isEmpty) {
+      throw ArgumentError.value(title, 'title', 'Trip name is required');
+    }
+    if ((start == null) != (end == null)) {
+      throw ArgumentError('A trip needs both dates or neither');
+    }
+    if (start != null && end != null && end.isBefore(start)) {
+      throw ArgumentError('A trip cannot end before it starts');
+    }
   }
 
   Future<void> softDeleteMoment(String id) async {

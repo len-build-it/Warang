@@ -142,6 +142,13 @@ class MomentsDao extends DatabaseAccessor<WarangDatabase>
   Future<int> insertMoment(MomentsCompanion entry) =>
       into(moments).insert(entry);
 
+  /// Moves every live moment of trip [from] into trip [to].
+  Future<int> reassignTrip(String from, String to, DateTime now) =>
+      (update(moments)..where(
+            (moment) => moment.tripId.equals(from) & moment.deletedAt.isNull(),
+          ))
+          .write(MomentsCompanion(tripId: Value(to), updatedAt: Value(now)));
+
   Future<int> updateMoment(String id, MomentsCompanion entry) =>
       (update(moments)..where((moment) => moment.id.equals(id))).write(entry);
 

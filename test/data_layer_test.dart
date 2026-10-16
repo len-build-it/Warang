@@ -209,6 +209,77 @@ void main() {
     expect(await repository.searchAsync('Keep'), hasLength(1));
   });
 
+  test('trip fields are validated', () async {
+    await expectLater(
+      repository.addTrip(' ', null, null, null),
+      throwsArgumentError,
+    );
+    await expectLater(
+      repository.addTrip(
+        'Backwards',
+        null,
+        DateTime(2026, 3, 9),
+        DateTime(2026, 3, 1),
+      ),
+      throwsArgumentError,
+    );
+    await expectLater(
+      repository.addTrip('Half', null, DateTime(2026, 3, 1), null),
+      throwsArgumentError,
+    );
+  });
+
+  test('updateTrip changes details and Everyday stays fixed', () async {
+    final trip = await _insertTrip(repository, 'Draft');
+    await repository.updateTrip(
+      trip.id,
+      title: 'Iloilo food crawl',
+      place: ' Iloilo ',
+      start: DateTime(2026, 5, 1),
+      end: DateTime(2026, 5, 3),
+    );
+    final saved = repository.trips.firstWhere((item) => item.id == trip.id);
+    expect(saved.title, 'Iloilo food crawl');
+    expect(saved.place, 'Iloilo');
+    expect(saved.endDate, DateTime(2026, 5, 3));
+    expect(
+      (await repository.addMoment(capturedAt: DateTime(2026, 5, 3, 20))).tripId,
+      trip.id,
+    );
+
+    await expectLater(
+      repository.updateTrip(repository.everyday.id, title: 'Renamed'),
+      throwsArgumentError,
+    );
+    await expectLater(
+      repository.deleteTrip(repository.everyday.id),
+      throwsArgumentError,
+    );
+  });
+
+  test('deleteTrip moves its moments to Everyday', () async {
+    await repository.addTrip(
+      'Guimaras',
+      null,
+      DateTime(2026, 4, 1),
+      DateTime(2026, 4, 2),
+    );
+    final trip = repository.trips.firstWhere(
+      (item) => item.title == 'Guimaras',
+    );
+    final moment = await repository.addMoment(
+      caption: 'Mango farm',
+      capturedAt: DateTime(2026, 4, 1, 9),
+    );
+    expect(moment.tripId, trip.id);
+
+    await repository.deleteTrip(trip.id);
+
+    expect(repository.trips.where((item) => item.id == trip.id), isEmpty);
+    expect(repository.moments.single.tripId, repository.everyday.id);
+    expect(repository.moments.single.caption, 'Mango farm');
+  });
+
   test('UUID v4 identifiers are unique across ten thousand values', () {
     final ids = {for (var index = 0; index < 10000; index++) newId()};
     expect(ids, hasLength(10000));
