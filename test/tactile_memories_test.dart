@@ -101,10 +101,10 @@ void main() {
       // Verify caption
       expect(find.text('Golden hour by the shore.'), findsOneWidget);
 
-      // Verify actions: Delete present, Share/Edit absent
+      // Verify actions: Edit and Delete present, Share absent
       expect(find.text('Delete'), findsOneWidget);
       expect(find.text('Share'), findsNothing);
-      expect(find.text('Edit'), findsNothing);
+      expect(find.text('Edit'), findsOneWidget);
     },
   );
 

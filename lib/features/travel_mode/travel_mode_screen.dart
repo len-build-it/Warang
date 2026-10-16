@@ -12,11 +12,13 @@ import '../../app/app_state.dart';
 import '../../app/device_providers.dart';
 import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
+import '../../core/formatting.dart';
 import '../../core/models.dart';
 import '../../data/files/photo_store.dart';
 import '../../data/repository.dart';
 import '../capture/capture_screen.dart';
 import '../map/warang_map.dart';
+import 'moment_edit_sheet.dart';
 
 class TravelModeScreen extends ConsumerStatefulWidget {
   const TravelModeScreen({super.key, this.onOpenMenu});
@@ -30,6 +32,9 @@ class TravelModeScreen extends ConsumerStatefulWidget {
 
 class _TravelModeScreenState extends ConsumerState<TravelModeScreen> {
   final _mapKey = GlobalKey<WarangMapSurfaceState>();
+
+  /// The moment whose pin is being placed by hand, if any.
+  String? _placingId;
 
   Future<void> _capture() async {
     final camera = await ref.read(cameraPermissionProvider)();
@@ -66,6 +71,54 @@ class _TravelModeScreenState extends ConsumerState<TravelModeScreen> {
     );
   }
 
+  Future<void> _delete(Moment moment) async {
+    final repository = ref.read(repositoryProvider);
+    final selection = ref.read(selectedMomentProvider.notifier);
+    await repository.softDeleteMoment(moment.id);
+    selection.clear();
+    if (!mounted) return;
+    showWarangSnackBar(
+      context,
+      'Moment deleted',
+      duration: const Duration(seconds: 6),
+      action: SnackBarAction(
+        label: 'Undo',
+        onPressed: () async {
+          await repository.restoreMoment(moment.id);
+          final restored = momentById(repository, moment.id);
+          if (restored != null) selection.select(restored);
+        },
+      ),
+    );
+  }
+
+  void _startPlacement(Moment moment) {
+    ref.read(selectedMomentProvider.notifier).clear();
+    setState(() => _placingId = moment.id);
+    _focus(moment);
+  }
+
+  void _endPlacement() {
+    final repository = ref.read(repositoryProvider);
+    final moment = _placingId == null
+        ? null
+        : momentById(repository, _placingId!);
+    setState(() => _placingId = null);
+    if (moment != null) {
+      ref.read(selectedMomentProvider.notifier).select(moment);
+    }
+  }
+
+  Future<void> _confirmPlacement() async {
+    final id = _placingId;
+    final center = _mapKey.currentState?.center;
+    if (id == null || center == null) return;
+    await ref
+        .read(repositoryProvider)
+        .setMomentLocation(id, center.latitude, center.longitude);
+    if (mounted) _endPlacement();
+  }
+
   void _focus(Moment moment) {
     if (moment.latitude == null || moment.longitude == null) return;
     _mapKey.currentState?.moveToCoordinate(moment.latitude!, moment.longitude!);
@@ -98,7 +151,7 @@ class _TravelModeScreenState extends ConsumerState<TravelModeScreen> {
     final photoStore = ref.watch(photoStoreProvider);
     final navHeight = WarangLayout.navigationHeight(context);
     final topOffset = math.max(MediaQuery.paddingOf(context).top, 12.0) + 8.0;
-    return AnnotatedRegion<SystemUiOverlayStyle>(
+    final region = AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: selected == null
@@ -142,7 +195,18 @@ class _TravelModeScreenState extends ConsumerState<TravelModeScreen> {
                 left: 16,
                 child: _HomeMenuButton(onPressed: widget.onOpenMenu!),
               ),
-            if (selected == null) ...[
+            if (_placingId != null) ...[
+              const IgnorePointer(child: Center(child: _PlacementCrosshair())),
+              Positioned(
+                left: 12,
+                right: 12,
+                bottom: navHeight + 8,
+                child: _PlacementBar(
+                  onCancel: _endPlacement,
+                  onConfirm: _confirmPlacement,
+                ),
+              ),
+            ] else if (selected == null) ...[
               if (moments.isEmpty)
                 Positioned(
                   left: 0,
@@ -218,6 +282,8 @@ class _TravelModeScreenState extends ConsumerState<TravelModeScreen> {
                       repository: repository,
                       photoStore: photoStore,
                       onClose: selectionNotifier.clear,
+                      onDelete: () => _delete(selected),
+                      onPlaceOnMap: () => _startPlacement(selected),
                     ),
                   ),
                 ),
@@ -226,6 +292,14 @@ class _TravelModeScreenState extends ConsumerState<TravelModeScreen> {
           ],
         ),
       ),
+    );
+    // Back leaves placement without changing the moment.
+    return PopScope(
+      canPop: _placingId == null,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _placingId != null) _endPlacement();
+      },
+      child: region,
     );
   }
 }
@@ -236,6 +310,63 @@ Moment? momentById(WarangRepository repository, String id) {
     if (moment.id == id) return moment;
   }
   return null;
+}
+
+class _PlacementCrosshair extends StatelessWidget {
+  const _PlacementCrosshair();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    // The pin's tip marks the exact centre of the map.
+    return Transform.translate(
+      offset: const Offset(0, -20),
+      child: Icon(
+        Icons.place,
+        size: 40,
+        color: theme.colorScheme.onSurface,
+        shadows: [Shadow(color: theme.colorScheme.surface, blurRadius: 8)],
+      ),
+    );
+  }
+}
+
+class _PlacementBar extends StatelessWidget {
+  const _PlacementBar({required this.onCancel, required this.onConfirm});
+  final VoidCallback onCancel;
+  final VoidCallback onConfirm;
+
+  @override
+  Widget build(BuildContext context) => WarangGlassSurface(
+    padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'Move the map to the spot',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: WarangQuietButton(label: 'Cancel', onPressed: onCancel),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: WarangPrimaryButton(
+                label: 'Confirm',
+                height: 48,
+                onPressed: onConfirm,
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
 }
 
 class _HomeMenuButton extends StatelessWidget {
@@ -271,11 +402,19 @@ class MomentCard extends StatefulWidget {
     required this.repository,
     required this.photoStore,
     required this.onClose,
+    this.onDelete,
+    this.onPlaceOnMap,
   });
   final Moment moment;
   final WarangRepository repository;
   final PhotoStore photoStore;
   final VoidCallback onClose;
+
+  /// Deletes the moment; when null the card deletes it and closes.
+  final VoidCallback? onDelete;
+
+  /// Starts manual pin placement; when null the location actions are hidden.
+  final VoidCallback? onPlaceOnMap;
 
   @override
   State<MomentCard> createState() => _MomentCardState();
@@ -309,18 +448,38 @@ class _MomentCardState extends State<MomentCard> {
               .catchError((_) => null);
   }
 
+  Future<void> _edit() async {
+    final outcome = await showMomentEditSheet(
+      context,
+      moment: widget.moment,
+      repository: widget.repository,
+    );
+    if (outcome == MomentEditOutcome.placeOnMap) widget.onPlaceOnMap?.call();
+  }
+
+  Future<void> _delete() async {
+    final onDelete = widget.onDelete;
+    if (onDelete != null) return onDelete();
+    await widget.repository.softDeleteMoment(widget.moment.id);
+    widget.onClose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final future = _future;
     final moment = widget.moment;
-    final repository = widget.repository;
-    final onClose = widget.onClose;
     final theme = Theme.of(context);
     final dark = theme.brightness == Brightness.dark;
 
-    final placeText =
-        moment.placeLabel != null && moment.placeLabel!.trim().isNotEmpty
-        ? moment.placeLabel!.trim().toUpperCase()
+    final label = moment.placeLabel?.trim();
+    final hasCoordinates = moment.latitude != null && moment.longitude != null;
+    final canAddLocation = !hasCoordinates && widget.onPlaceOnMap != null;
+    final placeText = label != null && label.isNotEmpty
+        ? label.toUpperCase()
+        : hasCoordinates
+        ? formatCoordinates(moment.latitude!, moment.longitude!)
+        : canAddLocation
+        ? 'ADD LOCATION'
         : 'NO LOCATION';
     final dateText = DateFormat(
       'dd MMM yyyy',
@@ -328,10 +487,50 @@ class _MomentCardState extends State<MomentCard> {
     final timeText = DateFormat(
       'h:mm a',
     ).format(moment.capturedAt).toUpperCase();
+    final placeholder = ColoredBox(
+      color: theme.extension<MapPalette>()!.landAlt,
+      child: const Center(child: Icon(Icons.photo_outlined, size: 36)),
+    );
+
+    final meta = Container(
+      constraints: BoxConstraints(minHeight: canAddLocation ? 48 : 0),
+      alignment: Alignment.centerLeft,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: theme.scaffoldBackgroundColor,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: theme.colorScheme.outline.withValues(alpha: 0.65),
+        ),
+      ),
+      child: RichText(
+        text: TextSpan(
+          style: TextStyle(
+            fontFamily: 'DM Mono',
+            fontSize: 11,
+            letterSpacing: 1.4,
+            color: theme.colorScheme.onSurface.withValues(alpha: .64),
+          ),
+          children: [
+            TextSpan(
+              text: placeText,
+              style: TextStyle(
+                color: canAddLocation
+                    ? (dark ? WarangColors.darkSoft : WarangColors.lightSoft)
+                    : theme.colorScheme.onSurface.withValues(alpha: .88),
+                fontWeight: FontWeight.w500,
+                decoration: canAddLocation ? TextDecoration.underline : null,
+              ),
+            ),
+            TextSpan(text: ' · $dateText · $timeText'),
+          ],
+        ),
+      ),
+    );
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 18),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(18),
@@ -350,17 +549,31 @@ class _MomentCardState extends State<MomentCard> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Center(
-              child: Container(
-                width: 44,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.outline,
-                  borderRadius: BorderRadius.circular(3),
+            // The handle is a real affordance: drag down to dismiss.
+            Semantics(
+              label: 'Close moment',
+              button: true,
+              onTap: widget.onClose,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onVerticalDragEnd: (details) {
+                  if ((details.primaryVelocity ?? 0) > 300) widget.onClose();
+                },
+                child: SizedBox(
+                  height: 33,
+                  child: Center(
+                    child: Container(
+                      width: 44,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.outline,
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
-            const SizedBox(height: 14),
             // Restrained printed photograph frame:
             Container(
               decoration: BoxDecoration(
@@ -391,16 +604,16 @@ class _MomentCardState extends State<MomentCard> {
                   child: FutureBuilder<File?>(
                     future: future,
                     builder: (context, snapshot) {
-                      if (snapshot.hasData &&
-                          snapshot.data != null &&
-                          snapshot.data!.existsSync()) {
-                        return Image.file(snapshot.data!, fit: BoxFit.cover);
+                      final file = snapshot.data;
+                      if (file == null || !file.existsSync()) {
+                        return placeholder;
                       }
-                      return ColoredBox(
-                        color: theme.extension<MapPalette>()!.landAlt,
-                        child: const Center(
-                          child: Icon(Icons.photo_outlined, size: 36),
-                        ),
+                      return Image.file(
+                        file,
+                        fit: BoxFit.cover,
+                        frameBuilder: (context, child, frame, sync) =>
+                            sync || frame != null ? child : placeholder,
+                        errorBuilder: (_, _, _) => placeholder,
                       );
                     },
                   ),
@@ -418,48 +631,35 @@ class _MomentCardState extends State<MomentCard> {
               ),
             ],
             const SizedBox(height: 12),
-            // Readable opaque caption/metadata area with stamp-like stored metadata:
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-              decoration: BoxDecoration(
-                color: theme.scaffoldBackgroundColor,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: theme.colorScheme.outline.withValues(alpha: 0.65),
-                ),
-              ),
-              child: RichText(
-                text: TextSpan(
-                  style: TextStyle(
-                    fontFamily: 'DM Mono',
-                    fontSize: 11,
-                    letterSpacing: 1.4,
-                    color: theme.colorScheme.onSurface.withValues(alpha: .64),
+            if (canAddLocation)
+              Semantics(
+                button: true,
+                label: 'Add location',
+                excludeSemantics: true,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(8),
+                    onTap: widget.onPlaceOnMap,
+                    child: meta,
                   ),
-                  children: [
-                    TextSpan(
-                      text: placeText,
-                      style: TextStyle(
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: moment.placeLabel == null ? .72 : .88,
-                        ),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    TextSpan(text: ' · $dateText · $timeText'),
-                  ],
                 ),
-              ),
-            ),
+              )
+            else
+              meta,
             const SizedBox(height: 18),
             Divider(height: 1, color: theme.colorScheme.outline),
             const SizedBox(height: 16),
-            WarangQuietButton(
-              label: 'Delete',
-              onPressed: () async {
-                await repository.softDeleteMoment(moment.id);
-                onClose();
-              },
+            Row(
+              children: [
+                Expanded(
+                  child: WarangQuietButton(label: 'Edit', onPressed: _edit),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: WarangQuietButton(label: 'Delete', onPressed: _delete),
+                ),
+              ],
             ),
           ],
         ),

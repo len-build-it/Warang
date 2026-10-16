@@ -82,10 +82,10 @@ void main() {
 
     expect(find.text('Delete'), findsOneWidget);
     expect(find.text('Share'), findsNothing);
-    expect(find.text('Edit'), findsNothing);
+    expect(find.text('Edit'), findsOneWidget);
     expect(find.text('Swipe for nearby moments'), findsNothing);
     expect(
-      find.textContaining('NO LOCATION', findRichText: true),
+      find.textContaining('11.550°N · 122.000°E', findRichText: true),
       findsOneWidget,
     );
   });

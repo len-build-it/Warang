@@ -225,6 +225,12 @@ void main() {
       await shot(tester, '06_search_$theme');
       await tester.tap(find.byType(ListTile).first);
       await shot(tester, '04_moment_open_$theme');
+      await tester.tap(find.text('Edit'));
+      await shot(tester, '13_edit_sheet_$theme');
+      await tester.tap(find.text('Move pin on map'));
+      await shot(tester, '14_placement_$theme');
+      await tester.tap(find.text('Cancel'));
+      await settle(tester);
       await tester.tapAt(const Offset(200, 120));
       await settle(tester);
 
