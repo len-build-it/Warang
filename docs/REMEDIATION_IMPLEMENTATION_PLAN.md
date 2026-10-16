@@ -278,14 +278,18 @@ dead end.
 
 ### 4A. Capture resilience
 
-- [ ] Show a plain-language permission explanation before camera/location
+- [x] Show a plain-language permission explanation before camera/location
   requests.
-- [ ] Handle image processing and database failures: reset the saving state,
+- [x] Handle image processing and database failures: reset the saving state,
   preserve the captured image when safe, and show a useful retry message.
-- [ ] Add tests for no-location capture, empty caption, denied permissions,
+- [x] Add tests for no-location capture, empty caption, denied permissions,
   photo-store failure, and database failure.
 
 **Commit:** `fix(capture): recover from save failures` with its tests.
+
+> 2026-10-16 (FEAT-001 Phase 3): done in commits `84fab7d` to `bda0069`.
+> The onboarding privacy note and the map's location dialog are the plain-language explanations; a permanently denied camera now offers Open settings.
+> Tests: `test/capture_flow_test.dart` and `test/data_layer_test.dart`.
 
 ### 4B. Moment actions
 

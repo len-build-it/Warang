@@ -112,41 +112,41 @@ Continue automatically to Phase 3.
 ## Phase 3: Capture loop closure
 
 Requirements: REQ-007, REQ-008, REQ-009, REQ-010; findings F-10, F-11, F-12; remediation 4A
-State: Not started
+State: Complete
 
 ### Tasks
 
-- [ ] Extract the active-trip rule into `lib/core/trip_rules.dart` (`Trip? activeTripFor(DateTime, List<Trip>)`).
+- [x] Extract the active-trip rule into `lib/core/trip_rules.dart` (`Trip? activeTripFor(DateTime, List<Trip>)`).
   The start and end comparisons are inclusive of the whole calendar day.
   Make `TripsDao.findActiveFor` match it (compare against the start of the day after `endDate`).
-- [ ] Add `WarangRepository.captureMoment({required File photo, String? caption, double? latitude, double? longitude, DateTime? capturedAt})`.
+- [x] Add `WarangRepository.captureMoment({required File photo, String? caption, double? latitude, double? longitude, DateTime? capturedAt})`.
   It imports through the injected `PhotoStore`, inserts the moment, deletes the stored files if the insert throws, rethrows, and returns the saved `Moment`.
   `CaptureScreen` calls it instead of orchestrating the two steps itself.
-- [ ] Add a location state to `CaptureScreen` (locating, located, unavailable).
+- [x] Add a location state to `CaptureScreen` (locating, located, unavailable).
   The meta line shows `LOCATING… · 4:42 PM`, `11.969°N · 121.918°E · 4:42 PM`, or `NO LOCATION YET · 4:42 PM`.
   A second line reads `SAVING TO <TRIP TITLE>` (or `SAVING TO EVERYDAY`).
   Save is never blocked by location.
-- [ ] Replace the raw-exception snackbar with "Couldn't save this photo. It's still here - try again." plus a Retry action; keep the photo and reset the saving state.
-- [ ] Introduce a small permission seam (a provider holding a `Future<PermissionStatus> Function()` for the camera) so tests can inject denied and permanently denied states.
+- [x] Replace the raw-exception snackbar with "Couldn't save this photo. It's still here - try again." plus a Retry action; keep the photo and reset the saving state.
+- [x] Introduce a small permission seam (a provider holding a `Future<PermissionStatus> Function()` for the camera) so tests can inject denied and permanently denied states.
   A permanently denied status shows "Camera access is off for Warang." with an "Open settings" action that calls `openAppSettings()`.
-- [ ] `CaptureScreen` pops with the saved `Moment`.
+- [x] `CaptureScreen` pops with the saved `Moment`.
   Travel Mode then moves the map to it when it has coordinates and shows a floating snackbar `Saved to <trip>`, with a bottom margin of the navigation height plus 8.
-- [ ] Put the coordinate formatter in `lib/core/formatting.dart`; it is shared with Phase 4.
+- [x] Put the coordinate formatter in `lib/core/formatting.dart`; it is shared with Phase 4.
 
 ### Verification
 
-- [ ] `test/core_rules_test.dart`: active-trip boundaries (start-day 00:00 is in; end-day 23:59 is in; the next day at 00:00 is out; undated trips never match; the most recently updated trip wins on overlap) and coordinate formatting (hemispheres, rounding).
-- [ ] `test/data_layer_test.dart` additions: `captureMoment` cleans up the stored files when the insert fails; a DAO boundary test matches `activeTripFor`.
-- [ ] `test/capture_flow_test.dart`: covers the three meta-line states, the trip line, the save-failure message with Retry and no exception text, the permanently denied action, and the saved snackbar on Travel Mode.
-- [ ] Gates 1-5 pass; capture renders show the location and trip lines in both themes.
+- [x] `test/core_rules_test.dart`: active-trip boundaries (start-day 00:00 is in; end-day 23:59 is in; the next day at 00:00 is out; undated trips never match; the most recently updated trip wins on overlap) and coordinate formatting (hemispheres, rounding).
+- [x] `test/data_layer_test.dart` additions: `captureMoment` cleans up the stored files when the insert fails; a DAO boundary test matches `activeTripFor`.
+- [x] `test/capture_flow_test.dart`: covers the three meta-line states, the trip line, the save-failure message with Retry and no exception text, the permanently denied action, and the saved snackbar on Travel Mode.
+- [x] Gates 1-5 pass; capture renders show the location and trip lines in both themes.
 
 ### Review and checkpoint
 
-- [ ] Review correctness, scope, dependencies, and unrelated changes (Ponytail review).
-- [ ] Tick remediation 4A with a dated note.
-- [ ] Update plan, evidence, and `HANDOFF.md`.
-- [ ] Stage only reviewed phase paths and verify the staged diff.
-- [ ] Commit and verify that Git reports success.
+- [x] Review correctness, scope, dependencies, and unrelated changes (Ponytail review).
+- [x] Tick remediation 4A with a dated note.
+- [x] Update plan, evidence, and `HANDOFF.md`.
+- [x] Stage only reviewed phase paths and verify the staged diff.
+- [x] Commit and verify that Git reports success.
 
 Checkpoint message: `docs(plan): FEAT-001 phase 3 - capture loop`
 Continue automatically to Phase 4.
