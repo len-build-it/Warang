@@ -211,7 +211,8 @@ void main() {
       // Verify stat cards (subordinated summaries) are present
       expect(find.text('MOMENTS'), findsOneWidget);
       expect(find.text('PLACES'), findsOneWidget);
-      expect(find.text('STREAK'), findsOneWidget);
+      expect(find.text('DAYS'), findsOneWidget);
+      expect(find.text('STREAK'), findsNothing);
 
       // Tap trip card to verify navigation
       await tester.tap(find.text('Cordillera Trek'));

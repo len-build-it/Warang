@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../core/memory_stats.dart';
 import '../../core/models.dart';
 import '../../data/files/photo_store.dart';
 import '../../data/repository.dart';
@@ -28,12 +29,7 @@ class WarangDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final profile = repository.profile;
-    final places = repository.moments
-        .map((moment) => moment.placeLabel?.trim())
-        .whereType<String>()
-        .where((place) => place.isNotEmpty)
-        .toSet()
-        .length;
+    final places = distinctPlaces(repository.moments);
     final trips = repository.trips.where((trip) => !trip.isEveryday).length;
     return Material(
       color: theme.scaffoldBackgroundColor,

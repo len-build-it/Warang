@@ -2,13 +2,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import '../../app/app.dart';
 import '../../app/app_state.dart';
 import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
 import '../../core/formatting.dart';
+import '../../core/memory_stats.dart';
 import '../../core/models.dart';
 import '../../data/files/photo_store.dart';
 import '../../data/repository.dart';
@@ -84,7 +84,11 @@ class _HomeTabContentState extends State<_HomeTabContent> {
     final everyday = widget.repository.everyday;
     final moments = widget.repository.moments;
     final realTrips = trips.where((trip) => !trip.isEveryday).toList();
-    final analytics = _AnalyticsSnapshot.from(moments);
+    final analytics = MemoryStats.from(
+      moments,
+      everydayId: everyday.id,
+      now: DateTime.now(),
+    );
     final everydayMoments = moments
         .where((moment) => moment.tripId == everyday.id)
         .toList(growable: false);
@@ -196,105 +200,15 @@ class _HomeTabContentState extends State<_HomeTabContent> {
   }
 }
 
-class _AnalyticsSnapshot {
-  const _AnalyticsSnapshot({
-    required this.monthlyMoments,
-    required this.cumulativeTrips,
-    required this.monthLabels,
-    required this.places,
-    required this.streak,
-    required this.ready,
-  });
-
-  final List<int> monthlyMoments;
-  final List<int> cumulativeTrips;
-  final List<String> monthLabels;
-  final int places;
-  final int streak;
-  final bool ready;
-
-  factory _AnalyticsSnapshot.from(List<Moment> moments) {
-    final now = DateTime.now();
-    final starts = [
-      for (var index = 5; index >= 0; index--)
-        DateTime(now.year, now.month - index),
-    ];
-    final monthlyMoments = [
-      for (final start in starts)
-        moments
-            .where(
-              (moment) =>
-                  moment.capturedAt.year == start.year &&
-                  moment.capturedAt.month == start.month,
-            )
-            .length,
-    ];
-    final monthLabels = starts
-        .map((date) => DateFormat('MMM').format(date).toUpperCase())
-        .toList(growable: false);
-    final sorted = [...moments]
-      ..sort((a, b) => a.capturedAt.compareTo(b.capturedAt));
-    final seenTrips = <String>{};
-    final cumulativeTrips = <int>[];
-    for (final start in starts) {
-      for (final moment in sorted) {
-        final month = DateTime(moment.capturedAt.year, moment.capturedAt.month);
-        if (!month.isAfter(start)) seenTrips.add(moment.tripId);
-      }
-      cumulativeTrips.add(seenTrips.length);
-    }
-    final places = moments
-        .map((moment) => moment.placeLabel?.trim())
-        .whereType<String>()
-        .where((place) => place.isNotEmpty)
-        .toSet()
-        .length;
-    final days =
-        moments
-            .map(
-              (moment) => DateTime(
-                moment.capturedAt.year,
-                moment.capturedAt.month,
-                moment.capturedAt.day,
-              ),
-            )
-            .toSet()
-            .toList()
-          ..sort((a, b) => b.compareTo(a));
-    var streak = 0;
-    if (days.isNotEmpty) {
-      streak = 1;
-      for (var index = 1; index < days.length; index++) {
-        if (days[index - 1].difference(days[index]).inDays != 1) break;
-        streak++;
-      }
-    }
-    final span = sorted.isEmpty
-        ? Duration.zero
-        : sorted.last.capturedAt.difference(sorted.first.capturedAt);
-    return _AnalyticsSnapshot(
-      monthlyMoments: monthlyMoments,
-      cumulativeTrips: cumulativeTrips,
-      monthLabels: monthLabels,
-      places: places,
-      streak: streak,
-      ready: sorted.length >= 2 && span.inDays >= 7,
-    );
-  }
-}
-
 class _StatRow extends StatelessWidget {
   const _StatRow({required this.snapshot});
-  final _AnalyticsSnapshot snapshot;
+  final MemoryStats snapshot;
 
   @override
   Widget build(BuildContext context) => Row(
     children: [
       Expanded(
-        child: _StatCard(
-          value: snapshot.monthlyMoments.fold(0, (a, b) => a + b),
-          label: 'Moments',
-        ),
+        child: _StatCard(value: snapshot.moments, label: 'Moments'),
       ),
       const SizedBox(width: 8),
       Expanded(
@@ -302,7 +216,7 @@ class _StatRow extends StatelessWidget {
       ),
       const SizedBox(width: 8),
       Expanded(
-        child: _StatCard(value: snapshot.streak, label: 'Streak'),
+        child: _StatCard(value: snapshot.days, label: 'Days'),
       ),
     ],
   );
