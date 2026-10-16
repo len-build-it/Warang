@@ -226,35 +226,35 @@ Continue automatically to Phase 6.
 ## Phase 6: Honest Home, Settings, onboarding, and map controls
 
 Requirements: REQ-018, REQ-019, REQ-020, REQ-021 (map part); findings F-09, F-14, F-15, F-19, F-22, F-24
-State: Not started
+State: Complete
 
 ### Tasks
 
-- [ ] Move the analytics snapshot and place counting into `lib/core/memory_stats.dart` (pure Dart).
+- [x] Move the analytics snapshot and place counting into `lib/core/memory_stats.dart` (pure Dart).
   The Home stats become Moments (total), Places (distinct labels), and Days (distinct capture days); the drawer uses the same function.
-- [ ] Settings: remove the Sharing section and the Clean up row.
+- [x] Settings: remove the Sharing section and the Clean up row.
   Hold the storage futures in `initState` and refresh them after Clear.
   Clear asks "Clear offline map cache? Areas you have visited will need a connection again."
   The profile row shows the avatar through `PhotoStore` and opens the shared name editor (extract the drawer's `_editName` into one function).
-- [ ] Privacy copy, onboarding: "Warang asks for your camera to take photos and your location to place them on the map. Your name, photos and pins stay on this phone. Map tiles are downloaded from OpenStreetMap."
+- [x] Privacy copy, onboarding: "Warang asks for your camera to take photos and your location to place them on the map. Your name, photos and pins stay on this phone. Map tiles are downloaded from OpenStreetMap."
   The Settings footer reads "Your photos and pins stay on this phone."
   Update the README Privacy and feature sections to match.
-- [ ] Remove the map layers menu and its `_showMoments` and `_showClusters` state from `warang_map.dart`.
+- [x] Remove the map layers menu and its `_showMoments` and `_showClusters` state from `warang_map.dart`.
 
 ### Verification
 
-- [ ] `test/core_rules_test.dart` additions for memory stats: total, distinct days across midnight, places ignoring blank labels.
-- [ ] Update `test/utility_screens_test.dart` and `test/unavailable_actions_test.dart`: Sharing and Clean up are absent; Clear confirm is shown and Cancel keeps the cache; the profile row opens the editor; no "Nothing leaves it" text remains in the widget tree.
-- [ ] Update `test/map_navigation_test.dart` for the absent layers button.
-- [ ] Gates 1-5 pass; Home, Settings, and onboarding renders are checked in both themes; the accent count per screen stays at 4 or fewer.
+- [x] `test/core_rules_test.dart` additions for memory stats: total, distinct days across midnight, places ignoring blank labels.
+- [x] Update `test/utility_screens_test.dart` and `test/unavailable_actions_test.dart`: Sharing and Clean up are absent; Clear confirm is shown and Cancel keeps the cache; the profile row opens the editor; no "Nothing leaves it" text remains in the widget tree.
+- [x] Update `test/map_navigation_test.dart` for the absent layers button.
+- [x] Gates 1-5 pass; Home, Settings, and onboarding renders are checked in both themes; the accent count per screen stays at 4 or fewer.
 
 ### Review and checkpoint
 
-- [ ] Review correctness, scope, dependencies, and unrelated changes (Ponytail review).
-- [ ] Tick the remediation Phase 6 settings task with a dated note recording the Clean up removal decision.
-- [ ] Update plan, evidence, and `HANDOFF.md`.
-- [ ] Stage only reviewed phase paths and verify the staged diff.
-- [ ] Commit and verify that Git reports success.
+- [x] Review correctness, scope, dependencies, and unrelated changes (Ponytail review).
+- [x] Tick the remediation Phase 6 settings task with a dated note recording the Clean up removal decision.
+- [x] Update plan, evidence, and `HANDOFF.md`.
+- [x] Stage only reviewed phase paths and verify the staged diff.
+- [x] Commit and verify that Git reports success.
 
 Checkpoint message: `docs(plan): FEAT-001 phase 6 - honest surfaces`
 Continue automatically to Phase 7.

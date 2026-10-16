@@ -389,8 +389,8 @@ is understandable.
 
 ### Tasks
 
-- [ ] Persist or remove settings toggles that currently do nothing.
-- [ ] Make “Clean up” report and run the existing orphan sweep, with a clear
+- [x] Persist or remove settings toggles that currently do nothing.
+- [x] Make “Clean up” report and run the existing orphan sweep, with a clear
   result message and test coverage.
 - [ ] Update README, in-app copy, and `IMPLEMENTATION_PLAN.md` checkboxes to
   reflect only completed behavior. Keep historical entries; add a dated note
@@ -400,6 +400,8 @@ is understandable.
 - [ ] Verify the actual signed ARM64 APK installs and supports: onboarding,
   capture with/without GPS, edit location, trip assignment, backup/restore,
   travelbook import/export, cache behavior, and theme switching.
+
+> 2026-10-16 (FEAT-001 Phase 6, Len's chat decision): the share toggles were removed until sharing ships, and the Clean up row was removed instead of wired, because the orphan sweep already runs on every launch. Commit `36579e4`.
 
 ### Required commits
 
