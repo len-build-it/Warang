@@ -280,6 +280,12 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
 
   Future<void> recenter() => _refreshLocation(moveToUser: true);
 
+  /// The point under the centre of the map, used for manual pin placement.
+  ({double latitude, double longitude}) get center {
+    final point = _mapController.camera.center;
+    return (latitude: point.latitude, longitude: point.longitude);
+  }
+
   void moveToCoordinate(
     double latitude,
     double longitude, [
