@@ -22,6 +22,20 @@ void main() {
     if (await documents.exists()) await documents.delete(recursive: true);
   });
 
+  test('storageBytes totals photos and thumbnails', () async {
+    expect(await store.storageBytes(), 0);
+    final source = File(p.join(documents.path, 'camera-output.png'))
+      ..writeAsBytesSync(_imageBytes(width: 64, height: 48));
+    final stored = await store.importPhotoAsset(source);
+
+    final full = await store.resolve(stored.relPath);
+    final thumb = await store.resolve(stored.thumbRelPath);
+    expect(
+      await store.storageBytes(),
+      await full.length() + await thumb.length(),
+    );
+  });
+
   test(
     'imports a resized original and a 320px thumbnail at relative paths',
     () async {

@@ -127,6 +127,42 @@ void main() {
     },
   );
 
+  testWidgets('SettingsScreen reports the real photo storage size', (
+    tester,
+  ) async {
+    await tester.runAsync(() async {
+      final photos = Directory('${tempDir.path}/warang/photos/2026/10')
+        ..createSync(recursive: true);
+      File('${photos.path}/a.jpg').writeAsBytesSync(List.filled(2048, 1));
+    });
+    // The size is read with directory streams, which only advance on the
+    // real event loop, so the screen is built outside the fake clock.
+    await tester.runAsync(
+      () => tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            repositoryProvider.overrideWithValue(repository),
+            mapTileStoreProvider.overrideWithValue(mapTileStore),
+            photoStoreProvider.overrideWithValue(photoStore),
+          ],
+          child: MaterialApp(
+            theme: buildWarangTheme(Brightness.light),
+            home: const SettingsScreen(),
+          ),
+        ),
+      ),
+    );
+    for (var i = 0; i < 5; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await tester.pump();
+    }
+
+    expect(find.text('2.0 KB'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+  });
+
   testWidgets(
     'SettingsScreen provides back navigation AppBar, non-tappable info, and Clear action with SnackBar',
     (tester) async {
@@ -141,11 +177,30 @@ void main() {
       expect(find.text('STORAGE'), findsOneWidget);
       expect(find.text('MAP'), findsOneWidget);
       expect(find.text('FOLLOWS PHONE'), findsOneWidget);
+      expect(find.text('Clean up'), findsNothing);
+      expect(find.text('SHARING'), findsNothing);
+      expect(find.text('Copy caption on share'), findsNothing);
+      expect(find.text('Corner mark on images'), findsNothing);
+      expect(find.textContaining('Nothing leaves it'), findsNothing);
 
       final clearButton = find.widgetWithText(TextButton, 'Clear');
       expect(clearButton, findsOneWidget);
 
+      // Clear asks first; Cancel keeps the cache.
       await tester.tap(clearButton);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('Clear offline map cache?'), findsOneWidget);
+      await tester.tap(find.text('Cancel'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('Clear offline map cache?'), findsNothing);
+      expect(find.text('Offline map cache cleared.'), findsNothing);
+
+      await tester.tap(clearButton);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.tap(find.text('Clear cache'));
       await tester.pump();
       await tester.runAsync(() async {
         await Future.delayed(const Duration(milliseconds: 150));
@@ -154,6 +209,10 @@ void main() {
       await tester.pump(const Duration(milliseconds: 200));
 
       expect(find.text('Offline map cache cleared.'), findsOneWidget);
+
+      final footer = find.text('Your photos and pins stay on this phone.');
+      await tester.scrollUntilVisible(footer, 200);
+      expect(footer, findsOneWidget);
       await tester.pumpWidget(const SizedBox());
     },
   );

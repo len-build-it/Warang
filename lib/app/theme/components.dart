@@ -562,7 +562,10 @@ class WarangSettingsCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(14),
       border: Border.all(color: Theme.of(context).colorScheme.outline),
     ),
-    child: Column(children: children),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: children,
+    ),
   );
 }
 

@@ -4,10 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/app.dart';
 import '../../app/app_state.dart';
+import '../../app/shell/warang_drawer.dart';
 import '../../app/theme/components.dart';
-import '../../app/theme/tokens.dart';
-import '../map/map_tile_store.dart';
 
+/// Settings shows only controls that work today; share options return when
+/// sharing ships.
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
@@ -16,25 +17,28 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  bool _copyCaption = true;
-  bool _cornerMark = true;
-  MapTileStore get _mapTileStore => ref.read(mapTileStoreProvider);
+  late Future<int> _photoBytes;
+  late Future<int> _cacheBytes;
+
+  @override
+  void initState() {
+    super.initState();
+    _photoBytes = ref.read(photoStoreProvider).storageBytes();
+    _cacheBytes = ref.read(mapTileStoreProvider).totalBytes();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final dark = theme.brightness == Brightness.dark;
     final repository = ref.watch(repositoryProvider);
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Theme.of(context).brightness == Brightness.dark
-            ? Brightness.light
-            : Brightness.dark,
-        statusBarBrightness: Theme.of(context).brightness == Brightness.dark
-            ? Brightness.dark
-            : Brightness.light,
+        statusBarIconBrightness: dark ? Brightness.light : Brightness.dark,
+        statusBarBrightness: dark ? Brightness.dark : Brightness.light,
         systemNavigationBarColor: Colors.transparent,
-        systemNavigationBarIconBrightness:
-            Theme.of(context).brightness == Brightness.dark
+        systemNavigationBarIconBrightness: dark
             ? Brightness.light
             : Brightness.dark,
       ),
@@ -42,7 +46,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         appBar: AppBar(
           title: const Text('Settings'),
           scrolledUnderElevation: 0,
-          backgroundColor: Theme.of(context).colorScheme.surface,
+          backgroundColor: theme.colorScheme.surface,
         ),
         body: ListView(
           padding: const EdgeInsets.fromLTRB(20, 14, 20, 34),
@@ -50,22 +54,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const WarangSectionLabel('You'),
             const SizedBox(height: 9),
             WarangSettingsCard(
-              children: [_ProfileRow(name: repository.profile.name)],
+              children: [
+                AnimatedBuilder(
+                  animation: repository,
+                  builder: (context, _) => _ProfileRow(
+                    avatar: ProfileAvatar(
+                      profile: repository.profile,
+                      photoStore: repository.photoStore,
+                      size: 48,
+                    ),
+                    name: repository.profile.name,
+                    onTap: () => editProfileName(context, repository),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 20),
             const WarangSectionLabel('Storage'),
             const SizedBox(height: 9),
             WarangSettingsCard(
               children: [
-                FutureBuilder<int>(
-                  future: ref.watch(photoStoreProvider).storageBytes(),
-                  builder: (context, snapshot) => WarangSettingsRow(
-                    label: 'Photos on this phone',
-                    value: _formatBytes(snapshot.data ?? 0),
-                  ),
-                ),
-                const WarangDivider(),
-                const WarangSettingsRow(label: 'Clean up', value: '0 B'),
+                _BytesRow(label: 'Photos on this phone', bytes: _photoBytes),
               ],
             ),
             const SizedBox(height: 20),
@@ -75,47 +84,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               children: [
                 const WarangSettingsRow(label: 'Theme', value: 'FOLLOWS PHONE'),
                 const WarangDivider(),
-                FutureBuilder<int>(
-                  future: _mapTileStore.totalBytes(),
-                  builder: (context, snapshot) => WarangSettingsRow(
-                    label: 'Offline map cache',
-                    value: _formatBytes(snapshot.data ?? 0),
-                    trailing: TextButton(
-                      style: TextButton.styleFrom(
-                        visualDensity: VisualDensity.compact,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        minimumSize: const Size(48, 36),
+                _BytesRow(
+                  label: 'Offline map cache',
+                  bytes: _cacheBytes,
+                  trailing: TextButton(
+                    style: TextButton.styleFrom(
+                      visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
                       ),
-                      onPressed: _clearMapCache,
-                      child: const Text('Clear'),
+                      minimumSize: const Size(48, 36),
                     ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            const WarangSectionLabel('Sharing'),
-            const SizedBox(height: 9),
-            WarangSettingsCard(
-              children: [
-                WarangSettingsRow(
-                  label: 'Copy caption on share',
-                  toggle: true,
-                  trailing: WarangToggle(
-                    value: _copyCaption,
-                    onChanged: _setCopyCaption,
-                  ),
-                ),
-                const WarangDivider(),
-                WarangSettingsRow(
-                  label: 'Corner mark on images',
-                  toggle: true,
-                  trailing: WarangToggle(
-                    value: _cornerMark,
-                    onChanged: _setCornerMark,
+                    onPressed: _clearMapCache,
+                    child: const Text('Clear'),
                   ),
                 ),
               ],
@@ -136,9 +118,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       const SizedBox(height: 4),
                       Text(
                         'Aklanon. To go out and explore.',
-                        style: Theme.of(
-                          context,
-                        ).textTheme.bodySmall?.copyWith(fontSize: 13),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontSize: 13,
+                        ),
                       ),
                     ],
                   ),
@@ -147,11 +129,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             const SizedBox(height: 28),
             Text(
-              'Everything stays on this phone.',
+              'Your photos and pins stay on this phone.',
               textAlign: TextAlign.center,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(fontSize: 12.5),
+              style: theme.textTheme.bodySmall?.copyWith(fontSize: 12.5),
             ),
           ],
         ),
@@ -159,72 +139,113 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  void _setCopyCaption(bool value) => setState(() => _copyCaption = value);
-  void _setCornerMark(bool value) => setState(() => _cornerMark = value);
-
   Future<void> _clearMapCache() async {
-    await _mapTileStore.clear();
-    if (mounted) {
-      setState(() {});
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Offline map cache cleared.'),
-          duration: Duration(seconds: 2),
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear offline map cache?'),
+        content: const Text(
+          'Areas you have visited will need a connection again.',
         ),
-      );
-    }
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Clear cache'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final store = ref.read(mapTileStoreProvider);
+    await store.clear();
+    if (!mounted) return;
+    setState(() {
+      _cacheBytes = store.totalBytes();
+    });
+    showWarangSnackBar(
+      context,
+      'Offline map cache cleared.',
+      aboveNavigation: false,
+      duration: const Duration(seconds: 2),
+    );
   }
 }
 
-class _ProfileRow extends StatelessWidget {
-  const _ProfileRow({required this.name});
-  final String name;
+class _BytesRow extends StatelessWidget {
+  const _BytesRow({required this.label, required this.bytes, this.trailing});
+  final String label;
+  final Future<int> bytes;
+  final Widget? trailing;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.all(14),
-    child: Row(
-      children: [
-        Container(
-          width: 48,
-          height: 48,
-          alignment: Alignment.center,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            color: WarangColors.accent,
-          ),
-          child: Text(
-            name.isEmpty ? 'W' : name.substring(0, 1).toUpperCase(),
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: WarangColors.accentInk,
+  Widget build(BuildContext context) => FutureBuilder<int>(
+    future: bytes,
+    builder: (context, snapshot) => WarangSettingsRow(
+      label: label,
+      // Show a dash until the size is known instead of a misleading 0 B.
+      value: snapshot.hasData ? _formatBytes(snapshot.data!) : '-',
+      trailing: trailing,
+    ),
+  );
+}
+
+class _ProfileRow extends StatelessWidget {
+  const _ProfileRow({
+    required this.avatar,
+    required this.name,
+    required this.onTap,
+  });
+  final Widget avatar;
+  final String name;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: 'Edit name',
+    child: InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            avatar,
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    'Stored on this phone only',
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(fontSize: 12.5),
+                  ),
+                ],
+              ),
             ),
-          ),
+            Icon(
+              Icons.edit_outlined,
+              size: 18,
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: .62),
+            ),
+          ],
         ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                name,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                'Stored on this phone only',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(fontSize: 12.5),
-              ),
-            ],
-          ),
-        ),
-      ],
+      ),
     ),
   );
 }
