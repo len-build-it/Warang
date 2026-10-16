@@ -6,6 +6,7 @@ import 'package:drift/drift.dart';
 
 import '../core/ids.dart';
 import '../core/models.dart';
+import '../core/trip_rules.dart';
 import 'db/database.dart';
 import 'files/photo_store.dart';
 
@@ -58,6 +59,40 @@ class WarangRepository extends ChangeNotifier {
   List<Moment> get moments => List.unmodifiable(_moments);
 
   Trip get everyday => _trips.firstWhere((trip) => trip.isEveryday);
+
+  /// The trip a capture at [at] is saved into: a dated trip covering that
+  /// day, otherwise Everyday.
+  Trip tripForCapture(DateTime at) => activeTripFor(at, _trips) ?? everyday;
+
+  /// Stores [photo] and records it as a new moment.
+  ///
+  /// If recording fails after the photo is stored, the stored files are
+  /// removed so no orphan is left behind, and the error is rethrown.
+  Future<Moment> captureMoment({
+    required File photo,
+    String? caption,
+    double? latitude,
+    double? longitude,
+    DateTime? capturedAt,
+  }) async {
+    final stored = await photoStore.importPhotoAsset(photo);
+    try {
+      return await addMoment(
+        caption: caption,
+        latitude: latitude,
+        longitude: longitude,
+        relPath: stored.relPath,
+        thumbRelPath: stored.thumbRelPath,
+        width: stored.width,
+        height: stored.height,
+        bytes: stored.bytes,
+        capturedAt: capturedAt,
+      );
+    } catch (_) {
+      await photoStore.discard(stored);
+      rethrow;
+    }
+  }
 
   Future<void> setName(String name) async {
     final now = DateTime.now();

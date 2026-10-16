@@ -253,6 +253,12 @@ class PhotoStore {
     }
   }
 
+  /// Removes both files of a photo that never became part of a moment.
+  Future<void> discard(StoredPhoto photo) async {
+    await _deleteIfExists(await resolve(photo.relPath));
+    await _deleteIfExists(await resolve(photo.thumbRelPath));
+  }
+
   Future<void> _deleteIfExists(File file) async {
     if (await file.exists()) await file.delete();
   }
