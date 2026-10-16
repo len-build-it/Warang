@@ -3,7 +3,7 @@
 Created: 2026-10-16T22:50:00+08:00
 Updated: 2026-10-16T22:50:00+08:00
 Revision: 1
-Status: Approved - executing
+Status: Complete
 Feature spec and revision: [FEAT-001 revision 1](../features/FEAT-001-user-flow-quality.md)
 Approved baseline and architecture revisions: `docs/DESIGN_SPEC.md` and `docs/IMPLEMENTATION_PLAN.md` at commit `dc407c5`; architecture changes are limited to the FEAT-001 decision record
 Len's chat approval: 2026-10-16, "approved, go ahead with all four decisions"
@@ -262,27 +262,27 @@ Continue automatically to Phase 7.
 ## Phase 7: End-to-end verification and closeout
 
 Requirements: REQ-001 to REQ-023
-State: Not started
+State: Complete
 
 ### Tasks
 
-- [ ] Add `test/user_journey_test.dart`, one widget test that walks the full journey against an in-memory database with an injected photo, location, and permission.
+- [x] Add `test/user_journey_test.dart`, one widget test that walks the full journey against an in-memory database with an injected photo, location, and permission.
   The journey is: onboarding -> capture without GPS -> saved snackbar -> open the moment -> Edit caption and place -> place on map -> create a dated trip -> move the moment into it -> trip detail -> view on map -> Delete -> Undo -> back out to an exit-ready state.
-- [ ] Render every screen in both themes to `docs/evidence/FEAT-001/final/` and compare them with `baseline/`; fix any pixel-level issue found (overflow, clipping, contrast, misalignment).
-- [ ] Reconcile the README feature list and the FEAT-001 status.
-- [ ] Add a pending physical-device checklist to the verification log for Len (back gesture, TalkBack drawer focus, keyboard over the Edit sheet, real GPS, font rendering).
+- [x] Render every screen in both themes to `docs/evidence/FEAT-001/final/` and compare them with `baseline/`; fix any pixel-level issue found (overflow, clipping, contrast, misalignment).
+- [x] Reconcile the README feature list and the FEAT-001 status.
+- [x] Add a pending physical-device checklist to the verification log for Len (back gesture, TalkBack drawer focus, keyboard over the Edit sheet, real GPS, font rendering).
 
 ### Verification
 
-- [ ] Gates 1-5 pass on the final tree.
-- [ ] `git status --short` shows only the preserved untracked paths listed in Scope.
+- [x] Gates 1-5 pass on the final tree.
+- [x] `git status --short` shows only the preserved untracked paths listed in Scope.
 
 ### Review and checkpoint
 
-- [ ] Review the full FEAT-001 diff (`git diff dc407c5..HEAD`) for correctness, scope, and Ponytail simplicity.
-- [ ] Update plan, evidence, `docs/SPEC_INDEX.md`, and `HANDOFF.md`.
-- [ ] Stage only reviewed phase paths and verify the staged diff.
-- [ ] Commit and verify that Git reports success.
+- [x] Review the full FEAT-001 diff (`git diff dc407c5..HEAD`) for correctness, scope, and Ponytail simplicity.
+- [x] Update plan, evidence, `docs/SPEC_INDEX.md`, and `HANDOFF.md`.
+- [x] Stage only reviewed phase paths and verify the staged diff.
+- [x] Commit and verify that Git reports success.
 
 Checkpoint message: `docs(plan): FEAT-001 phase 7 - journey verification`
 FEAT-001 is complete once this commit succeeds; physical-device checks remain pending until Len supplies results.

@@ -2,7 +2,7 @@
 
 Created: 2026-10-16T22:55:00+08:00
 Updated: 2026-10-16T23:59:00+08:00
-State: Executing
+State: Complete - awaiting physical-device checks
 Feature: FEAT-001
 
 ## Read first
@@ -29,13 +29,13 @@ Architecture and behavior changes return to Len; this handoff cannot override th
 
 ## Progress and working tree
 
-Phases 1-6 complete; the latest code commit before this checkpoint is `0709bf2 refactor(map): remove the layers menu [FEAT-001 P6]`.
+Phases 1-7 complete; the latest code commit before this checkpoint is `b4d36ab test(journey): walk capture to undo end to end [FEAT-001 P7]`.
 Each phase's commits and checkpoint are listed by `git log --oneline --grep "FEAT-001"`.
 Preserve the existing untracked paths: `.agents/skills/*`, `.agents/templates/`, `.claude/`, `CLAUDE.md`, `releases/`, and `scripts/`.
 
 ## Checks and evidence
 
-See [docs/evidence/FEAT-001-verification.md](docs/evidence/FEAT-001-verification.md); the latest gates passed with 93 tests on 2026-10-16.
+See [docs/evidence/FEAT-001-verification.md](docs/evidence/FEAT-001-verification.md); the latest gates passed with 96 tests on 2026-10-16.
 Known environment issue: Flutter sometimes cannot delete stale, empty generated directories under `build/` or `ios/Flutter/ephemeral/`; removing the named directory and rerunning fixes it.
 No emulator or device was available, so the screen evidence comes from widget renders.
 
@@ -47,4 +47,4 @@ No emulator or device was available, so the screen evidence comes from widget re
 
 ## Next action
 
-Start Phase 7 (end-to-end journey verification and closeout).
+FEAT-001 is complete. Next: Len runs the physical-device checklist in docs/evidence/FEAT-001-verification.md.

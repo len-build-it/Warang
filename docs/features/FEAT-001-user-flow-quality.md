@@ -3,7 +3,7 @@
 Created: 2026-10-16T22:45:00+08:00
 Updated: 2026-10-16T23:10:00+08:00
 Revision: 1
-Status: Approved
+Status: Implemented - physical-device checks pending
 
 ## Purpose and success
 
