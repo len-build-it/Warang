@@ -84,6 +84,27 @@ void main() {
     });
   });
 
+  group('formatTripRange', () {
+    test('uses plain dashes and drops repeated parts', () {
+      expect(
+        formatTripRange(DateTime(2026, 3, 12), DateTime(2026, 3, 19)),
+        'MAR 12-19',
+      );
+      expect(
+        formatTripRange(DateTime(2026, 3, 30), DateTime(2026, 4, 4)),
+        'MAR 30 - APR 4',
+      );
+      expect(
+        formatTripRange(DateTime(2026, 12, 30), DateTime(2027, 1, 2)),
+        'DEC 30, 2026 - JAN 2, 2027',
+      );
+      expect(
+        formatTripRange(DateTime(2026, 3, 12), DateTime(2026, 3, 12)),
+        'MAR 12',
+      );
+    });
+  });
+
   group('formatCoordinates', () {
     test('uses hemispheres and three decimals', () {
       expect(formatCoordinates(11.96864, 121.91804), '11.969°N · 121.918°E');
