@@ -49,8 +49,6 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
   Position? _position;
   DateTime? _staleSince;
   double _currentZoom = 5.8;
-  bool _showMoments = true;
-  bool _showClusters = true;
 
   @override
   void dispose() {
@@ -100,7 +98,7 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
             MarkerLayer(
               markers: [
                 if (_position != null) _positionMarker(_position!),
-                if (_showMoments || _showClusters) ..._momentMarkers(),
+                ..._momentMarkers(),
               ],
             ),
             RichAttributionWidget(
@@ -113,46 +111,6 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
               ],
             ),
           ],
-        ),
-        Positioned(
-          top: topOffset,
-          right: 16,
-          child: PopupMenuButton<String>(
-            tooltip: 'Map layers',
-            onSelected: (value) {
-              setState(() {
-                if (value == 'moments') _showMoments = !_showMoments;
-                if (value == 'clusters') _showClusters = !_showClusters;
-              });
-            },
-            itemBuilder: (context) => [
-              CheckedPopupMenuItem(
-                value: 'moments',
-                checked: _showMoments,
-                child: const Text('Your moments'),
-              ),
-              CheckedPopupMenuItem(
-                value: 'clusters',
-                checked: _showClusters,
-                child: const Text('Clusters'),
-              ),
-              const PopupMenuItem(enabled: false, child: Text('Base map')),
-            ],
-            child: WarangGlassSurface(
-              shape: BoxShape.circle,
-              child: SizedBox(
-                width: 48,
-                height: 48,
-                child: Center(
-                  child: Icon(
-                    Icons.layers_outlined,
-                    size: 20,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-              ),
-            ),
-          ),
         ),
         if (_staleSince != null)
           Positioned(
@@ -223,9 +181,9 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
     }
     return [
       for (final group in groups)
-        if (group.length == 1 && _showMoments)
+        if (group.length == 1)
           _markerFor(group.single)
-        else if (group.length > 1 && _showClusters)
+        else
           _clusterMarker(group),
     ];
   }
