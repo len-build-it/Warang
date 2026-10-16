@@ -19,6 +19,30 @@ InputDecoration warangInputDecoration(
   );
 }
 
+/// Shows a floating snackbar that clears the bottom navigation when
+/// [aboveNavigation] is true.
+ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showWarangSnackBar(
+  BuildContext context,
+  String message, {
+  SnackBarAction? action,
+  Duration duration = const Duration(seconds: 4),
+  bool aboveNavigation = true,
+}) {
+  final bottom = aboveNavigation
+      ? WarangLayout.navigationHeight(context) + 8
+      : 16.0;
+  final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
+  return messenger.showSnackBar(
+    SnackBar(
+      content: Text(message),
+      action: action,
+      duration: duration,
+      behavior: SnackBarBehavior.floating,
+      margin: EdgeInsets.fromLTRB(16, 0, 16, bottom),
+    ),
+  );
+}
+
 class WarangPrimaryButton extends StatelessWidget {
   const WarangPrimaryButton({
     super.key,
