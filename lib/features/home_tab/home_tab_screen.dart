@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../app/app.dart';
+import '../../app/app_state.dart';
 import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
 import '../../core/models.dart';
@@ -14,28 +15,42 @@ import 'analytics_charts.dart';
 import 'trip_detail_screen.dart';
 
 class HomeTabScreen extends ConsumerWidget {
-  const HomeTabScreen({super.key});
+  const HomeTabScreen({super.key, this.onSearch});
+
+  /// Opens moment search; null hides the header search action.
+  final VoidCallback? onSearch;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final repository = ref.watch(repositoryProvider);
+    final photoStore = ref.watch(photoStoreProvider);
     return AnimatedBuilder(
       animation: repository,
-      builder: (context, _) => _HomeTabContent(repository: repository),
+      builder: (context, _) => _HomeTabContent(
+        repository: repository,
+        photoStore: photoStore,
+        onSearch: onSearch,
+      ),
     );
   }
 }
 
 class _HomeTabContent extends StatefulWidget {
-  const _HomeTabContent({required this.repository});
+  const _HomeTabContent({
+    required this.repository,
+    required this.photoStore,
+    this.onSearch,
+  });
   final WarangRepository repository;
+  final PhotoStore photoStore;
+  final VoidCallback? onSearch;
 
   @override
   State<_HomeTabContent> createState() => _HomeTabContentState();
 }
 
 class _HomeTabContentState extends State<_HomeTabContent> {
-  final _photoStore = PhotoStore();
+  PhotoStore get _photoStore => widget.photoStore;
 
   Future<void> _createTrip() async {
     final title = TextEditingController();
@@ -161,7 +176,22 @@ class _HomeTabContentState extends State<_HomeTabContent> {
             WarangLayout.navigationHeight(context) + 24,
           ),
           children: [
-            Text('Home', style: Theme.of(context).textTheme.displaySmall),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Home',
+                    style: Theme.of(context).textTheme.displaySmall,
+                  ),
+                ),
+                if (widget.onSearch != null)
+                  IconButton(
+                    tooltip: 'Search moments',
+                    onPressed: widget.onSearch,
+                    icon: const Icon(Icons.search),
+                  ),
+              ],
+            ),
             const SizedBox(height: 7),
             Text(
               'A shelf of the places you have been.',
