@@ -199,7 +199,7 @@ class _TravelModeContentState extends State<_TravelModeContent> {
                   behavior: HitTestBehavior.opaque,
                   onTap: () => setState(() => _selected = null),
                   child: ColoredBox(
-                    color: theme.colorScheme.onSurface.withValues(alpha: .42),
+                    color: WarangColors.scrim(theme.brightness),
                   ),
                 ),
               ),
@@ -232,7 +232,7 @@ class _TravelModeContentState extends State<_TravelModeContent> {
                   child: GestureDetector(
                     onTap: _closeDrawer,
                     child: ColoredBox(
-                      color: theme.colorScheme.onSurface.withValues(alpha: .42),
+                      color: WarangColors.scrim(theme.brightness),
                     ),
                   ),
                 ),
