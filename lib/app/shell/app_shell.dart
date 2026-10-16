@@ -131,11 +131,11 @@ class _MobileNavigation extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
                 BoxShadow(
-                  color: theme.colorScheme.onSurface.withValues(
-                    alpha: theme.brightness == Brightness.dark ? 0.32 : 0.12,
-                  ),
-                  blurRadius: 18,
-                  offset: const Offset(0, -4),
+                  color: theme.brightness == Brightness.dark
+                      ? Colors.black.withValues(alpha: 0.30)
+                      : theme.colorScheme.onSurface.withValues(alpha: 0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
