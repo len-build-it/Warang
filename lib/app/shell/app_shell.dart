@@ -1,20 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/models.dart';
 import '../../features/home_tab/home_tab_screen.dart';
 import '../../features/news_tab/news_tab_screen.dart';
+import '../../features/settings/settings_screen.dart';
 import '../../features/travel_mode/travel_mode_screen.dart';
+import '../app.dart';
+import '../app_state.dart';
 import '../theme/components.dart';
 import '../theme/tokens.dart';
+import 'warang_drawer.dart';
 
-class AppShell extends StatefulWidget {
+class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key});
 
   @override
-  State<AppShell> createState() => _AppShellState();
+  ConsumerState<AppShell> createState() => _AppShellState();
 }
 
-class _AppShellState extends State<AppShell> {
-  int _currentIndex = 0;
+class _AppShellState extends ConsumerState<AppShell> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _drawerOpen = false;
 
   static const _items = [
     _ShellItem(
@@ -34,48 +41,125 @@ class _AppShellState extends State<AppShell> {
     ),
   ];
 
-  final _tabs = const [TravelModeScreen(), HomeTabScreen(), NewsTabScreen()];
+  late final _tabs = [
+    TravelModeScreen(onOpenMenu: _openDrawer),
+    HomeTabScreen(onSearch: _openSearch),
+    const NewsTabScreen(),
+  ];
+
+  void _openDrawer() => _scaffoldKey.currentState?.openDrawer();
+
+  void _closeDrawer() => _scaffoldKey.currentState?.closeDrawer();
+
+  Future<void> _openSearch() async {
+    _closeDrawer();
+    final repository = ref.read(repositoryProvider);
+    final moment = await showSearch<Moment?>(
+      context: context,
+      delegate: MomentSearchDelegate(
+        repository,
+        photoStore: ref.read(photoStoreProvider),
+      ),
+    );
+    if (moment != null && mounted) showMomentOnMap(context, ref, moment);
+  }
+
+  void _openSettings() {
+    _closeDrawer();
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
+  }
+
+  void _openAbout() {
+    _closeDrawer();
+    showAboutDialog(
+      context: context,
+      applicationName: 'Warang',
+      applicationVersion: '1.0.0',
+      applicationLegalese: 'Aklanon. To go out and explore.',
+    );
+  }
+
+  /// Back closes the innermost thing first: drawer, open moment, then a
+  /// non-map tab. Only an idle Travel Mode lets the route pop.
+  void _handleBack() {
+    if (_drawerOpen) {
+      _closeDrawer();
+    } else if (ref.read(selectedMomentProvider) != null) {
+      ref.read(selectedMomentProvider.notifier).clear();
+    } else if (ref.read(shellTabProvider) != 0) {
+      ref.read(shellTabProvider.notifier).select(0);
+    }
+  }
 
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, constraints) {
-      final desktop = constraints.maxWidth >= 900;
-      return Scaffold(
-        body: desktop
-            ? Row(
-                children: [
-                  _DesktopNavigation(
-                    items: _items,
-                    selectedIndex: _currentIndex,
-                    onSelected: _select,
-                  ),
-                  Expanded(child: _tabStack()),
-                ],
-              )
-            : Stack(
-                fit: StackFit.expand,
-                children: [
-                  _tabStack(),
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: _MobileNavigation(
-                      items: _items,
-                      selectedIndex: _currentIndex,
-                      onSelected: _select,
-                    ),
-                  ),
-                ],
+  Widget build(BuildContext context) {
+    final currentIndex = ref.watch(shellTabProvider);
+    final hasSelection = ref.watch(selectedMomentProvider) != null;
+    final repository = ref.watch(repositoryProvider);
+    return PopScope(
+      canPop: currentIndex == 0 && !hasSelection && !_drawerOpen,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _handleBack();
+      },
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final desktop = constraints.maxWidth >= 900;
+          return Scaffold(
+            key: _scaffoldKey,
+            drawerScrimColor: WarangColors.scrim(Theme.of(context).brightness),
+            drawerEdgeDragWidth: 24,
+            drawerEnableOpenDragGesture: currentIndex == 0,
+            onDrawerChanged: (open) => setState(() => _drawerOpen = open),
+            drawer: Drawer(
+              width: constraints.maxWidth * .82,
+              shape: const RoundedRectangleBorder(),
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              child: AnimatedBuilder(
+                animation: repository,
+                builder: (context, _) => WarangDrawer(
+                  repository: repository,
+                  onSearch: _openSearch,
+                  onSettings: _openSettings,
+                  onAbout: _openAbout,
+                ),
               ),
-      );
-    },
-  );
-
-  Widget _tabStack() => IndexedStack(index: _currentIndex, children: _tabs);
-
-  void _select(int index) {
-    if (index == _currentIndex) return;
-    setState(() => _currentIndex = index);
+            ),
+            body: desktop
+                ? Row(
+                    children: [
+                      _DesktopNavigation(
+                        items: _items,
+                        selectedIndex: currentIndex,
+                        onSelected: _select,
+                      ),
+                      Expanded(child: _tabStack(currentIndex)),
+                    ],
+                  )
+                : Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      _tabStack(currentIndex),
+                      Align(
+                        alignment: Alignment.bottomCenter,
+                        child: _MobileNavigation(
+                          items: _items,
+                          selectedIndex: currentIndex,
+                          onSelected: _select,
+                        ),
+                      ),
+                    ],
+                  ),
+          );
+        },
+      ),
+    );
   }
+
+  Widget _tabStack(int index) => IndexedStack(index: index, children: _tabs);
+
+  void _select(int index) => ref.read(shellTabProvider.notifier).select(index);
 }
 
 class _ShellItem {

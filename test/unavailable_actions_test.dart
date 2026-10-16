@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:warang/app/app.dart';
+import 'package:warang/app/shell/warang_drawer.dart';
 import 'package:warang/app/theme/tokens.dart';
 import 'package:warang/core/models.dart';
 import 'package:warang/data/db/database.dart';
@@ -47,7 +48,6 @@ void main() {
         Scaffold(
           body: WarangDrawer(
             repository: repository,
-            onClose: () {},
             onSearch: () {},
             onSettings: () {},
             onAbout: () {},

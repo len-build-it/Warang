@@ -5,45 +5,30 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../app/app.dart';
+import '../../app/app_state.dart';
 import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
 import '../../core/models.dart';
 import '../../data/files/photo_store.dart';
 import '../../data/repository.dart';
 import '../capture/capture_screen.dart';
-import '../settings/settings_screen.dart';
 import '../map/warang_map.dart';
 
-class TravelModeScreen extends ConsumerWidget {
-  const TravelModeScreen({super.key});
+class TravelModeScreen extends ConsumerStatefulWidget {
+  const TravelModeScreen({super.key, this.onOpenMenu});
+
+  /// Opens the shell drawer; null hides the menu button.
+  final VoidCallback? onOpenMenu;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final repository = ref.watch(repositoryProvider);
-    return AnimatedBuilder(
-      animation: repository,
-      builder: (context, _) => _TravelModeContent(repository: repository),
-    );
-  }
+  ConsumerState<TravelModeScreen> createState() => _TravelModeScreenState();
 }
 
-class _TravelModeContent extends StatefulWidget {
-  const _TravelModeContent({required this.repository});
-  final WarangRepository repository;
-
-  @override
-  State<_TravelModeContent> createState() => _TravelModeContentState();
-}
-
-class _TravelModeContentState extends State<_TravelModeContent> {
-  final _photoStore = PhotoStore();
+class _TravelModeScreenState extends ConsumerState<TravelModeScreen> {
   final _mapKey = GlobalKey<WarangMapSurfaceState>();
-  Moment? _selected;
-  bool _drawerOpen = false;
 
   Future<void> _capture() async {
     final camera = await Permission.camera.request();
@@ -61,42 +46,36 @@ class _TravelModeContentState extends State<_TravelModeContent> {
     ).push<bool>(MaterialPageRoute(builder: (_) => const CaptureScreen()));
   }
 
-  void _showSettings() => Navigator.of(
-    context,
-  ).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
-
-  Future<void> _showSearch() async {
-    _closeDrawer();
-    final selectedMoment = await showSearch<Moment?>(
-      context: context,
-      delegate: MomentSearchDelegate(
-        widget.repository,
-        photoStore: _photoStore,
-      ),
-    );
-    if (selectedMoment != null && mounted) {
-      setState(() => _selected = selectedMoment);
-      if (selectedMoment.latitude != null && selectedMoment.longitude != null) {
-        _mapKey.currentState?.moveToCoordinate(
-          selectedMoment.latitude!,
-          selectedMoment.longitude!,
-        );
-      }
-    }
-  }
-
-  void _openDrawer() => setState(() => _drawerOpen = true);
-  void _closeDrawer() {
-    if (_drawerOpen && mounted) setState(() => _drawerOpen = false);
+  void _focus(Moment moment) {
+    if (moment.latitude == null || moment.longitude == null) return;
+    _mapKey.currentState?.moveToCoordinate(moment.latitude!, moment.longitude!);
   }
 
   @override
   Widget build(BuildContext context) {
+    final repository = ref.watch(repositoryProvider);
+    ref.listen<MomentSelection?>(selectedMomentProvider, (previous, next) {
+      if (next == null || !next.focus) return;
+      final moment = momentById(repository, next.momentId);
+      if (moment != null) _focus(moment);
+    });
+    return AnimatedBuilder(
+      animation: repository,
+      builder: (context, _) => _content(context, repository),
+    );
+  }
+
+  Widget _content(BuildContext context, WarangRepository repository) {
     final theme = Theme.of(context);
     final dark = theme.brightness == Brightness.dark;
-    final moments = widget.repository.moments;
+    final moments = repository.moments;
     final size = MediaQuery.sizeOf(context);
-    final selected = _selected;
+    final selection = ref.watch(selectedMomentProvider);
+    final selected = selection == null
+        ? null
+        : momentById(repository, selection.momentId);
+    final selectionNotifier = ref.read(selectedMomentProvider.notifier);
+    final photoStore = ref.watch(photoStoreProvider);
     final navHeight = WarangLayout.navigationHeight(context);
     final topOffset = math.max(MediaQuery.paddingOf(context).top, 12.0) + 8.0;
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -125,10 +104,10 @@ class _TravelModeContentState extends State<_TravelModeContent> {
                 selectedId: selected?.id,
                 palette: theme.extension<MapPalette>()!,
                 dark: dark,
-                onMomentTap: (moment) => setState(() => _selected = moment),
-                onMapTap: selected == null
-                    ? null
-                    : () => setState(() => _selected = null),
+                tileStore: ref.watch(mapTileStoreProvider),
+                photoStore: photoStore,
+                onMomentTap: selectionNotifier.select,
+                onMapTap: selected == null ? null : selectionNotifier.clear,
               ),
             ),
             const Positioned(
@@ -137,11 +116,12 @@ class _TravelModeContentState extends State<_TravelModeContent> {
               right: 0,
               child: WarangTopScrim(),
             ),
-            Positioned(
-              top: topOffset,
-              left: 16,
-              child: _HomeMenuButton(onPressed: _openDrawer),
-            ),
+            if (widget.onOpenMenu != null)
+              Positioned(
+                top: topOffset,
+                left: 16,
+                child: _HomeMenuButton(onPressed: widget.onOpenMenu!),
+              ),
             if (selected == null) ...[
               if (moments.isEmpty)
                 Positioned(
@@ -197,7 +177,7 @@ class _TravelModeContentState extends State<_TravelModeContent> {
               Positioned.fill(
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
-                  onTap: () => setState(() => _selected = null),
+                  onTap: selectionNotifier.clear,
                   child: ColoredBox(
                     color: WarangColors.scrim(theme.brightness),
                   ),
@@ -215,73 +195,27 @@ class _TravelModeContentState extends State<_TravelModeContent> {
                     ),
                     child: MomentCard(
                       moment: selected,
-                      repository: widget.repository,
-                      photoStore: _photoStore,
-                      onClose: () => setState(() => _selected = null),
+                      repository: repository,
+                      photoStore: photoStore,
+                      onClose: selectionNotifier.clear,
                     ),
                   ),
                 ),
               ),
             ],
-            Positioned.fill(
-              child: IgnorePointer(
-                ignoring: !_drawerOpen,
-                child: AnimatedOpacity(
-                  opacity: _drawerOpen ? 1 : 0,
-                  duration: const Duration(milliseconds: 220),
-                  child: GestureDetector(
-                    onTap: _closeDrawer,
-                    child: ColoredBox(
-                      color: WarangColors.scrim(theme.brightness),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 260),
-              curve: Curves.easeOutCubic,
-              left: _drawerOpen ? 0 : -size.width * .82,
-              top: 0,
-              bottom: 0,
-              width: size.width * .82,
-              child: WarangDrawer(
-                repository: widget.repository,
-                onClose: _closeDrawer,
-                onSearch: _showSearch,
-                onSettings: () {
-                  _closeDrawer();
-                  _showSettings();
-                },
-                onAbout: () {
-                  _closeDrawer();
-                  showAboutDialog(
-                    context: context,
-                    applicationName: 'Warang',
-                    applicationVersion: '1.0.0',
-                    applicationLegalese: 'Aklanon. To go out and explore.',
-                  );
-                },
-              ),
-            ),
-            if (!_drawerOpen)
-              Positioned(
-                left: 0,
-                top: 0,
-                bottom: 0,
-                width: 24,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onHorizontalDragEnd: (details) {
-                    if ((details.primaryVelocity ?? 0) > 180) _openDrawer();
-                  },
-                ),
-              ),
           ],
         ),
       ),
     );
   }
+}
+
+/// The live moment with [id], or null once it is deleted.
+Moment? momentById(WarangRepository repository, String id) {
+  for (final moment in repository.moments) {
+    if (moment.id == id) return moment;
+  }
+  return null;
 }
 
 class _HomeMenuButton extends StatelessWidget {
@@ -294,307 +228,6 @@ class _HomeMenuButton extends StatelessWidget {
     onPressed: onPressed,
     semanticLabel: 'Open navigation drawer',
     tooltip: 'Menu',
-  );
-}
-
-class WarangDrawer extends StatelessWidget {
-  const WarangDrawer({
-    super.key,
-    required this.repository,
-    required this.onClose,
-    required this.onSearch,
-    required this.onSettings,
-    required this.onAbout,
-  });
-
-  final WarangRepository repository;
-  final VoidCallback onClose;
-  final VoidCallback onSearch;
-  final VoidCallback onSettings;
-  final VoidCallback onAbout;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final profile = repository.profile;
-    final places = repository.moments
-        .map((moment) => moment.placeLabel?.trim())
-        .whereType<String>()
-        .where((place) => place.isNotEmpty)
-        .toSet()
-        .length;
-    return Material(
-      color: theme.scaffoldBackgroundColor,
-      child: SafeArea(
-        child: GestureDetector(
-          onHorizontalDragEnd: (details) {
-            if ((details.primaryVelocity ?? 0) < -180) onClose();
-          },
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 18, 12, 15),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _DrawerAvatar(profile: profile, onTap: _pickAvatar),
-                    const SizedBox(width: 13),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            profile.name.isEmpty ? 'Your Warang' : profile.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontFamily: 'Public Sans',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            'Stored on this phone only',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              fontSize: 12.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      tooltip: 'Edit name',
-                      onPressed: () => _editName(context),
-                      icon: const Icon(Icons.edit_outlined, size: 18),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  children: [
-                    _DrawerCount(
-                      value: repository.moments.length,
-                      label: 'Moments',
-                    ),
-                    const SizedBox(width: 22),
-                    _DrawerCount(value: places, label: 'Places'),
-                    const SizedBox(width: 22),
-                    _DrawerCount(
-                      value: repository.trips.length,
-                      label: 'Trips',
-                    ),
-                  ],
-                ),
-              ),
-              const Padding(
-                padding: EdgeInsets.fromLTRB(20, 18, 20, 8),
-                child: Divider(height: 1),
-              ),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  children: [
-                    _DrawerRow(
-                      icon: Icons.search,
-                      label: 'Search',
-                      onTap: onSearch,
-                    ),
-                    _DrawerRow(
-                      icon: Icons.tune,
-                      label: 'Settings',
-                      onTap: onSettings,
-                    ),
-                    _DrawerRow(
-                      icon: Icons.info_outline,
-                      label: 'About Warang',
-                      onTap: onAbout,
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 18),
-                child: Text(
-                  'WARANG  ·  VERSION 1.0.0  ·  BUILD 1',
-                  style: TextStyle(
-                    fontFamily: 'DM Mono',
-                    fontSize: 9,
-                    letterSpacing: 1.2,
-                    color: theme.colorScheme.onSurface.withValues(alpha: .42),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _editName(BuildContext context) async {
-    final controller = TextEditingController(text: repository.profile.name);
-    final name = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Your name'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          textCapitalization: TextCapitalization.words,
-          decoration: const InputDecoration(hintText: 'Name'),
-          onSubmitted: (value) => Navigator.of(context).pop(value),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(controller.text),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
-    controller.dispose();
-    if (name != null && name.trim().isNotEmpty) {
-      await repository.setName(name);
-    }
-  }
-
-  Future<void> _pickAvatar() async {
-    final picked = await ImagePicker().pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 88,
-    );
-    if (picked != null) await repository.setAvatar(File(picked.path));
-  }
-}
-
-class _DrawerAvatar extends StatelessWidget {
-  const _DrawerAvatar({required this.profile, required this.onTap});
-  final Profile profile;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final fallback = profile.name.isEmpty
-        ? 'W'
-        : profile.name.substring(0, 1).toUpperCase();
-    final path = profile.avatarRelPath;
-    if (path == null || path.isEmpty) {
-      return GestureDetector(onTap: onTap, child: _fallback(fallback));
-    }
-    return FutureBuilder<File>(
-      future: PhotoStore().resolve(path),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData || !snapshot.data!.existsSync()) {
-          return GestureDetector(onTap: onTap, child: _fallback(fallback));
-        }
-        return GestureDetector(
-          onTap: onTap,
-          child: ClipOval(
-            child: Image.file(
-              snapshot.data!,
-              width: 52,
-              height: 52,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => _fallback(fallback),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _fallback(String letter) => Container(
-    width: 52,
-    height: 52,
-    alignment: Alignment.center,
-    decoration: const BoxDecoration(
-      color: WarangColors.accent,
-      shape: BoxShape.circle,
-    ),
-    child: Text(
-      letter,
-      style: const TextStyle(
-        fontFamily: 'Bricolage Grotesque',
-        fontSize: 20,
-        fontWeight: FontWeight.w700,
-        color: WarangColors.accentInk,
-      ),
-    ),
-  );
-}
-
-class _DrawerCount extends StatelessWidget {
-  const _DrawerCount({required this.value, required this.label});
-  final int value;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        '$value',
-        style: const TextStyle(
-          fontFamily: 'DM Mono',
-          fontSize: 17,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      const SizedBox(height: 2),
-      Text(
-        label.toUpperCase(),
-        style: TextStyle(
-          fontFamily: 'DM Mono',
-          fontSize: 9,
-          letterSpacing: 1.2,
-          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .54),
-        ),
-      ),
-    ],
-  );
-}
-
-class _DrawerRow extends StatelessWidget {
-  const _DrawerRow({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => Material(
-    color: Colors.transparent,
-    child: InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              size: 20,
-              color: Theme.of(
-                context,
-              ).colorScheme.onSurface.withValues(alpha: .68),
-            ),
-            const SizedBox(width: 14),
-            Text(label, style: const TextStyle(fontSize: 15.5)),
-          ],
-        ),
-      ),
-    ),
   );
 }
 
