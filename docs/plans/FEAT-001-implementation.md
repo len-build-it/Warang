@@ -190,35 +190,35 @@ Continue automatically to Phase 5.
 ## Phase 5: Trips that receive moments
 
 Requirements: REQ-015, REQ-016, REQ-017; findings F-03, F-13; remediation 4C
-State: Not started
+State: Complete
 
 ### Tasks
 
-- [ ] Replace the New trip dialog with a full-screen form (`MaterialPageRoute`, `fullscreenDialog: true`).
+- [x] Replace the New trip dialog with a full-screen form (`MaterialPageRoute`, `fullscreenDialog: true`).
   It has labelled Trip name (required), Place (optional), and Dates (optional) fields; Dates opens `showDateRangePicker`, and Clear dates is allowed.
   Validate that start is on or before end next to the field.
   Show a helper line: "Photos you take between these dates go into this trip."
-- [ ] Reuse the same form for Edit trip (prefilled). Trip detail gets an overflow menu with Edit and Delete for non-Everyday trips.
-- [ ] Add repository methods `updateTrip` and `deleteTrip(id)`: soft-delete the trip and move its moments to Everyday in one transaction.
+- [x] Reuse the same form for Edit trip (prefilled). Trip detail gets an overflow menu with Edit and Delete for non-Everyday trips.
+- [x] Add repository methods `updateTrip` and `deleteTrip(id)`: soft-delete the trip and move its moments to Everyday in one transaction.
   Delete asks for confirmation: "Delete this trip? Its N moments move to Everyday."
-- [ ] Trip detail watches the repository (it receives a trip id, not a snapshot); when the trip is deleted, it pops.
+- [x] Trip detail watches the repository (it receives a trip id, not a snapshot); when the trip is deleted, it pops.
   Tapping a moment row calls `showMomentOnMap`.
-- [ ] Home trip cards show the planned chip when the start date is in the future, using the stored dates (no invented data).
+- [x] Home trip cards show the planned chip when the start date is in the future, using the stored dates (no invented data).
 
 ### Verification
 
-- [ ] Repository tests: dated assignment at both boundaries through `captureMoment`; update; delete moves moments to Everyday; Everyday cannot be updated or deleted.
-- [ ] `test/trips_flow_test.dart`: an end-before-start error shows inline; a created dated trip appears with its range; trip detail updates after a moment is deleted; a row tap opens Travel Mode with the moment selected; delete confirmation moves the moments.
-- [ ] Update `test/utility_screens_test.dart` for the form that replaces the dialog without weakening its validation assertions.
-- [ ] Gates 1-5 pass; renders cover the form, a dated trip card, and trip detail in both themes.
+- [x] Repository tests: dated assignment at both boundaries through `captureMoment`; update; delete moves moments to Everyday; Everyday cannot be updated or deleted.
+- [x] `test/trips_flow_test.dart`: an end-before-start error shows inline; a created dated trip appears with its range; trip detail updates after a moment is deleted; a row tap opens Travel Mode with the moment selected; delete confirmation moves the moments.
+- [x] Update `test/utility_screens_test.dart` for the form that replaces the dialog without weakening its validation assertions.
+- [x] Gates 1-5 pass; renders cover the form, a dated trip card, and trip detail in both themes.
 
 ### Review and checkpoint
 
-- [ ] Review correctness, scope, dependencies, and unrelated changes (Ponytail review).
-- [ ] Tick remediation 4C items with a dated note.
-- [ ] Update plan, evidence, and `HANDOFF.md`.
-- [ ] Stage only reviewed phase paths and verify the staged diff.
-- [ ] Commit and verify that Git reports success.
+- [x] Review correctness, scope, dependencies, and unrelated changes (Ponytail review).
+- [x] Tick remediation 4C items with a dated note.
+- [x] Update plan, evidence, and `HANDOFF.md`.
+- [x] Stage only reviewed phase paths and verify the staged diff.
+- [x] Commit and verify that Git reports success.
 
 Checkpoint message: `docs(plan): FEAT-001 phase 5 - trips`
 Continue automatically to Phase 6.

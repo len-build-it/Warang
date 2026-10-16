@@ -29,13 +29,13 @@ Architecture and behavior changes return to Len; this handoff cannot override th
 
 ## Progress and working tree
 
-Phases 1-4 complete; the latest code commit before this checkpoint is `a251436 feat(moment): edit, place, and undo delete from the card [FEAT-001 P4]`.
+Phases 1-5 complete; the latest code commit before this checkpoint is `c9aebe5 fix(theme): use accent text for focused field labels [FEAT-001 P5]`.
 Each phase's commits and checkpoint are listed by `git log --oneline --grep "FEAT-001"`.
 Preserve the existing untracked paths: `.agents/skills/*`, `.agents/templates/`, `.claude/`, `CLAUDE.md`, `releases/`, and `scripts/`.
 
 ## Checks and evidence
 
-See [docs/evidence/FEAT-001-verification.md](docs/evidence/FEAT-001-verification.md); the latest gates passed with 77 tests on 2026-10-16.
+See [docs/evidence/FEAT-001-verification.md](docs/evidence/FEAT-001-verification.md); the latest gates passed with 87 tests on 2026-10-16.
 Known environment issue: Flutter sometimes cannot delete stale, empty generated directories under `build/` or `ios/Flutter/ephemeral/`; removing the named directory and rerunning fixes it.
 No emulator or device was available, so the screen evidence comes from widget renders.
 
@@ -47,4 +47,4 @@ No emulator or device was available, so the screen evidence comes from widget re
 
 ## Next action
 
-Start Phase 5 (trips that receive moments).
+Start Phase 6 (honest Home, Settings, onboarding, and map controls).

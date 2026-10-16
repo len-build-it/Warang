@@ -316,13 +316,16 @@ dead end.
 
 ### 4C. Trips that can contain moments
 
-- [ ] Require or edit trip dates at creation, and validate start ≤ end.
-- [ ] Make the active-trip assignment rule visible and deterministic.
-- [ ] Add move-to-trip for existing Everyday moments.
+- [x] Require or edit trip dates at creation, and validate start ≤ end.
+- [x] Make the active-trip assignment rule visible and deterministic.
+- [x] Add move-to-trip for existing Everyday moments.
 - [ ] Add trip edit, delete, cover, and planned-trip states only after
   assignment works.
 - [ ] Test date-boundary assignment, no-date behavior, moving moments,
   deletion, and cover validation.
+
+> 2026-10-16 (FEAT-001 Phase 5): dated trips, the inclusive whole-day assignment rule (shown on the capture screen and the trip form), move-to-trip from the moment Edit sheet, and trip edit and delete (moments move to Everyday) shipped in commits `a9bc72a` and `4198d48` to `92ced07`.
+> Choosing a cover by hand and cover validation remain open; the cover is still the trip's first photo.
 
 **Required commits:**
 
