@@ -25,6 +25,9 @@ const _months = [
   'DEC',
 ];
 
+/// Three-letter uppercase month, e.g. `MAR`.
+String monthLabel(DateTime date) => _months[date.month - 1];
+
 /// A compact trip range in the metadata voice, with a plain dash:
 /// `MAR 12-19`, `MAR 30 - APR 4`, or `DEC 30, 2026 - JAN 2, 2027`.
 String formatTripRange(DateTime start, DateTime end) {

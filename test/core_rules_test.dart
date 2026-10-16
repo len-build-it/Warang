@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:warang/core/formatting.dart';
+import 'package:warang/core/memory_stats.dart';
 import 'package:warang/core/models.dart';
 import 'package:warang/core/trip_rules.dart';
 
@@ -102,6 +103,46 @@ void main() {
         formatTripRange(DateTime(2026, 3, 12), DateTime(2026, 3, 12)),
         'MAR 12',
       );
+    });
+  });
+
+  group('MemoryStats', () {
+    Moment moment(
+      String id,
+      DateTime at, {
+      String trip = 'everyday',
+      String? place,
+    }) => Moment(id: id, tripId: trip, capturedAt: at, placeLabel: place);
+
+    test('counts totals, distinct days, and written places', () {
+      final moments = [
+        moment('a', DateTime(2026, 9, 1, 23, 59), place: 'White Beach'),
+        moment('b', DateTime(2026, 9, 2, 0, 1), place: ' white beach '),
+        moment('c', DateTime(2026, 9, 2, 10), place: '  '),
+        moment('d', DateTime(2026, 3, 9), trip: 'boracay', place: 'Malay'),
+      ];
+      final stats = MemoryStats.from(
+        moments,
+        everydayId: 'everyday',
+        now: DateTime(2026, 10, 16),
+      );
+
+      expect(stats.moments, 4);
+      expect(stats.days, 3);
+      expect(stats.places, 2);
+      expect(stats.monthLabels, ['MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT']);
+      expect(stats.monthlyMoments, [0, 0, 0, 0, 3, 0]);
+      expect(stats.cumulativeTrips, [1, 1, 1, 1, 1, 1]);
+      expect(stats.ready, isTrue);
+    });
+
+    test('Everyday is not counted as a trip', () {
+      final stats = MemoryStats.from(
+        [moment('a', DateTime(2026, 9, 1)), moment('b', DateTime(2026, 9, 20))],
+        everydayId: 'everyday',
+        now: DateTime(2026, 9, 30),
+      );
+      expect(stats.cumulativeTrips.last, 0);
     });
   });
 
