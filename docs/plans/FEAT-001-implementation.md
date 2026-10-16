@@ -40,34 +40,34 @@ Each phase ends with a `docs(plan)` checkpoint commit that updates this plan's c
 ## Phase 1: Visual foundations and evidence tooling
 
 Requirements: REQ-001, REQ-002, REQ-003, REQ-023 (inset part); findings F-06, F-08, F-17, F-18, F-23, F-25
-State: Not started
+State: Complete
 
 ### Tasks
 
-- [ ] Add `tool/ux_screenshots_test.dart`, promoted from the 2026-10-16 audit harness saved at `docs/evidence/FEAT-001/baseline-harness.dart.txt`.
+- [x] Add `tool/ux_screenshots_test.dart`, promoted from the 2026-10-16 audit harness saved at `docs/evidence/FEAT-001/baseline-harness.dart.txt`.
   Resolve paths from `Directory.current` and the `FLUTTER_ROOT` environment variable, not from absolute paths.
   Write renders under `docs/evidence/FEAT-001/<label>/` using a `--dart-define=UX_LABEL=phase-N` value.
   Keep it outside `test/` so the default `flutter test` never runs platform-dependent goldens.
-- [ ] Fix `buildWarangTheme` so every body and label style carries `fontFamily: 'Public Sans'`, while display and title roles keep Bricolage.
-- [ ] Add a `scrim` colour to `WarangColors` (light: ink at 42%; dark: black at 55%).
+- [x] Fix `buildWarangTheme` so every body and label style carries `fontFamily: 'Public Sans'`, while display and title roles keep Bricolage.
+- [x] Add a `scrim` colour to `WarangColors` (light: ink at 42%; dark: black at 55%).
   Use it for the moment dimmer and the drawer scrim.
-- [ ] Set `outlineVariant` to the line token in the colour scheme; set the `TextButton` theme foreground to `accentText`.
-- [ ] Add the missing `WarangDivider` between the Storage rows.
-- [ ] Replace the hard-coded Home bottom padding (108) with `WarangLayout.navigationHeight(context) + 24`.
-- [ ] Soften the solid nav shadow so it no longer reads as a band (one shallow shadow, as in the glass variant).
+- [x] Set `outlineVariant` to the line token in the colour scheme; set the `TextButton` theme foreground to `accentText`.
+- [x] Add the missing `WarangDivider` between the Storage rows.
+- [x] Replace the hard-coded Home bottom padding (108) with `WarangLayout.navigationHeight(context) + 24`.
+- [x] Soften the solid nav shadow so it no longer reads as a band (one shallow shadow, as in the glass variant).
 
 ### Verification
 
-- [ ] New `test/theme_tokens_test.dart`: covers the font family on every text style in both themes, dark scrim luminance below 0.1, `outlineVariant` equal to the line token, and `accentText` contrast of at least 4.5:1 on surface.
-- [ ] Gates 1-5 pass; renders show body text in the bundled family and a darkened map under the dark moment card.
-- [ ] Record results in [`docs/evidence/FEAT-001-verification.md`](../evidence/FEAT-001-verification.md).
+- [x] New `test/theme_tokens_test.dart`: covers the font family on every text style in both themes, dark scrim luminance below 0.1, `outlineVariant` equal to the line token, and `accentText` contrast of at least 4.5:1 on surface.
+- [x] Gates 1-5 pass; renders show body text in the bundled family and a darkened map under the dark moment card.
+- [x] Record results in [`docs/evidence/FEAT-001-verification.md`](../evidence/FEAT-001-verification.md).
 
 ### Review and checkpoint
 
-- [ ] Review correctness, scope, dependencies, and unrelated changes (Ponytail review).
-- [ ] Update plan, evidence, and `HANDOFF.md`.
-- [ ] Stage only reviewed phase paths and verify the staged diff.
-- [ ] Commit and verify that Git reports success.
+- [x] Review correctness, scope, dependencies, and unrelated changes (Ponytail review).
+- [x] Update plan, evidence, and `HANDOFF.md`.
+- [x] Stage only reviewed phase paths and verify the staged diff.
+- [x] Commit and verify that Git reports success.
 
 Checkpoint message: `docs(plan): FEAT-001 phase 1 - visual foundations`
 Continue automatically to Phase 2.

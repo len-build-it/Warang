@@ -1,7 +1,7 @@
 # Current handoff
 
 Created: 2026-10-16T22:55:00+08:00
-Updated: 2026-10-16T22:55:00+08:00
+Updated: 2026-10-16T23:59:00+08:00
 State: Executing
 Feature: FEAT-001
 
@@ -29,14 +29,14 @@ Architecture and behavior changes return to Len; this handoff cannot override th
 
 ## Progress and working tree
 
-No implementation has started.
-HEAD is `dc407c5` on `master`.
-The FEAT-001 documents and baseline renders are new and uncommitted: `docs/SPEC_INDEX.md`, `docs/features/`, `docs/plans/`, `docs/evidence/`, and this file.
+Phases 1-1 complete; the latest code commit before this checkpoint is `22c02c5 style(nav): soften solid navigation shadow [FEAT-001 P1]`.
+Each phase's commits and checkpoint are listed by `git log --oneline --grep "FEAT-001"`.
 Preserve the existing untracked paths: `.agents/skills/*`, `.agents/templates/`, `.claude/`, `CLAUDE.md`, `releases/`, and `scripts/`.
 
 ## Checks and evidence
 
-The baseline is recorded in [docs/evidence/FEAT-001-verification.md](docs/evidence/FEAT-001-verification.md): analyze clean and 41 tests passing on 2026-10-16.
+See [docs/evidence/FEAT-001-verification.md](docs/evidence/FEAT-001-verification.md); the latest gates passed with 50 tests on 2026-10-16.
+Known environment issue: Flutter sometimes cannot delete stale, empty generated directories under `build/` or `ios/Flutter/ephemeral/`; removing the named directory and rerunning fixes it.
 No emulator or device was available, so the screen evidence comes from widget renders.
 
 ## Blockers and attempts
@@ -47,4 +47,4 @@ No emulator or device was available, so the screen evidence comes from widget re
 
 ## Next action
 
-Start Phase 1 of the FEAT-001 plan.
+Start Phase 2 (shell navigation and shared app state).
