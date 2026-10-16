@@ -677,6 +677,11 @@ class MomentSearchDelegate extends SearchDelegate<Moment?> {
   @override
   String? get searchFieldLabel => 'Search captions, places, or trips...';
 
+  // Typed queries read as body text, not as a display headline.
+  @override
+  TextStyle? get searchFieldStyle =>
+      const TextStyle(fontFamily: 'Public Sans', fontSize: 17);
+
   @override
   ThemeData appBarTheme(BuildContext context) {
     final theme = Theme.of(context);
