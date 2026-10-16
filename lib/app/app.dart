@@ -10,24 +10,32 @@ final repositoryProvider = Provider<WarangRepository>(
   (ref) => throw UnimplementedError(),
 );
 
-class WarangApp extends ConsumerWidget {
+class WarangApp extends StatelessWidget {
   const WarangApp({super.key});
+
+  @override
+  Widget build(BuildContext context) => MaterialApp(
+    title: 'Warang',
+    debugShowCheckedModeBanner: false,
+    theme: buildWarangTheme(Brightness.light),
+    darkTheme: buildWarangTheme(Brightness.dark),
+    themeMode: ThemeMode.system,
+    home: const WarangHome(),
+  );
+}
+
+/// Shows first run until a name exists, then the tab shell.
+class WarangHome extends ConsumerWidget {
+  const WarangHome({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final repository = ref.watch(repositoryProvider);
-    return MaterialApp(
-      title: 'Warang',
-      debugShowCheckedModeBanner: false,
-      theme: buildWarangTheme(Brightness.light),
-      darkTheme: buildWarangTheme(Brightness.dark),
-      themeMode: ThemeMode.system,
-      home: AnimatedBuilder(
-        animation: repository,
-        builder: (context, _) => repository.profile.name.isEmpty
-            ? const OnboardingScreen()
-            : const AppShell(),
-      ),
+    return AnimatedBuilder(
+      animation: repository,
+      builder: (context, _) => repository.profile.name.isEmpty
+          ? const OnboardingScreen()
+          : const AppShell(),
     );
   }
 }
