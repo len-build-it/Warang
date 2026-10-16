@@ -3,14 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/app.dart';
+import '../../app/app_state.dart';
 import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
-import '../../data/files/photo_store.dart';
 import '../map/map_tile_store.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
-  const SettingsScreen({super.key, this.mapTileStore});
-  final MapTileStore? mapTileStore;
+  const SettingsScreen({super.key});
 
   @override
   ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
@@ -19,28 +18,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _copyCaption = true;
   bool _cornerMark = true;
-  late final MapTileStore _mapTileStore;
-  late final bool _ownsMapTileStore;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.mapTileStore != null) {
-      _mapTileStore = widget.mapTileStore!;
-      _ownsMapTileStore = false;
-    } else {
-      _mapTileStore = MapTileStore();
-      _ownsMapTileStore = true;
-    }
-  }
-
-  @override
-  void dispose() {
-    if (_ownsMapTileStore) {
-      _mapTileStore.close();
-    }
-    super.dispose();
-  }
+  MapTileStore get _mapTileStore => ref.read(mapTileStoreProvider);
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +58,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             WarangSettingsCard(
               children: [
                 FutureBuilder<int>(
-                  future: PhotoStore().storageBytes(),
+                  future: ref.watch(photoStoreProvider).storageBytes(),
                   builder: (context, snapshot) => WarangSettingsRow(
                     label: 'Photos on this phone',
                     value: _formatBytes(snapshot.data ?? 0),

@@ -6,9 +6,11 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import 'app/app.dart';
+import 'app/app_state.dart';
 import 'data/db/database.dart';
 import 'data/files/photo_store.dart';
 import 'data/repository.dart';
+import 'features/map/map_tile_store.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,7 +26,10 @@ Future<void> main() async {
   await photoStore.sweepOrphans(database);
   runApp(
     ProviderScope(
-      overrides: [repositoryProvider.overrideWithValue(repository)],
+      overrides: [
+        repositoryProvider.overrideWithValue(repository),
+        mapTileStoreProvider.overrideWithValue(MapTileStore()),
+      ],
       child: const WarangApp(),
     ),
   );

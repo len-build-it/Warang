@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:warang/app/app.dart';
+import 'package:warang/app/app_state.dart';
 import 'package:warang/app/theme/tokens.dart';
 import 'package:warang/data/db/database.dart';
 import 'package:warang/data/files/photo_store.dart';
@@ -50,7 +51,10 @@ void main() {
   });
 
   Widget app(Widget child) => ProviderScope(
-    overrides: [repositoryProvider.overrideWithValue(repository)],
+    overrides: [
+      repositoryProvider.overrideWithValue(repository),
+      mapTileStoreProvider.overrideWithValue(mapTileStore),
+    ],
     child: MaterialApp(
       theme: buildWarangTheme(Brightness.light),
       darkTheme: buildWarangTheme(Brightness.dark),
@@ -126,7 +130,7 @@ void main() {
   testWidgets(
     'SettingsScreen provides back navigation AppBar, non-tappable info, and Clear action with SnackBar',
     (tester) async {
-      await tester.pumpWidget(app(SettingsScreen(mapTileStore: mapTileStore)));
+      await tester.pumpWidget(app(const SettingsScreen()));
       await tester.runAsync(() async {
         await Future.delayed(const Duration(milliseconds: 100));
       });
