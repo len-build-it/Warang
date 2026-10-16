@@ -154,35 +154,35 @@ Continue automatically to Phase 4.
 ## Phase 4: Moment card actions
 
 Requirements: REQ-011, REQ-012, REQ-013, REQ-014, REQ-021 (card part); findings F-02, F-04, F-05, F-21; remediation 4B edit and manual location
-State: Not started
+State: Complete
 
 ### Tasks
 
-- [ ] Add repository methods `updateMoment(id, {caption, placeLabel, tripId})` (empty strings clear to null), `setMomentLocation(id, lat, lng)`, and `restoreMoment(id)` (clears `deletedAt` on the moment).
-- [ ] Moment card meta: place label, otherwise formatted coordinates, otherwise `NO LOCATION`.
+- [x] Add repository methods `updateMoment(id, {caption, placeLabel, tripId})` (empty strings clear to null), `setMomentLocation(id, lat, lng)`, and `restoreMoment(id)` (clears `deletedAt` on the moment).
+- [x] Moment card meta: place label, otherwise formatted coordinates, otherwise `NO LOCATION`.
   When there are no coordinates, show `ADD LOCATION` as a tappable `inkSoft` segment that starts placement mode (design spec section 10).
-- [ ] Action row: two equal quiet buttons, `Edit` and `Delete`.
+- [x] Action row: two equal quiet buttons, `Edit` and `Delete`.
   `Edit` opens a modal bottom sheet with labelled Caption and Place name fields, a Trip dropdown (Everyday plus active trips), a "Place on map" button, and Save.
   Keyboard insets must not hide the fields.
-- [ ] Placement mode on Travel Mode: hide the card, show a fixed centre crosshair, and show a glass bar with "Move the map to the spot" plus Cancel and Confirm.
+- [x] Placement mode on Travel Mode: hide the card, show a fixed centre crosshair, and show a glass bar with "Move the map to the spot" plus Cancel and Confirm.
   Confirm calls `setMomentLocation` with the map centre, then reselects the moment. Back or Cancel exits without changes.
-- [ ] Delete: soft delete, close the card, and show "Moment deleted" with Undo for 6 s (floating above the navigation); Undo calls `restoreMoment` and reselects the moment.
-- [ ] The card handle dismisses the card on a downward drag (velocity above 300); add a neutral placeholder through `Image.frameBuilder` while the photo decodes.
-- [ ] Update `test/unavailable_actions_test.dart` so `Edit` is expected and Share still is not.
+- [x] Delete: soft delete, close the card, and show "Moment deleted" with Undo for 6 s (floating above the navigation); Undo calls `restoreMoment` and reselects the moment.
+- [x] The card handle dismisses the card on a downward drag (velocity above 300); add a neutral placeholder through `Image.frameBuilder` while the photo decodes.
+- [x] Update `test/unavailable_actions_test.dart` so `Edit` is expected and Share still is not.
 
 ### Verification
 
-- [ ] Repository tests: update, clear-to-null, move between trips, set location, and restore.
-- [ ] `test/moment_actions_test.dart`: the Edit sheet saves and the card updates; placement Confirm writes the centre and Cancel does not; Delete followed by Undo restores the moment; the coordinates meta appears when the label is missing; a downward drag dismisses the card.
-- [ ] Gates 1-5 pass; card, sheet, and placement renders are checked in both themes; the accent count on the card stays 0.
+- [x] Repository tests: update, clear-to-null, move between trips, set location, and restore.
+- [x] `test/moment_actions_test.dart`: the Edit sheet saves and the card updates; placement Confirm writes the centre and Cancel does not; Delete followed by Undo restores the moment; the coordinates meta appears when the label is missing; a downward drag dismisses the card.
+- [x] Gates 1-5 pass; card, sheet, and placement renders are checked in both themes; the accent count on the card stays 0.
 
 ### Review and checkpoint
 
-- [ ] Review correctness, scope, dependencies, and unrelated changes (Ponytail review).
-- [ ] Tick remediation 4B edit and manual-location items with a dated note; leave the pager and sharing unticked.
-- [ ] Update plan, evidence, and `HANDOFF.md`.
-- [ ] Stage only reviewed phase paths and verify the staged diff.
-- [ ] Commit and verify that Git reports success.
+- [x] Review correctness, scope, dependencies, and unrelated changes (Ponytail review).
+- [x] Tick remediation 4B edit and manual-location items with a dated note; leave the pager and sharing unticked.
+- [x] Update plan, evidence, and `HANDOFF.md`.
+- [x] Stage only reviewed phase paths and verify the staged diff.
+- [x] Commit and verify that Git reports success.
 
 Checkpoint message: `docs(plan): FEAT-001 phase 4 - moment actions`
 Continue automatically to Phase 5.

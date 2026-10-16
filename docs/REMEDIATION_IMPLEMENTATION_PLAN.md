@@ -293,14 +293,18 @@ dead end.
 
 ### 4B. Moment actions
 
-- [ ] Implement caption, place-label, date, and manual map-pin editing.
-- [ ] Make “Add location” a real action.
+- [x] Implement caption, place-label, date, and manual map-pin editing.
+- [x] Make “Add location” a real action.
 - [ ] Implement either a real nearby-moment pager or remove that interaction
   entirely. Do not ship decorative pagination.
 - [ ] Implement raw-photo sharing first. Add rendered card sharing and preview
   only after raw sharing works.
 - [ ] Add widget/repository tests for edit, manual location, deletion, and
   sharing hand-off.
+
+> 2026-10-16 (FEAT-001 Phase 4): caption, place label, trip, and manual pin editing plus Add location shipped in commits `88f3526` to `a251436`.
+> Date editing was left out: capture time is recorded by the device and editing it would silently move moments between dated trips.
+> The nearby-moment pager and sharing remain open.
 
 **Required commits:**
 
