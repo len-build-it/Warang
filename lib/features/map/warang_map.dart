@@ -22,6 +22,8 @@ class WarangMapSurface extends StatefulWidget {
     required this.dark,
     required this.onMomentTap,
     this.onMapTap,
+    this.tileStore,
+    this.photoStore,
   });
 
   final List<Moment> moments;
@@ -31,13 +33,18 @@ class WarangMapSurface extends StatefulWidget {
   final ValueChanged<Moment> onMomentTap;
   final VoidCallback? onMapTap;
 
+  /// Shared stores from the composition root; the map creates and owns its
+  /// own only when they are omitted.
+  final MapTileStore? tileStore;
+  final PhotoStore? photoStore;
+
   @override
   WarangMapSurfaceState createState() => WarangMapSurfaceState();
 }
 
 class WarangMapSurfaceState extends State<WarangMapSurface> {
-  late final MapTileStore _tileStore = MapTileStore();
-  final _photoStore = PhotoStore();
+  late final MapTileStore _tileStore = widget.tileStore ?? MapTileStore();
+  late final PhotoStore _photoStore = widget.photoStore ?? PhotoStore();
   final _mapController = MapController();
   Position? _position;
   DateTime? _staleSince;
@@ -47,7 +54,7 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
 
   @override
   void dispose() {
-    _tileStore.close();
+    if (widget.tileStore == null) _tileStore.close();
     super.dispose();
   }
 
