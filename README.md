@@ -67,7 +67,6 @@ Amber `#E8A020` against sage-grey neutrals, in both light and dark, following yo
 | Database | Drift over SQLite, with FTS5 search |
 | Map | `flutter_map` + `latlong2`, cache-first custom tile provider |
 | Location | `geolocator`, one-shot reads only |
-| Planned sharing/archive primitives | `share_plus` + `archive` (not exposed yet) |
 
 Android first, iOS to follow. No platform-only dependencies.
 
@@ -111,9 +110,7 @@ lib/
     news_tab/     Bundled offline notes
     onboarding/   First run
     settings/     Settings
-    share/        Planned share hand-off primitive
     travel_mode/  Capture, map, search, and moment cards
-    travelbook/   Unexposed archive service under remediation
 docs/             Implementation plan and design spec
 design/           Brand assets and the design canvas export
 assets/           Fonts and logos

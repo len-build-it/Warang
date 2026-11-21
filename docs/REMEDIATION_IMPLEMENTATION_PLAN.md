@@ -223,6 +223,8 @@ Choose and record the restore policy before writing code:
 **Goal:** sharing a trip is safe, read-only on import, and reachable only when
 the complete flow works.
 
+> 2026-11-21: unexposed `TravelbookService` and `WarangShareService` removed in FEAT-002 (last present at `a85a915`); rebuild against this phase's spec.
+
 ### Tasks
 
 - [ ] Decode every imported image before storage and cap decoded pixel count
