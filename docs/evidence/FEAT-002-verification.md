@@ -1,7 +1,7 @@
 # Verification: FEAT-002
 
 Created: 2026-11-21T17:07:00+08:00
-Updated: 2026-11-21T17:15:00+08:00
+Updated: 2026-11-21T17:21:00+08:00
 
 | Requirement / phase | Check or scenario | Environment and conditions | Actual result | When run | Evidence / limitations |
 | --- | --- | --- | --- | --- | --- |
@@ -18,9 +18,18 @@ Updated: 2026-11-21T17:15:00+08:00
 | Phase 2 | Gate 4: `flutter build apk --debug` | Windows host | Passed under stated conditions (`Built build\app\outputs\flutter-apk\app-debug.apk`, exit 0) | 2026-11-21T17:13:20+08:00 | - |
 | Phase 2 | Gate 5: `flutter test tool/ux_screenshots_test.dart --dart-define=UX_LABEL=feat-002-baseline` | Windows host | Passed under stated conditions (6/8 exact pixel match; only clock-dependent `12_capture_dark.png` and `12_capture_light.png` differed by 0.03% / 372px) | 2026-11-21T17:14:12+08:00 | Masked diffs verified by eye in both themes: only the clock digits changed (`4:58 PM` to `5:14 PM`). Deleted `tool/failures/`. |
 | Phase 2 | Gate 6: Phase 2 success metrics | Windows host | Passed under stated conditions: `WarangToggle` `0`, `CREATE TABLE` `3`, `onCreate` `0`, `Uuid` in `photo_store.dart` `0`, `writeValue('activeProfileId'` `1`, `writeValue('everydayTripId'` `1`, hand-written `lib/` lines `7665` (<= 7730) | 2026-11-21T17:14:12+08:00 | Existing test `'LRU eviction removes the oldest tile first'` passed unchanged. |
+| Phase 3 (REQ-005, REQ-006, D-2) | Gate 1: `dart format lib test tool` and `--set-exit-if-changed` | Windows host | Passed under stated conditions (`Formatted 53 files (0 changed)`, exit 0) | 2026-11-21T17:16:35+08:00 | - |
+| Phase 3 | Gate 2: `flutter analyze` | Windows host | Passed under stated conditions (`No issues found!`) | 2026-11-21T17:16:41+08:00 | - |
+| Phase 3 | Gate 3: `flutter test` | Windows host | Passed under stated conditions (`+97: All tests passed!`, matches expected 97) | 2026-11-21T17:17:05+08:00 | Replaced permanently-denied camera test with `locationReaderProvider returns null when permission is denied` (via `locationPermissionProvider`). |
+| Phase 3 | Gate 4: `flutter build apk --debug` | Windows host | Passed under stated conditions (`Built build\app\outputs\flutter-apk\app-debug.apk`, exit 0) | 2026-11-21T17:19:40+08:00 | - |
+| Phase 3 | Gate 5: `flutter test tool/ux_screenshots_test.dart --dart-define=UX_LABEL=feat-002-baseline` | Windows host | Passed under stated conditions (6/8 exact pixel match; only clock-dependent `12_capture_dark.png` and `12_capture_light.png` differed by 0.03% / 365px) | 2026-11-21T17:20:24+08:00 | Masked diffs verified by eye in both themes: only the clock digits changed (`4:58 PM` to `5:20 PM`). Deleted `tool/failures/`. |
+| Phase 3 | Gate 6: Phase 3 success metrics | Windows host | Passed under stated conditions: `permission_handler` `0`, `android.permission.CAMERA` `0`, `cameraPermissionProvider\|openAppSettings` `0`, hand-written `lib/` lines `7650` (<= 7710) | 2026-11-21T17:20:24+08:00 | Direct non-SDK dependencies in `pubspec.yaml`: 13 (down from 17). |
 
 ## Pending physical-device checklist (Len)
 
 Physical-device validation is performed by Len and remains pending until Len supplies results.
 
-- [ ] FEAT-001 physical-device checklist (tracked in [FEAT-001-verification.md](FEAT-001-verification.md)).
+- [ ] Capture opens the system camera with no Warang permission dialog. (Pending)
+- [ ] The photo saves and pins. (Pending)
+- [ ] Denying location still saves the photo with NO LOCATION. (Pending)
+- [ ] FEAT-001 physical-device checklist (tracked in [FEAT-001-verification.md](FEAT-001-verification.md)). (Pending)

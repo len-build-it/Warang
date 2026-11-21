@@ -146,28 +146,28 @@ Continue automatically to Phase 3.
 ## Phase 3: Drop permission_handler (decision D-2)
 
 Requirements: REQ-005, REQ-006
-State: Awaiting approval
+State: Complete
 Expected test count: 97 - 1 (permanently-denied camera test) + 1 (new location-denied test) = 97
 
 Skip this whole phase if Len's approval rejects D-2; record "skipped by decision" in the plan and evidence, then continue to Phase 4 with a dependency target of 14.
 
 ### Tasks
 
-- [ ] Remove `<uses-permission android:name="android.permission.CAMERA" />` from `android/app/src/main/AndroidManifest.xml`.
+- [x] Remove `<uses-permission android:name="android.permission.CAMERA" />` from `android/app/src/main/AndroidManifest.xml`.
   Keep both location permissions.
-- [ ] In `lib/app/device_providers.dart`, delete `CameraPermissionRequest` and `cameraPermissionProvider`.
+- [x] In `lib/app/device_providers.dart`, delete `CameraPermissionRequest` and `cameraPermissionProvider`.
   Change `locationReaderProvider` to call `Geolocator.checkPermission()`, then `Geolocator.requestPermission()` only when the result is `denied`, and return `null` for `denied`, `deniedForever`, or `unableToDetermine`.
   Keep the try/catch, the 3-second `timeLimit`, and the medium accuracy.
-- [ ] In `lib/features/travel_mode/travel_mode_screen.dart`, delete the camera permission check and the two snackbars at the start of `_capture`, so it pushes `CaptureScreen` directly.
+- [x] In `lib/features/travel_mode/travel_mode_screen.dart`, delete the camera permission check and the two snackbars at the start of `_capture`, so it pushes `CaptureScreen` directly.
   Keep the save confirmation snackbar.
-- [ ] Remove the `permission_handler` import from `lib/` and `test/`, and remove it from `pubspec.yaml`; run `flutter pub get`.
-- [ ] Update `test/capture_flow_test.dart` and `test/user_journey_test.dart`: drop the `cameraPermissionProvider` overrides and delete `'a permanently denied camera offers system settings'`.
+- [x] Remove the `permission_handler` import from `lib/` and `test/`, and remove it from `pubspec.yaml`; run `flutter pub get`.
+- [x] Update `test/capture_flow_test.dart` and `test/user_journey_test.dart`: drop the `cameraPermissionProvider` overrides and delete `'a permanently denied camera offers system settings'`.
   Do not weaken any other assertion.
-- [ ] If `test/android_hardening_test.dart` checks manifest permissions, update it to expect no CAMERA permission and both location permissions.
+- [x] If `test/android_hardening_test.dart` checks manifest permissions, update it to expect no CAMERA permission and both location permissions.
 
 ### New tests
 
-- [ ] One test showing that the location reader returns `null` when permission is denied.
+- [x] One test showing that the location reader returns `null` when permission is denied.
   If the Geolocator static calls cannot be faked without a new dependency, extract the permission check into a function parameter or provider, in the same style as the existing device adapters, and test through that seam.
 
 ### Success metrics
@@ -179,16 +179,16 @@ Skip this whole phase if Len's approval rejects D-2; record "skipped by decision
 
 ### Verification
 
-- [ ] Gates 1-6 pass with 97 tests.
-- [ ] Add these lines to the pending physical-device checklist in the evidence log, for Len: "Capture opens the system camera with no Warang permission dialog," "The photo saves and pins," and "Denying location still saves the photo with NO LOCATION."
+- [x] Gates 1-6 pass with 97 tests.
+- [x] Add these lines to the pending physical-device checklist in the evidence log, for Len: "Capture opens the system camera with no Warang permission dialog," "The photo saves and pins," and "Denying location still saves the photo with NO LOCATION."
   Mark them pending; do not claim them.
 
 ### Review and checkpoint
 
-- [ ] Review correctness, scope, dependencies, and unrelated changes (Ponytail review).
-- [ ] Update plan, evidence, and `HANDOFF.md`.
-- [ ] Stage only reviewed phase paths and verify the staged diff.
-- [ ] Commit and verify that Git reports success.
+- [x] Review correctness, scope, dependencies, and unrelated changes (Ponytail review).
+- [x] Update plan, evidence, and `HANDOFF.md`.
+- [x] Stage only reviewed phase paths and verify the staged diff.
+- [x] Commit and verify that Git reports success.
 
 Checkpoint message: `docs(plan): FEAT-002 phase 3 - drop permission_handler`
 Continue automatically to Phase 4.

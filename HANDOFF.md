@@ -1,8 +1,8 @@
 # Current handoff
 
 Created: 2026-10-16T22:55:00+08:00
-Updated: 2026-11-21T17:15:00+08:00
-State: FEAT-002 Phase 2 complete; continuing to Phase 3
+Updated: 2026-11-21T17:21:00+08:00
+State: FEAT-002 Phase 3 complete; continuing to Phase 4
 Feature: FEAT-002 (FEAT-001 complete, physical-device checks pending)
 
 ## Read first
@@ -29,7 +29,7 @@ Allowed phases: Phases 1-4 continuously without hard stops (Len's instruction, 2
 ## Progress and working tree
 
 FEAT-001 is complete (`a85a915`).
-FEAT-002 revision 1 approved at `cfeccc6`; visual baseline committed at `5d679f1`; Phase 1 complete at `c1602c5`; Phase 2 complete (`WarangToggle` removed, `MapTileStore` unified in `onOpen` + byte-free `evictToLimit`, `seedDefaults` deduplicated, `PhotoStore` uses `newId()`, gates 1-6 passed with 97 tests and 7665 `lib/` lines).
+FEAT-002 revision 1 approved at `cfeccc6`; visual baseline committed at `5d679f1`; Phase 1 complete at `c1602c5`; Phase 2 complete at `1ac6fe8`; Phase 3 complete (`permission_handler` and Android `CAMERA` permission removed, Geolocator permission check + `locationPermissionProvider` test seam added, gates 1-6 passed with 97 tests, 13 direct dependencies, and 7650 `lib/` lines).
 Preserve the existing untracked paths: `.agents/skills/*`, `.agents/templates/`, `.claude/`, `CLAUDE.md`, `releases/`, and `scripts/`.
 
 ## Checks and evidence
@@ -46,5 +46,5 @@ FEAT-001 evidence: [docs/evidence/FEAT-001-verification.md](docs/evidence/FEAT-0
 
 ## Next action
 
-Continue to Phase 3 of [docs/plans/FEAT-002-implementation.md](docs/plans/FEAT-002-implementation.md).
-Len still owes the FEAT-001 physical-device checklist.
+Continue to Phase 4 of [docs/plans/FEAT-002-implementation.md](docs/plans/FEAT-002-implementation.md).
+Len still owes the FEAT-001 and FEAT-002 physical-device checklists.
