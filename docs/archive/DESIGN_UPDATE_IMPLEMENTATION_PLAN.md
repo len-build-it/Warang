@@ -79,7 +79,7 @@ Read these local references before editing:
 2. `README.md` for the currently advertised product.
 3. `docs/REMEDIATION_IMPLEMENTATION_PLAN.md` for unavailable features and safety constraints.
 4. `docs/IMPLEMENTATION_PLAN.md`, including section 3's commit protocol.
-5. `docs/DESIGN_SPEC.md`, `warang-design-prompt.md`, and `design/warang-canvas.html` for the existing visual identity.
+5. `docs/DESIGN_SPEC.md`, `docs/archive/warang-design-prompt.md`, and `design/warang-canvas.html` for the existing visual identity.
 6. The installed Len's Toolkit skills and this root plan.
 
 This user-requested redesign is a scoped visual update.

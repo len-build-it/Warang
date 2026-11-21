@@ -342,7 +342,7 @@ Seeded on first run with `isEveryday = true`. Every capture that has no active t
 ### Phase 0 — Scaffold
 **Goal:** an empty app that builds and runs.
 
-- [x] **T0.1** `flutter create` into the existing repo without clobbering `.git` or `warang-design-prompt.md`. Package id `ph.warang.app`.
+- [x] **T0.1** `flutter create` into the existing repo without clobbering `.git` or `warang-design-prompt.md` (archived at `docs/archive/warang-design-prompt.md`). Package id `ph.warang.app`.
 - [x] **T0.2** Write `.gitignore` per §3.
 - [ ] **T0.3** Add all dependencies from §4 to `pubspec.yaml`.
 - [ ] **T0.4** Create the folder layout from §4 with a `.gitkeep` in each empty dir.
