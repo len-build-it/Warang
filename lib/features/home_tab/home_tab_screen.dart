@@ -17,10 +17,7 @@ import 'trip_detail_screen.dart';
 import 'trip_form_screen.dart';
 
 class HomeTabScreen extends ConsumerWidget {
-  const HomeTabScreen({super.key, this.onSearch});
-
-  /// Opens moment search; null hides the header search action.
-  final VoidCallback? onSearch;
+  const HomeTabScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -28,24 +25,16 @@ class HomeTabScreen extends ConsumerWidget {
     final photoStore = ref.watch(photoStoreProvider);
     return AnimatedBuilder(
       animation: repository,
-      builder: (context, _) => _HomeTabContent(
-        repository: repository,
-        photoStore: photoStore,
-        onSearch: onSearch,
-      ),
+      builder: (context, _) =>
+          _HomeTabContent(repository: repository, photoStore: photoStore),
     );
   }
 }
 
 class _HomeTabContent extends StatefulWidget {
-  const _HomeTabContent({
-    required this.repository,
-    required this.photoStore,
-    this.onSearch,
-  });
+  const _HomeTabContent({required this.repository, required this.photoStore});
   final WarangRepository repository;
   final PhotoStore photoStore;
-  final VoidCallback? onSearch;
 
   @override
   State<_HomeTabContent> createState() => _HomeTabContentState();
@@ -109,16 +98,10 @@ class _HomeTabContentState extends State<_HomeTabContent> {
               children: [
                 Expanded(
                   child: Text(
-                    'Home',
+                    'Trips',
                     style: Theme.of(context).textTheme.displaySmall,
                   ),
                 ),
-                if (widget.onSearch != null)
-                  IconButton(
-                    tooltip: 'Search moments',
-                    onPressed: widget.onSearch,
-                    icon: const WarangIcon(WarangGlyphs.search),
-                  ),
               ],
             ),
             const SizedBox(height: 7),

@@ -16,8 +16,8 @@ import 'package:warang/data/repository.dart';
 import 'package:warang/features/capture/capture_screen.dart';
 import 'package:warang/features/home_tab/home_tab_screen.dart';
 import 'package:warang/features/map/map_tile_store.dart';
+import 'package:warang/features/search/search_tab_screen.dart';
 import 'package:warang/features/settings/settings_screen.dart';
-import 'package:warang/features/travel_mode/travel_mode_screen.dart';
 
 void main() {
   late WarangDatabase database;
@@ -64,16 +64,17 @@ void main() {
   );
 
   testWidgets(
-    'MomentSearchDelegate shows explicit empty state on unmatched query',
+    'MomentSearchResults shows explicit empty state on unmatched query',
     (tester) async {
-      final delegate = MomentSearchDelegate(repository, photoStore: photoStore);
-      delegate.query = 'nonexistentquery123';
-
       await tester.pumpWidget(
         app(
-          Builder(
-            builder: (context) =>
-                Scaffold(body: delegate.buildResults(context)),
+          Scaffold(
+            body: MomentSearchResults(
+              repository: repository,
+              photoStore: photoStore,
+              query: 'nonexistentquery123',
+              onSelected: (_) {},
+            ),
           ),
         ),
       );
@@ -96,7 +97,7 @@ void main() {
   );
 
   testWidgets(
-    'MomentSearchDelegate renders readable caption, place, and plain dash',
+    'MomentSearchResults renders readable caption, place, and plain dash',
     (tester) async {
       await tester.runAsync(() async {
         await repository.addMoment(
@@ -106,14 +107,15 @@ void main() {
         );
       });
 
-      final delegate = MomentSearchDelegate(repository, photoStore: photoStore);
-      delegate.query = 'Boracay';
-
       await tester.pumpWidget(
         app(
-          Builder(
-            builder: (context) =>
-                Scaffold(body: delegate.buildResults(context)),
+          Scaffold(
+            body: MomentSearchResults(
+              repository: repository,
+              photoStore: photoStore,
+              query: 'Boracay',
+              onSelected: (_) {},
+            ),
           ),
         ),
       );

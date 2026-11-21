@@ -68,7 +68,7 @@ void main() {
       ),
     );
     await tester.pump(const Duration(milliseconds: 100));
-    await tester.tap(find.text('Home'));
+    await tester.tap(find.bySemanticsLabel('Trips'));
     await settle(tester);
     return ProviderScope.containerOf(tester.element(find.byType(AppShell)));
   }

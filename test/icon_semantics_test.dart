@@ -122,10 +122,13 @@ void main() {
     container.read(selectedMomentProvider.notifier).clear();
     await settle(tester);
 
-    await tester.tap(find.byTooltip('Menu'));
+    await tester.tap(find.byTooltip('You'));
     await settle(tester);
-    expectLabelledIcons(tester, 'drawer');
-    await tester.tap(find.text('Search'));
+    expectLabelledIcons(tester, 'You sheet');
+    await tester.binding.handlePopRoute();
+    await settle(tester);
+
+    await tester.tap(find.bySemanticsLabel('Search').first);
     await settle(tester);
     expectLabelledIcons(tester, 'search');
     await tester.enterText(find.byType(TextField), 'nothing-matches');
@@ -134,25 +137,23 @@ void main() {
     );
     await settle(tester);
     expectLabelledIcons(tester, 'search with no results');
-    await tester.binding.handlePopRoute();
-    await settle(tester);
 
-    await tester.tap(find.text('Home'));
+    await tester.tap(find.bySemanticsLabel('Trips').first);
     await settle(tester);
-    expectLabelledIcons(tester, 'home');
+    expectLabelledIcons(tester, 'trips');
     await tester.tap(find.text('Boracay'));
     await settle(tester);
     expectLabelledIcons(tester, 'trip detail');
     await tester.binding.handlePopRoute();
     await settle(tester);
 
-    await tester.tap(find.text('News'));
+    await tester.tap(find.bySemanticsLabel('News').first);
     await settle(tester);
     expectLabelledIcons(tester, 'news');
 
-    await tester.tap(find.text('Travel Mode'));
+    await tester.tap(find.bySemanticsLabel('Map').first);
     await settle(tester);
-    await tester.tap(find.byTooltip('Menu'));
+    await tester.tap(find.byTooltip('You'));
     await settle(tester);
     await tester.tap(find.text('Settings'));
     await settle(tester);

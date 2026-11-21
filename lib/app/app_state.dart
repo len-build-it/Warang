@@ -18,7 +18,15 @@ final mapTileStoreProvider = Provider<MapTileStore>((ref) {
   return store;
 });
 
-/// Index of the visible shell tab: 0 Travel Mode, 1 Home, 2 News.
+/// The shell tabs, in dock order (capture sits between Trips and News).
+abstract final class ShellTab {
+  static const map = 0;
+  static const trips = 1;
+  static const news = 2;
+  static const search = 3;
+}
+
+/// Index of the visible shell tab; see [ShellTab].
 final shellTabProvider = NotifierProvider<ShellTabNotifier, int>(
   ShellTabNotifier.new,
 );
@@ -53,9 +61,9 @@ class SelectedMomentNotifier extends Notifier<MomentSelection?> {
   void clear() => state = null;
 }
 
-/// Opens [moment] over the Travel Mode map from anywhere in the app.
+/// Opens [moment] over the map from anywhere in the app.
 void showMomentOnMap(BuildContext context, WidgetRef ref, Moment moment) {
   Navigator.of(context).popUntil((route) => route.isFirst);
-  ref.read(shellTabProvider.notifier).select(0);
+  ref.read(shellTabProvider.notifier).select(ShellTab.map);
   ref.read(selectedMomentProvider.notifier).select(moment, focus: true);
 }

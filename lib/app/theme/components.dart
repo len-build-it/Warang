@@ -3,7 +3,10 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
+import 'clay.dart';
 import 'clay_components.dart';
+import 'motion.dart';
+import 'palette.dart';
 import 'tokens.dart';
 import 'warang_icons.dart';
 
@@ -175,76 +178,80 @@ class WarangTopScrim extends StatelessWidget {
   }
 }
 
-class WarangCaptureButton extends StatefulWidget {
+/// C2 capture button: a 76 amber clay disc inside a 4 px `surface` ring,
+/// with the aperture ring pressed into it.
+///
+/// Pressing plays `press` and a light haptic; the camera opens on release
+/// with no added delay while the button springs back underneath.
+class WarangCaptureButton extends StatelessWidget {
   const WarangCaptureButton({super.key, required this.onPressed});
   final VoidCallback onPressed;
 
-  @override
-  State<WarangCaptureButton> createState() => _WarangCaptureButtonState();
-}
-
-class _WarangCaptureButtonState extends State<WarangCaptureButton> {
-  bool _pressed = false;
-
-  void _setPressed(bool pressed) {
-    if (mounted && _pressed != pressed) setState(() => _pressed = pressed);
-  }
+  static const diameter = 76.0;
 
   @override
-  Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
-    return Semantics(
-      button: true,
-      label: 'Capture',
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: widget.onPressed,
-        onTapDown: (_) => _setPressed(true),
-        onTapUp: (_) => _setPressed(false),
-        onTapCancel: () => _setPressed(false),
-        child: AnimatedScale(
-          scale: _pressed ? .96 : 1,
-          duration: const Duration(milliseconds: 90),
-          curve: Curves.easeOut,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: WarangColors.accent,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color:
-                      (dark
-                              ? Colors.black
-                              : Theme.of(context).colorScheme.onSurface)
-                          .withValues(alpha: dark ? .55 : .26),
-                  blurRadius: dark ? 28 : 24,
-                  offset: Offset(0, dark ? 12 : 10),
-                ),
-              ],
-            ),
-            child: const SizedBox(
-              width: 74,
-              height: 74,
-              child: Center(
-                child: SizedBox(
-                  width: 30,
-                  height: 30,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.fromBorderSide(
-                        BorderSide(color: WarangColors.accentInk, width: 2.5),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+  Widget build(BuildContext context) => ClayPressable(
+    onPressed: onPressed,
+    haptic: WarangHaptic.light,
+    semanticLabel: 'Capture a moment',
+    builder: (context, press) => ClaySurface(
+      depth: ClayDepth.clay3,
+      press: press,
+      circle: true,
+      padding: const EdgeInsets.all(4),
+      child: ClaySurface(
+        depth: ClayDepth.clay1,
+        press: press,
+        tone: WarangKeepsake.amber,
+        circle: true,
+        child: const SizedBox.square(
+          dimension: diameter,
+          child: Center(
+            child: CustomPaint(
+              size: Size.square(30),
+              painter: _AperturePainter(),
             ),
           ),
         ),
       ),
+    ),
+  );
+}
+
+/// The aperture: a 2.5 px `ink` ring with an inset shade inside it.
+class _AperturePainter extends CustomPainter {
+  const _AperturePainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = size.center(Offset.zero);
+    final radius = size.shortestSide / 2 - 1.25;
+    final inner = Rect.fromCircle(center: center, radius: radius);
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            WarangKeepsake.amber.clayShade,
+            WarangKeepsake.amber.fill.withValues(alpha: 0),
+          ],
+        ).createShader(inner),
+    );
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.5
+        ..color = WarangColors.lightInk,
     );
   }
+
+  @override
+  bool shouldRepaint(covariant _AperturePainter oldDelegate) => false;
 }
 
 class WarangPositionMarker extends StatefulWidget {

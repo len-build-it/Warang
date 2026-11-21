@@ -216,9 +216,12 @@ void main() {
       await tester.pumpWidget(host(const WarangHome(), brightness));
       await shot(tester, '03_travel_filled_$theme');
 
-      await tester.tap(find.byTooltip('Menu'));
-      await shot(tester, '05_drawer_$theme');
-      await tester.tap(find.text('Search'));
+      await tester.tap(find.byTooltip('You'));
+      await shot(tester, '05_you_sheet_$theme');
+      // A tap on the dimmer above the sheet closes it.
+      await tester.tapAt(const Offset(195, 60));
+      await settle(tester);
+      await tester.tap(find.bySemanticsLabel('Search').first);
       await settle(tester);
       await tester.enterText(find.byType(TextField), 'beach');
       await shot(tester, '06_search_$theme');
@@ -233,7 +236,7 @@ void main() {
       await tester.tapAt(const Offset(200, 120));
       await settle(tester);
 
-      await tester.tap(find.text('Home'));
+      await tester.tap(find.bySemanticsLabel('Trips').first);
       await shot(tester, '07_home_$theme');
       await tester.tap(find.text('New trip'));
       await shot(tester, '15_trip_form_$theme');
@@ -248,12 +251,12 @@ void main() {
       await tester.pageBack();
       await settle(tester);
 
-      await tester.tap(find.text('News'));
+      await tester.tap(find.bySemanticsLabel('News').first);
       await shot(tester, '10_news_$theme');
 
-      await tester.tap(find.text('Travel Mode'));
+      await tester.tap(find.bySemanticsLabel('Map').first);
       await settle(tester);
-      await tester.tap(find.byTooltip('Menu'));
+      await tester.tap(find.byTooltip('You'));
       await settle(tester);
       await tester.tap(find.text('Settings'));
       await shot(tester, '11_settings_$theme');

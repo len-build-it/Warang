@@ -165,16 +165,33 @@ abstract final class WarangGlass {
 }
 
 abstract final class WarangLayout {
-  static const mobileNavHeight = 64.0;
-  static const mobileNavMarginVertical = 8.0;
-  static const mobileNavMarginHorizontal = 12.0;
+  /// C1 dock: a 72 tall pill, 12 from each side, 8 above the bottom inset.
+  static const dockHeight = 72.0;
+  static const dockMarginBottom = 8.0;
+  static const dockMarginHorizontal = 12.0;
 
+  /// The C2 capture button, with its 4 px ring, centred on the dock's top
+  /// edge.
+  static const captureOuterDiameter = 84.0;
+
+  /// Screens at least this wide use the left rail instead of the dock.
+  static const railBreakpoint = 900.0;
+
+  static bool usesRail(BuildContext context) =>
+      MediaQuery.sizeOf(context).width >= railBreakpoint;
+
+  /// The height the dock covers from the bottom of the screen, or zero when
+  /// the rail is in use.
   static double navigationHeight(BuildContext context) {
-    if (MediaQuery.sizeOf(context).width >= 900) return 0.0;
-    final bottom = MediaQuery.paddingOf(context).bottom;
-    return mobileNavHeight +
-        mobileNavMarginVertical +
-        (bottom > mobileNavMarginVertical ? bottom : mobileNavMarginVertical);
+    if (usesRail(context)) return 0.0;
+    return dockHeight + dockMarginBottom + MediaQuery.paddingOf(context).bottom;
+  }
+
+  /// Content placed above this height clears the dock and the raised
+  /// capture button.
+  static double dockClearance(BuildContext context) {
+    if (usesRail(context)) return 0.0;
+    return navigationHeight(context) + captureOuterDiameter / 2;
   }
 }
 

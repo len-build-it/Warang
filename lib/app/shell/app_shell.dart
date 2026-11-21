@@ -2,16 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/models.dart';
+import '../../features/capture/capture_screen.dart';
 import '../../features/home_tab/home_tab_screen.dart';
 import '../../features/news_tab/news_tab_screen.dart';
+import '../../features/search/search_tab_screen.dart';
 import '../../features/settings/settings_screen.dart';
 import '../../features/travel_mode/travel_mode_screen.dart';
 import '../app.dart';
 import '../app_state.dart';
 import '../theme/components.dart';
 import '../theme/tokens.dart';
-import 'warang_drawer.dart';
+import 'dock.dart';
+import 'you_sheet.dart';
 
+/// The tab shell: Map, Trips, News, and Search behind the clay dock, with
+/// capture in the middle of it and profile, Settings, and About in the You
+/// sheet behind the avatar bubble.
 class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key});
 
@@ -20,64 +26,59 @@ class AppShell extends ConsumerStatefulWidget {
 }
 
 class _AppShellState extends ConsumerState<AppShell> {
-  final _scaffoldKey = GlobalKey<ScaffoldState>();
-  bool _drawerOpen = false;
+  final _travelKey = GlobalKey<TravelModeScreenState>();
 
   static const _items = [
-    _ShellItem(glyph: WarangGlyphs.map, label: 'Travel Mode'),
-    _ShellItem(glyph: WarangGlyphs.trips, label: 'Home'),
-    _ShellItem(glyph: WarangGlyphs.news, label: 'News'),
+    DockItem(glyph: WarangGlyphs.map, label: 'Map'),
+    DockItem(glyph: WarangGlyphs.trips, label: 'Trips'),
+    DockItem(glyph: WarangGlyphs.news, label: 'News'),
+    DockItem(glyph: WarangGlyphs.search, label: 'Search'),
   ];
 
   late final _tabs = [
-    TravelModeScreen(onOpenMenu: _openDrawer),
-    HomeTabScreen(onSearch: _openSearch),
+    TravelModeScreen(key: _travelKey, onOpenYou: _openYou),
+    const HomeTabScreen(),
     const NewsTabScreen(),
+    const SearchTabScreen(),
   ];
 
-  void _openDrawer() => _scaffoldKey.currentState?.openDrawer();
-
-  void _closeDrawer() => _scaffoldKey.currentState?.closeDrawer();
-
-  Future<void> _openSearch() async {
-    _closeDrawer();
-    final repository = ref.read(repositoryProvider);
-    final moment = await showSearch<Moment?>(
-      context: context,
-      delegate: MomentSearchDelegate(
-        repository,
-        photoStore: ref.read(photoStoreProvider),
-      ),
-    );
-    if (moment != null && mounted) showMomentOnMap(context, ref, moment);
-  }
-
-  void _openSettings() {
-    _closeDrawer();
-    Navigator.of(
+  /// Opens the camera on release, with no delay, from any tab. A saved
+  /// moment returns to the map, where its pin is shown.
+  Future<void> _capture() async {
+    final moment = await Navigator.of(
       context,
-    ).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
+    ).push<Moment>(MaterialPageRoute(builder: (_) => const CaptureScreen()));
+    if (moment == null || !mounted) return;
+    ref.read(selectedMomentProvider.notifier).clear();
+    ref.read(shellTabProvider.notifier).select(ShellTab.map);
+    _travelKey.currentState?.showCaptured(moment);
   }
 
-  void _openAbout() {
-    _closeDrawer();
-    showAboutDialog(
-      context: context,
-      applicationName: 'Warang',
-      applicationVersion: '1.0.0',
-      applicationLegalese: 'Aklanon. To go out and explore.',
-    );
-  }
+  void _openYou() => showYouSheet(
+    context,
+    repository: ref.read(repositoryProvider),
+    onSettings: _openSettings,
+    onAbout: _openAbout,
+  );
 
-  /// Back closes the innermost thing first: drawer, open moment, then a
-  /// non-map tab. Only an idle Travel Mode lets the route pop.
+  void _openSettings() => Navigator.of(
+    context,
+  ).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
+
+  void _openAbout() => showAboutDialog(
+    context: context,
+    applicationName: 'Warang',
+    applicationVersion: '1.0.0',
+    applicationLegalese: 'Aklanon. To go out and explore.',
+  );
+
+  /// Back closes the innermost thing first: an open moment, then a tab
+  /// other than Map. Only an idle Map lets the route pop.
   void _handleBack() {
-    if (_drawerOpen) {
-      _closeDrawer();
-    } else if (ref.read(selectedMomentProvider) != null) {
+    if (ref.read(selectedMomentProvider) != null) {
       ref.read(selectedMomentProvider.notifier).clear();
-    } else if (ref.read(shellTabProvider) != 0) {
-      ref.read(shellTabProvider.notifier).select(0);
+    } else if (ref.read(shellTabProvider) != ShellTab.map) {
+      ref.read(shellTabProvider.notifier).select(ShellTab.map);
     }
   }
 
@@ -85,282 +86,43 @@ class _AppShellState extends ConsumerState<AppShell> {
   Widget build(BuildContext context) {
     final currentIndex = ref.watch(shellTabProvider);
     final hasSelection = ref.watch(selectedMomentProvider) != null;
-    final repository = ref.watch(repositoryProvider);
+    final tabs = IndexedStack(index: currentIndex, children: _tabs);
     return PopScope(
-      canPop: currentIndex == 0 && !hasSelection && !_drawerOpen,
+      canPop: currentIndex == ShellTab.map && !hasSelection,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) _handleBack();
       },
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final desktop = constraints.maxWidth >= 900;
-          return Scaffold(
-            key: _scaffoldKey,
-            drawerScrimColor: WarangColors.scrim(Theme.of(context).brightness),
-            drawerEdgeDragWidth: 24,
-            drawerEnableOpenDragGesture: currentIndex == 0,
-            onDrawerChanged: (open) => setState(() => _drawerOpen = open),
-            drawer: Drawer(
-              width: constraints.maxWidth * .82,
-              shape: const RoundedRectangleBorder(),
-              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-              child: AnimatedBuilder(
-                animation: repository,
-                builder: (context, _) => WarangDrawer(
-                  repository: repository,
-                  onSearch: _openSearch,
-                  onSettings: _openSettings,
-                  onAbout: _openAbout,
-                ),
-              ),
-            ),
-            body: desktop
-                ? Row(
-                    children: [
-                      _DesktopNavigation(
-                        items: _items,
-                        selectedIndex: currentIndex,
-                        onSelected: _select,
-                      ),
-                      Expanded(child: _tabStack(currentIndex)),
-                    ],
-                  )
-                : Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      _tabStack(currentIndex),
-                      Align(
-                        alignment: Alignment.bottomCenter,
-                        child: _MobileNavigation(
-                          items: _items,
-                          selectedIndex: currentIndex,
-                          onSelected: _select,
-                        ),
-                      ),
-                    ],
+      child: Scaffold(
+        body: WarangLayout.usesRail(context)
+            ? Row(
+                children: [
+                  WarangRail(
+                    items: _items,
+                    selectedIndex: currentIndex,
+                    onSelected: _select,
+                    onCapture: _capture,
                   ),
-          );
-        },
+                  Expanded(child: tabs),
+                ],
+              )
+            : Stack(
+                fit: StackFit.expand,
+                children: [
+                  tabs,
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: WarangDock(
+                      items: _items,
+                      selectedIndex: currentIndex,
+                      onSelected: _select,
+                      onCapture: _capture,
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }
-
-  Widget _tabStack(int index) => IndexedStack(index: index, children: _tabs);
 
   void _select(int index) => ref.read(shellTabProvider.notifier).select(index);
-}
-
-class _ShellItem {
-  const _ShellItem({required this.glyph, required this.label});
-  final WarangGlyph glyph;
-  final String label;
-}
-
-class _MobileNavigation extends StatelessWidget {
-  const _MobileNavigation({
-    required this.items,
-    required this.selectedIndex,
-    required this.onSelected,
-  });
-
-  final List<_ShellItem> items;
-  final int selectedIndex;
-  final ValueChanged<int> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isTravelMode = selectedIndex == 0;
-    final navContent = SizedBox(
-      height: WarangLayout.mobileNavHeight,
-      child: Row(
-        children: [
-          for (var index = 0; index < items.length; index++)
-            Expanded(
-              child: _NavigationItem(
-                item: items[index],
-                selected: index == selectedIndex,
-                onTap: () => onSelected(index),
-              ),
-            ),
-        ],
-      ),
-    );
-
-    final navBar = isTravelMode
-        ? WarangGlassSurface(
-            borderRadius: BorderRadius.circular(14),
-            child: navContent,
-          )
-        : DecoratedBox(
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: [
-                BoxShadow(
-                  color: theme.brightness == Brightness.dark
-                      ? Colors.black.withValues(alpha: 0.30)
-                      : theme.colorScheme.onSurface.withValues(alpha: 0.08),
-                  blurRadius: 12,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: navContent,
-          );
-
-    return SafeArea(
-      minimum: const EdgeInsets.fromLTRB(
-        WarangLayout.mobileNavMarginHorizontal,
-        WarangLayout.mobileNavMarginVertical,
-        WarangLayout.mobileNavMarginHorizontal,
-        WarangLayout.mobileNavMarginVertical,
-      ),
-      child: navBar,
-    );
-  }
-}
-
-class _DesktopNavigation extends StatelessWidget {
-  const _DesktopNavigation({
-    required this.items,
-    required this.selectedIndex,
-    required this.onSelected,
-  });
-
-  final List<_ShellItem> items;
-  final int selectedIndex;
-  final ValueChanged<int> onSelected;
-
-  @override
-  Widget build(BuildContext context) => SafeArea(
-    child: SizedBox(
-      width: 220,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(18, 14, 18, 24),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Warang',
-                      style: WarangType.meta.copyWith(
-                        color: WarangNeutrals.of(context).inkFaint,
-                      ),
-                    ),
-                  ),
-                ),
-                for (var index = 0; index < items.length; index++)
-                  _NavigationItem(
-                    item: items[index],
-                    selected: index == selectedIndex,
-                    onTap: () => onSelected(index),
-                    horizontal: true,
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    ),
-  );
-}
-
-class _NavigationItem extends StatelessWidget {
-  const _NavigationItem({
-    required this.item,
-    required this.selected,
-    required this.onTap,
-    this.horizontal = false,
-  });
-
-  final _ShellItem item;
-  final bool selected;
-  final VoidCallback onTap;
-  final bool horizontal;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final dark = theme.brightness == Brightness.dark;
-    final color = selected
-        ? (dark ? WarangColors.darkAccentText : WarangColors.lightAccentText)
-        : WarangNeutrals.of(context).inkSoft;
-    final background = selected
-        ? WarangColors.accent.withValues(alpha: dark ? .22 : .16)
-        : Colors.transparent;
-
-    return Semantics(
-      selected: selected,
-      label: item.label,
-      button: true,
-      child: Padding(
-        padding: horizontal
-            ? const EdgeInsets.symmetric(horizontal: 8, vertical: 3)
-            : const EdgeInsets.symmetric(horizontal: 6),
-        child: Material(
-          color: background,
-          borderRadius: BorderRadius.circular(12),
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(12),
-            focusColor: WarangColors.accent.withValues(alpha: .18),
-            hoverColor: theme.colorScheme.onSurface.withValues(alpha: .06),
-            splashColor: WarangColors.accent.withValues(alpha: .20),
-            child: Padding(
-              padding: horizontal
-                  ? const EdgeInsets.symmetric(horizontal: 14, vertical: 13)
-                  : const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-              child: horizontal
-                  ? Row(
-                      children: [
-                        WarangIcon(item.glyph, selected: selected, size: 24),
-                        const SizedBox(width: 12),
-                        Text(
-                          item.label,
-                          style: TextStyle(
-                            color: color,
-                            fontSize: 14,
-                            fontWeight: selected
-                                ? FontWeight.w600
-                                : FontWeight.w400,
-                          ),
-                        ),
-                      ],
-                    )
-                  : Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        WarangIcon(item.glyph, selected: selected, size: 24),
-                        const SizedBox(height: 3),
-                        Text(
-                          item.label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: color,
-                            fontSize: 11,
-                            fontWeight: selected
-                                ? FontWeight.w600
-                                : FontWeight.w400,
-                          ),
-                        ),
-                      ],
-                    ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }

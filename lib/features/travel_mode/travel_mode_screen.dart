@@ -7,37 +7,34 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/app.dart';
 import '../../app/app_state.dart';
+import '../../app/shell/you_sheet.dart';
 import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
 import '../../core/formatting.dart';
 import '../../core/models.dart';
 import '../../data/files/photo_store.dart';
 import '../../data/repository.dart';
-import '../capture/capture_screen.dart';
 import '../map/warang_map.dart';
 import 'moment_edit_sheet.dart';
 
 class TravelModeScreen extends ConsumerStatefulWidget {
-  const TravelModeScreen({super.key, this.onOpenMenu});
+  const TravelModeScreen({super.key, this.onOpenYou});
 
-  /// Opens the shell drawer; null hides the menu button.
-  final VoidCallback? onOpenMenu;
+  /// Opens the You sheet; null hides the avatar bubble.
+  final VoidCallback? onOpenYou;
 
   @override
-  ConsumerState<TravelModeScreen> createState() => _TravelModeScreenState();
+  ConsumerState<TravelModeScreen> createState() => TravelModeScreenState();
 }
 
-class _TravelModeScreenState extends ConsumerState<TravelModeScreen> {
+class TravelModeScreenState extends ConsumerState<TravelModeScreen> {
   final _mapKey = GlobalKey<WarangMapSurfaceState>();
 
   /// The moment whose pin is being placed by hand, if any.
   String? _placingId;
 
-  Future<void> _capture() async {
-    final moment = await Navigator.of(
-      context,
-    ).push<Moment>(MaterialPageRoute(builder: (_) => const CaptureScreen()));
-    if (moment == null || !mounted) return;
+  /// Shows a just-saved [moment] on the map and confirms its trip.
+  void showCaptured(Moment moment) {
     _focus(moment);
     final repository = ref.read(repositoryProvider);
     final trip = repository.trips.where((trip) => trip.id == moment.tripId);
@@ -126,6 +123,7 @@ class _TravelModeScreenState extends ConsumerState<TravelModeScreen> {
     final selectionNotifier = ref.read(selectedMomentProvider.notifier);
     final photoStore = ref.watch(photoStoreProvider);
     final navHeight = WarangLayout.navigationHeight(context);
+    final clearance = WarangLayout.dockClearance(context);
     final topOffset = math.max(MediaQuery.paddingOf(context).top, 12.0) + 8.0;
     final region = AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
@@ -165,18 +163,21 @@ class _TravelModeScreenState extends ConsumerState<TravelModeScreen> {
               right: 0,
               child: WarangTopScrim(),
             ),
-            if (widget.onOpenMenu != null)
+            if (widget.onOpenYou != null)
               Positioned(
                 top: topOffset,
                 left: 16,
-                child: _HomeMenuButton(onPressed: widget.onOpenMenu!),
+                child: AvatarBubble(
+                  repository: repository,
+                  onPressed: widget.onOpenYou!,
+                ),
               ),
             if (_placingId != null) ...[
               const IgnorePointer(child: Center(child: _PlacementCrosshair())),
               Positioned(
                 left: 12,
                 right: 12,
-                bottom: navHeight + 8,
+                bottom: clearance + 8,
                 child: _PlacementBar(
                   onCancel: _endPlacement,
                   onConfirm: _confirmPlacement,
@@ -187,7 +188,7 @@ class _TravelModeScreenState extends ConsumerState<TravelModeScreen> {
                 Positioned(
                   left: 0,
                   right: 0,
-                  bottom: navHeight + 104,
+                  bottom: clearance + 16,
                   child: Center(
                     child: IgnorePointer(
                       child: DecoratedBox(
@@ -221,14 +222,8 @@ class _TravelModeScreenState extends ConsumerState<TravelModeScreen> {
                   ),
                 ),
               Positioned(
-                bottom: navHeight + 16,
-                left: 0,
-                right: 0,
-                child: Center(child: WarangCaptureButton(onPressed: _capture)),
-              ),
-              Positioned(
                 right: 16,
-                bottom: navHeight + 29,
+                bottom: navHeight + 16,
                 child: _RecenterButton(
                   onPressed: () => _mapKey.currentState?.recenter(),
                 ),
@@ -246,12 +241,12 @@ class _TravelModeScreenState extends ConsumerState<TravelModeScreen> {
               Positioned(
                 left: 12,
                 right: 12,
-                bottom: navHeight + 8,
+                bottom: clearance + 8,
                 child: Center(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
                       maxWidth: 520,
-                      maxHeight: size.height - navHeight - topOffset - 24,
+                      maxHeight: size.height - clearance - topOffset - 24,
                     ),
                     child: MomentCard(
                       moment: selected,
@@ -344,29 +339,24 @@ class _PlacementBar extends StatelessWidget {
   );
 }
 
-class _HomeMenuButton extends StatelessWidget {
-  const _HomeMenuButton({required this.onPressed});
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) => WarangGlassIconButton(
-    icon: const WarangIcon(WarangGlyphs.more),
-    onPressed: onPressed,
-    semanticLabel: 'Open navigation drawer',
-    tooltip: 'Menu',
-  );
-}
-
 class _RecenterButton extends StatelessWidget {
   const _RecenterButton({required this.onPressed});
   final VoidCallback onPressed;
 
   @override
-  Widget build(BuildContext context) => WarangGlassIconButton(
-    icon: const WarangIcon(WarangGlyphs.recenter),
+  Widget build(BuildContext context) => ClayPressable(
     onPressed: onPressed,
     semanticLabel: 'Recenter map on current location',
     tooltip: 'Recenter',
+    builder: (context, press) => ClaySurface(
+      depth: ClayDepth.clay2,
+      press: press,
+      circle: true,
+      child: const SizedBox.square(
+        dimension: 48,
+        child: Center(child: WarangIcon(WarangGlyphs.recenter, size: 22)),
+      ),
+    ),
   );
 }
 
@@ -636,251 +626,6 @@ class _MomentCardState extends State<MomentCard> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class MomentSearchDelegate extends SearchDelegate<Moment?> {
-  MomentSearchDelegate(this.repository, {PhotoStore? photoStore})
-    : photoStore = photoStore ?? PhotoStore();
-  final WarangRepository repository;
-  final PhotoStore photoStore;
-
-  @override
-  String? get searchFieldLabel => 'Search captions, places, or trips...';
-
-  // Typed queries read as body text, not as a display headline.
-  @override
-  TextStyle? get searchFieldStyle => WarangType.bodyL;
-
-  @override
-  ThemeData appBarTheme(BuildContext context) {
-    final theme = Theme.of(context);
-    return theme.copyWith(
-      appBarTheme: AppBarTheme(
-        backgroundColor: theme.colorScheme.surface,
-        foregroundColor: theme.colorScheme.onSurface,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        surfaceTintColor: Colors.transparent,
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        hintStyle: theme.textTheme.bodyLarge?.copyWith(
-          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-        ),
-        border: InputBorder.none,
-      ),
-    );
-  }
-
-  @override
-  List<Widget>? buildActions(BuildContext context) => [
-    if (query.isNotEmpty)
-      IconButton(
-        tooltip: 'Clear',
-        onPressed: () {
-          query = '';
-          showSuggestions(context);
-        },
-        icon: const WarangIcon(WarangGlyphs.close),
-      ),
-  ];
-
-  @override
-  Widget? buildLeading(BuildContext context) => IconButton(
-    tooltip: 'Back',
-    onPressed: () => close(context, null),
-    icon: const WarangIcon(WarangGlyphs.back),
-  );
-
-  @override
-  Widget buildResults(BuildContext context) => _results(context);
-
-  @override
-  Widget buildSuggestions(BuildContext context) => _results(context);
-
-  Widget _results(BuildContext context) {
-    final theme = Theme.of(context);
-    return Material(
-      color: theme.scaffoldBackgroundColor,
-      child: FutureBuilder<List<Moment>>(
-        future: repository.searchAsync(query),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          final moments = snapshot.data ?? const <Moment>[];
-          if (moments.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    WarangIcon(
-                      WarangGlyphs.searchEmpty,
-                      size: 48,
-                      color: theme.colorScheme.onSurfaceVariant.withValues(
-                        alpha: 0.6,
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    Text(
-                      query.trim().isEmpty
-                          ? 'No moments captured yet'
-                          : 'No matches found for "${query.trim()}"',
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      query.trim().isEmpty
-                          ? 'Moments you capture will appear here.'
-                          : 'Try searching for a different caption or place name.',
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-          return ListView.separated(
-            itemCount: moments.length,
-            separatorBuilder: (context, index) => Divider(
-              height: 1,
-              indent: 72,
-              color: theme.colorScheme.outlineVariant,
-            ),
-            itemBuilder: (context, index) {
-              final moment = moments[index];
-              final hasCaption =
-                  moment.caption != null && moment.caption!.trim().isNotEmpty;
-              final hasPlace =
-                  moment.placeLabel != null &&
-                  moment.placeLabel!.trim().isNotEmpty;
-              final title = hasCaption
-                  ? moment.caption!
-                  : (hasPlace ? moment.placeLabel! : 'Untitled moment');
-              final dateStr = formatDate(moment.capturedAt);
-              final subtitle = hasCaption && hasPlace
-                  ? '${moment.placeLabel} - $dateStr'
-                  : dateStr;
-              return ListTile(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
-                leading: _MomentSearchThumbnail(
-                  moment: moment,
-                  photoStore: photoStore,
-                ),
-                title: Text(
-                  title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.w500),
-                ),
-                subtitle: Text(
-                  subtitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                trailing: moment.latitude != null && moment.longitude != null
-                    ? WarangIcon(
-                        WarangGlyphs.recenter,
-                        size: 18,
-                        color: theme.colorScheme.primary.withValues(alpha: 0.7),
-                      )
-                    : null,
-                onTap: () => close(context, moment),
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _MomentSearchThumbnail extends StatefulWidget {
-  const _MomentSearchThumbnail({
-    required this.moment,
-    required this.photoStore,
-  });
-
-  final Moment moment;
-  final PhotoStore photoStore;
-
-  @override
-  State<_MomentSearchThumbnail> createState() => _MomentSearchThumbnailState();
-}
-
-class _MomentSearchThumbnailState extends State<_MomentSearchThumbnail> {
-  Future<File?>? _fileFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadFile();
-  }
-
-  @override
-  void didUpdateWidget(covariant _MomentSearchThumbnail oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.moment.relPath != widget.moment.relPath ||
-        oldWidget.moment.thumbRelPath != widget.moment.thumbRelPath) {
-      _loadFile();
-    }
-  }
-
-  void _loadFile() {
-    final path = widget.moment.thumbRelPath ?? widget.moment.relPath;
-    if (path == null) {
-      _fileFuture = null;
-    } else {
-      _fileFuture = widget.photoStore.resolve(path).then((f) async {
-        return await f.exists() ? f : null;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: theme.colorScheme.outlineVariant),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: _fileFuture == null
-          ? WarangIcon(
-              WarangGlyphs.photo,
-              size: 20,
-              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-            )
-          : FutureBuilder<File?>(
-              future: _fileFuture,
-              builder: (context, snapshot) {
-                final file = snapshot.data;
-                if (file != null) {
-                  return Image.file(file, fit: BoxFit.cover);
-                }
-                return WarangIcon(
-                  WarangGlyphs.photo,
-                  size: 20,
-                  color: theme.colorScheme.onSurfaceVariant.withValues(
-                    alpha: 0.5,
-                  ),
-                );
-              },
-            ),
     );
   }
 }

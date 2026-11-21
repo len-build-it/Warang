@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:warang/app/app.dart';
-import 'package:warang/app/shell/warang_drawer.dart';
+import 'package:warang/app/shell/you_sheet.dart';
 import 'package:warang/app/theme/tokens.dart';
 import 'package:warang/core/models.dart';
 import 'package:warang/data/db/database.dart';
@@ -41,16 +41,15 @@ void main() {
     expect(find.text('Back up everything'), findsNothing);
   });
 
-  testWidgets('unavailable travelbook action is absent from the drawer', (
+  testWidgets('unavailable travelbook action is absent from the You sheet', (
     tester,
   ) async {
     await tester.pumpWidget(
       _app(
         repository,
         Scaffold(
-          body: WarangDrawer(
+          body: YouSheet(
             repository: repository,
-            onSearch: () {},
             onSettings: () {},
             onAbout: () {},
           ),

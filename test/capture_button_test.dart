@@ -4,50 +4,39 @@ import 'package:warang/app/theme/components.dart';
 import 'package:warang/app/theme/tokens.dart';
 
 void main() {
-  testWidgets('capture button is a single-shadow amber disc', (tester) async {
-    var taps = 0;
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: buildWarangTheme(Brightness.light),
-        home: Scaffold(body: WarangCaptureButton(onPressed: () => taps++)),
-      ),
-    );
+  for (final brightness in Brightness.values) {
+    testWidgets('capture button is amber clay in a surface ring '
+        '(${brightness.name})', (tester) async {
+      var taps = 0;
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildWarangTheme(brightness),
+          home: Scaffold(
+            body: Center(child: WarangCaptureButton(onPressed: () => taps++)),
+          ),
+        ),
+      );
 
-    final decorations = tester.widgetList<DecoratedBox>(
-      find.byType(DecoratedBox),
-    );
-    final disc = decorations
-        .map((box) => box.decoration)
-        .whereType<BoxDecoration>()
-        .firstWhere((decoration) => decoration.color == WarangColors.accent);
-    expect(disc.color, WarangColors.accent);
-    expect(disc.shape, BoxShape.circle);
-    expect(disc.boxShadow, hasLength(1));
-    expect(disc.boxShadow!.single.spreadRadius, 0);
-    expect(find.bySemanticsLabel('Capture'), findsOneWidget);
+      final surfaces = tester
+          .widgetList<ClaySurface>(find.byType(ClaySurface))
+          .toList();
+      // The outer ring is surface clay at clay3; the disc is amber clay.
+      expect(surfaces.first.depth, ClayDepth.clay3);
+      expect(surfaces.first.circle, isTrue);
+      expect(surfaces.first.padding, const EdgeInsets.all(4));
+      expect(surfaces.last.tone, WarangKeepsake.amber);
+      expect(surfaces.last.circle, isTrue);
+      expect(
+        tester.getSize(find.byType(WarangCaptureButton)),
+        const Size(84, 84),
+      );
+      expect(find.bySemanticsLabel('Capture a moment'), findsOneWidget);
 
-    await tester.tap(find.bySemanticsLabel('Capture'));
-    expect(taps, 1);
-  });
-
-  testWidgets('capture button keeps the same flat shape in dark theme', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: buildWarangTheme(Brightness.dark),
-        home: const Scaffold(body: WarangCaptureButton(onPressed: _noop)),
-      ),
-    );
-
-    final disc = tester
-        .widgetList<DecoratedBox>(find.byType(DecoratedBox))
-        .map((box) => box.decoration)
-        .whereType<BoxDecoration>()
-        .firstWhere((decoration) => decoration.color == WarangColors.accent);
-    expect(disc.boxShadow, hasLength(1));
-    expect(disc.boxShadow!.single.spreadRadius, 0);
-  });
+      await tester.tap(find.bySemanticsLabel('Capture a moment'));
+      expect(taps, 1);
+      await tester.pumpAndSettle();
+      handle.dispose();
+    });
+  }
 }
-
-void _noop() {}

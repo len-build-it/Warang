@@ -6,11 +6,15 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:warang/app/app.dart';
 import 'package:warang/app/app_state.dart';
 import 'package:warang/app/shell/app_shell.dart';
+import 'package:warang/app/shell/dock.dart';
+import 'package:warang/app/theme/components.dart';
 import 'package:warang/app/theme/tokens.dart';
 import 'package:warang/core/models.dart';
 import 'package:warang/data/db/database.dart';
 import 'package:warang/data/repository.dart';
+import 'package:warang/features/capture/capture_screen.dart';
 import 'package:warang/features/map/map_tile_store.dart';
+import 'package:warang/features/settings/settings_screen.dart';
 import 'package:warang/features/travel_mode/travel_mode_screen.dart';
 
 void main() {
@@ -104,65 +108,115 @@ void main() {
     expect(canPop(tester), isTrue);
   });
 
-  testWidgets('back on Home or News returns to Travel Mode', (tester) async {
+  testWidgets('back on Trips, News, or Search returns to the map', (
+    tester,
+  ) async {
     final container = await pumpShell(tester);
-    for (final tab in ['Home', 'News']) {
-      await tester.tap(find.text(tab));
+    for (final tab in ['Trips', 'News', 'Search']) {
+      await tester.tap(find.bySemanticsLabel(tab).first);
       await settle(tester);
-      expect(container.read(shellTabProvider), isNot(0));
+      expect(container.read(shellTabProvider), isNot(ShellTab.map));
       expect(canPop(tester), isFalse);
 
       await systemBack(tester);
 
-      expect(container.read(shellTabProvider), 0);
+      expect(container.read(shellTabProvider), ShellTab.map);
     }
     expect(canPop(tester), isTrue);
   });
 
-  testWidgets('drawer is modal over the navigation and back closes it', (
+  testWidgets('the You sheet is modal and closes with back or the dimmer', (
     tester,
   ) async {
     final container = await pumpShell(tester);
     expect(find.text('About Warang'), findsNothing);
 
-    await tester.tap(find.byTooltip('Menu'));
+    await tester.tap(find.byTooltip('You'));
     await settle(tester);
     expect(find.text('About Warang'), findsOneWidget);
+    expect(find.text('Only on this phone'), findsOneWidget);
 
-    // The Home tab sits under the open drawer, so it cannot be reached.
-    await tester.tapAt(tester.getCenter(find.text('Home').last));
+    // The dock sits under the open sheet, so it cannot be reached.
+    await tester.tapAt(tester.getCenter(find.byType(WarangDock)));
     await settle(tester);
-    expect(container.read(shellTabProvider), 0);
-    expect(find.text('About Warang'), findsOneWidget);
+    expect(container.read(shellTabProvider), ShellTab.map);
 
-    // The scrim beside the drawer closes it.
-    await tester.tapAt(const Offset(370, 400));
+    // The dimmer above the sheet closes it.
+    await tester.tapAt(const Offset(195, 40));
     await settle(tester);
     expect(find.text('About Warang'), findsNothing);
 
-    await tester.tap(find.byTooltip('Menu'));
+    await tester.tap(find.byTooltip('You'));
     await settle(tester);
     await systemBack(tester);
     expect(find.text('About Warang'), findsNothing);
   });
 
-  testWidgets('closed drawer exposes no semantics', (tester) async {
-    final handle = tester.ensureSemantics();
-    await pumpShell(tester);
-    expect(find.bySemanticsLabel('Search'), findsNothing);
-    expect(find.bySemanticsLabel('Settings'), findsNothing);
-    handle.dispose();
-  });
-
-  testWidgets('search from Home opens the result on Travel Mode', (
+  testWidgets('settings, profile, search, and About take two taps or fewer', (
     tester,
   ) async {
     final container = await pumpShell(tester);
-    await tester.tap(find.text('Home'));
+
+    // Search: one tap on the dock.
+    await tester.tap(find.bySemanticsLabel('Search').first);
+    await settle(tester);
+    expect(container.read(shellTabProvider), ShellTab.search);
+    await systemBack(tester);
+
+    // Settings: the avatar bubble, then Settings.
+    await tester.tap(find.byTooltip('You'));
+    await settle(tester);
+    await tester.tap(find.text('Settings'));
+    await settle(tester);
+    expect(find.byType(SettingsScreen), findsOneWidget);
+    await systemBack(tester);
+
+    // Profile: the avatar bubble, then the name opens the editor.
+    await tester.tap(find.byTooltip('You'));
+    await settle(tester);
+    await tester.tap(find.text('Len'));
+    await settle(tester);
+    expect(find.text('Your name'), findsOneWidget);
+    await tester.tap(find.text('Cancel'));
+    await settle(tester);
+    await systemBack(tester);
+
+    // About: the avatar bubble, then About Warang.
+    await tester.tap(find.byTooltip('You'));
+    await settle(tester);
+    await tester.tap(find.text('About Warang'));
+    await settle(tester);
+    expect(find.byType(AboutDialog), findsOneWidget);
+  });
+
+  testWidgets('the You sheet shows the counts as stamps', (tester) async {
+    await pumpShell(tester);
+    await tester.tap(find.byTooltip('You'));
+    await settle(tester);
+    expect(find.byType(WarangStamp), findsNWidgets(3));
+    expect(find.text('moment'), findsOneWidget);
+    expect(find.text('Len'), findsOneWidget);
+  });
+
+  testWidgets('capture opens on release with no delay', (tester) async {
+    await pumpShell(tester);
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.byType(WarangCaptureButton)),
+    );
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.byType(CaptureScreen, skipOffstage: false), findsNothing);
+    await gesture.up();
+    await tester.pump();
+    // The capture route is built in the very frame the finger lifts (it is
+    // offstage for that one frame while the transition measures heroes).
+    expect(find.byType(CaptureScreen, skipOffstage: false), findsOneWidget);
+  });
+
+  testWidgets('search opens the result on the map', (tester) async {
+    final container = await pumpShell(tester);
+    await tester.tap(find.bySemanticsLabel('Search').first);
     await settle(tester);
 
-    await tester.tap(find.byTooltip('Search moments'));
-    await settle(tester);
     await tester.enterText(find.byType(TextField), 'sunset');
     await tester.runAsync(
       () => Future<void>.delayed(const Duration(milliseconds: 100)),
@@ -171,7 +225,7 @@ void main() {
     await tester.tap(find.text('Sunset at White Beach').last);
     await settle(tester);
 
-    expect(container.read(shellTabProvider), 0);
+    expect(container.read(shellTabProvider), ShellTab.map);
     expect(container.read(selectedMomentProvider)?.momentId, moment.id);
     expect(container.read(selectedMomentProvider)?.focus, isTrue);
     expect(find.byType(MomentCard), findsOneWidget);

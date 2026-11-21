@@ -307,8 +307,11 @@ class _WarangFieldState extends State<WarangField> {
             borderRadius: radius,
             child: child,
           ),
+          // Taps anywhere in the well focus the field; the text field itself
+          // carries the semantics, so this detector adds none.
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
+            excludeFromSemantics: true,
             onTap: _focus.requestFocus,
             child: ConstrainedBox(
               constraints: BoxConstraints(

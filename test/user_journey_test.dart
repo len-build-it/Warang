@@ -117,7 +117,7 @@ void main() {
     final momentId = repository.moments.single.id;
 
     // Find it again from Home, since an unpinned moment has no map pin.
-    await tester.tap(find.text('Home'));
+    await tester.tap(find.bySemanticsLabel('Trips'));
     await settle(tester);
     await tester.tap(find.text('Everyday'));
     await settle(tester);
@@ -184,7 +184,7 @@ void main() {
     // The trip shows it, and opening it returns to the map.
     await tester.binding.handlePopRoute();
     await settle(tester);
-    await tester.tap(find.text('Home'));
+    await tester.tap(find.bySemanticsLabel('Trips'));
     await settle(tester);
     await tester.tap(find.text('Boracay long weekend'));
     await settle(tester);

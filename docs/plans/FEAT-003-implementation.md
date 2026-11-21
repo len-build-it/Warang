@@ -1,7 +1,7 @@
 # Implementation Plan: FEAT-003 Clay keepsake redesign
 
 Created: 2026-11-21T20:38:00+08:00
-Updated: 2026-11-21T22:07:00+08:00
+Updated: 2026-11-21T22:26:00+08:00
 Revision: 1
 Status: Approved - in progress
 Feature spec and revision: [FEAT-003 revision 1](../features/FEAT-003-clay-keepsake-redesign.md)
@@ -147,15 +147,15 @@ Checkpoint message: `docs(plan): FEAT-003 phase 4 - clay foundation and componen
 ## Phase 5: Dock, capture button, avatar bubble, and You sheet
 
 Requirements: REQ-007, REQ-008, REQ-012
-State: Approved - not started
+State: Complete (checkpoint commit recorded in `HANDOFF.md`)
 
 ### Tasks
 
-- [ ] Build C1 dock and C2 capture button, and replace the bottom bar and the wide-screen rail in `app_shell.dart` with them, in the order Map, Trips, capture, News, Search.
-- [ ] Make Search a dock tab that reuses the existing search behaviour.
-- [ ] Build C3 avatar bubble and the You sheet with every function of the current drawer: photo, name, counts, Settings, About.
-- [ ] Delete `lib/app/shell/warang_drawer.dart` and its tests, moving the still-relevant assertions to You sheet tests.
-- [ ] Rename the tabs to Map and Trips per V8.
+- [x] Build C1 dock and C2 capture button, and replace the bottom bar and the wide-screen rail in `app_shell.dart` with them, in the order Map, Trips, capture, News, Search.
+- [x] Make Search a dock tab that reuses the existing search behaviour.
+- [x] Build C3 avatar bubble and the You sheet with every function of the current drawer: photo, name, counts, Settings, About.
+- [x] Delete `lib/app/shell/warang_drawer.dart` and its tests, moving the still-relevant assertions to You sheet tests.
+- [x] Rename the tabs to Map and Trips per V8.
 
 ### Success metrics
 
