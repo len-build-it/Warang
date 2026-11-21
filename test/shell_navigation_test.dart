@@ -65,6 +65,9 @@ void main() {
 
   Future<void> settle(WidgetTester tester) async {
     for (var index = 0; index < 4; index++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 30)),
+      );
       await tester.pump(const Duration(milliseconds: 150));
     }
   }

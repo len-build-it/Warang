@@ -40,74 +40,65 @@ class MapTileStore {
   MapTileStore({this.databasePath});
   final String? databasePath;
   sqflite.Database? _database;
+  Future<sqflite.Database>? _opening;
 
   bool _closed = false;
 
-  Future<sqflite.Database> get _db async {
+  Future<sqflite.Database> get _db {
     if (_closed) {
-      throw StateError('MapTileStore is closed');
+      return Future.error(StateError('MapTileStore is closed'));
     }
     final existing = _database;
-    if (existing != null && existing.isOpen) return existing;
-    final path =
-        databasePath ??
-        p.join(await sqflite.getDatabasesPath(), 'warang_map_tiles.sqlite');
-    return _database = await sqflite.openDatabase(
-      path,
-      version: 1,
-      singleInstance: false,
-      onCreate: (db, _) async {
-        await db.execute('''
-          CREATE TABLE tiles (
-            z INTEGER NOT NULL,
-            x INTEGER NOT NULL,
-            y INTEGER NOT NULL,
-            layerId TEXT NOT NULL,
-            bytes BLOB NOT NULL,
-            fetchedAt INTEGER NOT NULL,
-            etag TEXT,
-            PRIMARY KEY (z, x, y, layerId)
-          )
-        ''');
-        await db.execute('CREATE INDEX tiles_fetched_at ON tiles (fetchedAt)');
-        await db.execute('''
-          CREATE TABLE map_camera (
-            id INTEGER PRIMARY KEY,
-            latitude REAL NOT NULL,
-            longitude REAL NOT NULL,
-            zoom REAL NOT NULL
-          )
-        ''');
-        await db.execute('''
-          CREATE TABLE map_location (
-            id INTEGER PRIMARY KEY,
-            latitude REAL NOT NULL,
-            longitude REAL NOT NULL,
-            accuracy REAL,
-            updatedAt INTEGER NOT NULL
-          )
-        ''');
-      },
-      onOpen: (db) async {
-        await db.execute('''
-          CREATE TABLE IF NOT EXISTS map_camera (
-            id INTEGER PRIMARY KEY,
-            latitude REAL NOT NULL,
-            longitude REAL NOT NULL,
-            zoom REAL NOT NULL
-          )
-        ''');
-        await db.execute('''
-          CREATE TABLE IF NOT EXISTS map_location (
-            id INTEGER PRIMARY KEY,
-            latitude REAL NOT NULL,
-            longitude REAL NOT NULL,
-            accuracy REAL,
-            updatedAt INTEGER NOT NULL
-          )
-        ''');
-      },
-    );
+    if (existing != null && existing.isOpen) return Future.value(existing);
+    return _opening ??= _open();
+  }
+
+  Future<sqflite.Database> _open() async {
+    try {
+      final path =
+          databasePath ??
+          p.join(await sqflite.getDatabasesPath(), 'warang_map_tiles.sqlite');
+      return _database = await sqflite.openDatabase(
+        path,
+        singleInstance: false,
+        onOpen: (db) async {
+          await db.execute('''
+            CREATE TABLE IF NOT EXISTS tiles (
+              z INTEGER NOT NULL,
+              x INTEGER NOT NULL,
+              y INTEGER NOT NULL,
+              layerId TEXT NOT NULL,
+              bytes BLOB NOT NULL,
+              fetchedAt INTEGER NOT NULL,
+              etag TEXT,
+              PRIMARY KEY (z, x, y, layerId)
+            )
+          ''');
+          await db.execute(
+            'CREATE INDEX IF NOT EXISTS tiles_fetched_at ON tiles (fetchedAt)',
+          );
+          await db.execute('''
+            CREATE TABLE IF NOT EXISTS map_camera (
+              id INTEGER PRIMARY KEY,
+              latitude REAL NOT NULL,
+              longitude REAL NOT NULL,
+              zoom REAL NOT NULL
+            )
+          ''');
+          await db.execute('''
+            CREATE TABLE IF NOT EXISTS map_location (
+              id INTEGER PRIMARY KEY,
+              latitude REAL NOT NULL,
+              longitude REAL NOT NULL,
+              accuracy REAL,
+              updatedAt INTEGER NOT NULL
+            )
+          ''');
+        },
+      );
+    } finally {
+      _opening = null;
+    }
   }
 
   Future<MapTileRecord?> get({
@@ -157,23 +148,15 @@ class MapTileStore {
 
   Future<void> evictToLimit(int maxBytes) async {
     final db = await _db;
-    final total = await totalBytes();
-    if (total <= maxBytes) return;
-    final rows = await db.query(
-      'tiles',
-      columns: ['z', 'x', 'y', 'layerId', 'bytes'],
-      orderBy: 'fetchedAt ASC',
+    var remaining = await totalBytes();
+    if (remaining <= maxBytes) return;
+    final rows = await db.rawQuery(
+      'SELECT rowid, length(bytes) AS size FROM tiles ORDER BY fetchedAt ASC',
     );
-    var remaining = total;
     for (final row in rows) {
       if (remaining <= maxBytes) break;
-      final bytes = (row['bytes']! as List<int>).length;
-      await db.delete(
-        'tiles',
-        where: 'z = ? AND x = ? AND y = ? AND layerId = ?',
-        whereArgs: [row['z'], row['x'], row['y'], row['layerId']],
-      );
-      remaining -= bytes;
+      await db.delete('tiles', where: 'rowid = ?', whereArgs: [row['rowid']]);
+      remaining -= (row['size'] as num?)?.toInt() ?? 0;
     }
   }
 
@@ -255,8 +238,9 @@ class MapTileStore {
 
   Future<void> close() async {
     _closed = true;
-    final db = _database;
+    final db = _database ?? await _opening;
     _database = null;
+    _opening = null;
     if (db != null && db.isOpen) {
       await db.close();
     }

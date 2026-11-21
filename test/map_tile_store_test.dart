@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart' as sqflite;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -113,4 +114,72 @@ void main() {
       'with-coordinate',
     ]);
   });
+
+  test(
+    'opens legacy database with only tiles table and persists camera',
+    () async {
+      final dbPath = p.join(directory.path, 'legacy_tiles.db');
+      final raw = await sqflite.openDatabase(
+        dbPath,
+        singleInstance: false,
+        onOpen: (db) async {
+          await db.execute('''
+          CREATE TABLE tiles (
+            z INTEGER NOT NULL,
+            x INTEGER NOT NULL,
+            y INTEGER NOT NULL,
+            layerId TEXT NOT NULL,
+            bytes BLOB NOT NULL,
+            fetchedAt INTEGER NOT NULL,
+            etag TEXT,
+            PRIMARY KEY (z, x, y, layerId)
+          )
+        ''');
+        },
+      );
+      await raw.close();
+
+      final store = MapTileStore(databasePath: dbPath);
+      await store.saveCamera(const LatLng(11.9686, 121.918), 14.5);
+      final loaded = await store.loadCamera();
+
+      expect(loaded, isNotNull);
+      expect(loaded!.center.latitude, 11.9686);
+      expect(loaded.center.longitude, 121.918);
+      expect(loaded.zoom, 14.5);
+      await store.close();
+    },
+  );
+
+  test(
+    'evictToLimit evicts oldest tiles until total is at or below limit',
+    () async {
+      final store = MapTileStore(
+        databasePath: p.join(directory.path, 'evict_five.db'),
+      );
+      final base = DateTime(2026, 11, 21, 12);
+      for (var i = 0; i < 5; i++) {
+        await store.put(
+          MapTileRecord(
+            z: 2,
+            x: i,
+            y: 0,
+            layerId: 'osm',
+            bytes: Uint8List(100),
+            fetchedAt: base.add(Duration(minutes: i)),
+          ),
+        );
+      }
+
+      await store.evictToLimit(250);
+
+      expect(await store.totalBytes(), lessThanOrEqualTo(250));
+      expect(await store.get(z: 2, x: 0, y: 0, layerId: 'osm'), isNull);
+      expect(await store.get(z: 2, x: 1, y: 0, layerId: 'osm'), isNull);
+      expect(await store.get(z: 2, x: 2, y: 0, layerId: 'osm'), isNull);
+      expect(await store.get(z: 2, x: 3, y: 0, layerId: 'osm'), isNotNull);
+      expect(await store.get(z: 2, x: 4, y: 0, layerId: 'osm'), isNotNull);
+      await store.close();
+    },
+  );
 }
