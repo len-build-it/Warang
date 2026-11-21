@@ -97,26 +97,26 @@ Continue automatically to Phase 2.
 ## Phase 2: Shrink duplicated logic
 
 Requirements: REQ-007, REQ-008, REQ-009, REQ-010, REQ-011
-State: Awaiting approval
+State: Complete
 Expected test count: 96 - 1 (`WarangToggle` test) + 2 (new tile-store tests) = 97
 
 ### Tasks
 
-- [ ] Delete `WarangToggle` from `lib/app/theme/components.dart` and its test `'WarangToggle includes toggle semantics'` in `test/shared_surfaces_test.dart`.
-- [ ] In `lib/features/map/map_tile_store.dart`, remove `onCreate` and `version`.
+- [x] Delete `WarangToggle` from `lib/app/theme/components.dart` and its test `'WarangToggle includes toggle semantics'` in `test/shared_surfaces_test.dart`.
+- [x] In `lib/features/map/map_tile_store.dart`, remove `onCreate` and `version`.
   Have `onOpen` run `CREATE TABLE IF NOT EXISTS` for `tiles`, `map_camera`, and `map_location`, plus `CREATE INDEX IF NOT EXISTS tiles_fetched_at ON tiles (fetchedAt)`.
   Keep the column definitions exactly as they are now.
-- [ ] Rewrite `evictToLimit` so SQL does the work: read `totalBytes()`; if it is over the limit, delete tiles oldest first until the running total is at or below the limit, using a `rowid` subquery with a window `SUM(length(bytes)) OVER (ORDER BY fetchedAt DESC)` or an equivalent single statement.
+- [x] Rewrite `evictToLimit` so SQL does the work: read `totalBytes()`; if it is over the limit, delete tiles oldest first until the running total is at or below the limit, using a `rowid` subquery with a window `SUM(length(bytes)) OVER (ORDER BY fetchedAt DESC)` or an equivalent single statement.
   No Dart-side query may select the `bytes` column during eviction.
   Bundled Android SQLite (API 21) may not support window functions, because the tile store uses the platform `sqflite`.
   If so, fall back to a loop that selects only `rowid` and `length(bytes)` ordered by `fetchedAt ASC` and deletes by `rowid`; that still meets REQ-009.
-- [ ] In `WarangDatabase.seedDefaults`, delete the two `writeValue` calls inside the `if (profile == null)` and `if (everyday == null)` branches; the unconditional writes after them stay.
-- [ ] In `lib/data/files/photo_store.dart`, replace `const Uuid().v4()` with `newId()` from `lib/core/ids.dart` and drop the `uuid` import there.
+- [x] In `WarangDatabase.seedDefaults`, delete the two `writeValue` calls inside the `if (profile == null)` and `if (everyday == null)` branches; the unconditional writes after them stay.
+- [x] In `lib/data/files/photo_store.dart`, replace `const Uuid().v4()` with `newId()` from `lib/core/ids.dart` and drop the `uuid` import there.
 
 ### New tests
 
-- [ ] `test/map_tile_store_test.dart`: a database file that already has only the `tiles` table (created by raw `sqflite_common_ffi` SQL) opens through `MapTileStore`, and `saveCamera` followed by `loadCamera` round-trips.
-- [ ] `test/map_tile_store_test.dart`: put five 100-byte tiles with increasing `fetchedAt`, call `evictToLimit(250)`, then `totalBytes()` is at most 250 and the two newest tiles are still readable.
+- [x] `test/map_tile_store_test.dart`: a database file that already has only the `tiles` table (created by raw `sqflite_common_ffi` SQL) opens through `MapTileStore`, and `saveCamera` followed by `loadCamera` round-trips.
+- [x] `test/map_tile_store_test.dart`: put five 100-byte tiles with increasing `fetchedAt`, call `evictToLimit(250)`, then `totalBytes()` is at most 250 and the two newest tiles are still readable.
 
 ### Success metrics
 
@@ -130,15 +130,15 @@ Expected test count: 96 - 1 (`WarangToggle` test) + 2 (new tile-store tests) = 9
 
 ### Verification
 
-- [ ] Gates 1-6 pass with 97 tests.
-- [ ] Results are recorded in the evidence log.
+- [x] Gates 1-6 pass with 97 tests.
+- [x] Results are recorded in the evidence log.
 
 ### Review and checkpoint
 
-- [ ] Review correctness, scope, dependencies, and unrelated changes (Ponytail review).
-- [ ] Update plan, evidence, and `HANDOFF.md`.
-- [ ] Stage only reviewed phase paths and verify the staged diff.
-- [ ] Commit and verify that Git reports success.
+- [x] Review correctness, scope, dependencies, and unrelated changes (Ponytail review).
+- [x] Update plan, evidence, and `HANDOFF.md`.
+- [x] Stage only reviewed phase paths and verify the staged diff.
+- [x] Commit and verify that Git reports success.
 
 Checkpoint message: `docs(plan): FEAT-002 phase 2 - shrink duplicated logic`
 Continue automatically to Phase 3.
