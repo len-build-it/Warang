@@ -1,7 +1,7 @@
 # Verification: FEAT-002
 
 Created: 2026-11-21T17:07:00+08:00
-Updated: 2026-11-21T17:21:00+08:00
+Updated: 2026-11-21T17:26:00+08:00
 
 | Requirement / phase | Check or scenario | Environment and conditions | Actual result | When run | Evidence / limitations |
 | --- | --- | --- | --- | --- | --- |
@@ -24,6 +24,22 @@ Updated: 2026-11-21T17:21:00+08:00
 | Phase 3 | Gate 4: `flutter build apk --debug` | Windows host | Passed under stated conditions (`Built build\app\outputs\flutter-apk\app-debug.apk`, exit 0) | 2026-11-21T17:19:40+08:00 | - |
 | Phase 3 | Gate 5: `flutter test tool/ux_screenshots_test.dart --dart-define=UX_LABEL=feat-002-baseline` | Windows host | Passed under stated conditions (6/8 exact pixel match; only clock-dependent `12_capture_dark.png` and `12_capture_light.png` differed by 0.03% / 365px) | 2026-11-21T17:20:24+08:00 | Masked diffs verified by eye in both themes: only the clock digits changed (`4:58 PM` to `5:20 PM`). Deleted `tool/failures/`. |
 | Phase 3 | Gate 6: Phase 3 success metrics | Windows host | Passed under stated conditions: `permission_handler` `0`, `android.permission.CAMERA` `0`, `cameraPermissionProvider\|openAppSettings` `0`, hand-written `lib/` lines `7650` (<= 7710) | 2026-11-21T17:20:24+08:00 | Direct non-SDK dependencies in `pubspec.yaml`: 13 (down from 17). |
+| Phase 4 (REQ-012..014) | Gate 1: `dart format lib test tool` and `--set-exit-if-changed` | Windows host | Passed under stated conditions (`Formatted 53 files (0 changed)`, exit 0) | 2026-11-21T17:22:20+08:00 | - |
+| Phase 4 | Gate 2: `flutter analyze` | Windows host | Passed under stated conditions (`No issues found!`) | 2026-11-21T17:22:55+08:00 | - |
+| Phase 4 | Gate 3: `flutter test` | Windows host | Passed under stated conditions (`+97: All tests passed!`, matches expected 97) | 2026-11-21T17:23:30+08:00 | - |
+| Phase 4 | Gate 4: `flutter build apk --debug` | Windows host | Passed under stated conditions (`Built build\app\outputs\flutter-apk\app-debug.apk`, exit 0) | 2026-11-21T17:24:45+08:00 | - |
+| Phase 4 | Gate 5: `flutter test tool/ux_screenshots_test.dart --dart-define=UX_LABEL=feat-002-baseline` | Windows host | Passed under stated conditions (6/8 exact pixel match; only clock-dependent `12_capture_dark.png` and `12_capture_light.png` differed) | 2026-11-21T17:25:31+08:00 | Masked diffs verified by eye in both themes: only the clock digits changed (`4:58 PM` to `5:25 PM`). Deleted `tool/failures/`. |
+| Phase 4 | Gate 6: Final feature metrics | Windows host | Passed under stated conditions: removed/archived paths absent (removed empty `_to_delete/` dir left by `git rm`), all Markdown links resolve to `docs/archive/`, hand-written `lib/` lines `7650` (<= 7700), direct non-SDK dependencies `13`, `git diff a85a915..HEAD --stat -- lib` shows 9 files (`+84/-455`) with only planned deletions/replacements and the Phase 3 `locationPermissionProvider` test seam | 2026-11-21T17:26:00+08:00 | `git status --short` shows only the preserved untracked paths. |
+
+## Feature totals (before vs after)
+
+| Metric | Before (`a85a915`) | After (Phase 4) | Target |
+| --- | --- | --- | --- |
+| Hand-written Dart lines under `lib/` (excluding `*.g.dart`) | 8021 | 7650 (-371) | <= 7700 |
+| Direct non-SDK dependencies in `pubspec.yaml` | 17 | 13 (-4) | 13 |
+| Automated tests (`flutter test`) | 96 passing | 97 passing (-2 deleted, +3 added) | 97 passing |
+| `flutter analyze` | `No issues found!` | `No issues found!` | `No issues found!` |
+| `flutter build apk --debug` | exit 0 | exit 0 | exit 0 |
 
 ## Pending physical-device checklist (Len)
 

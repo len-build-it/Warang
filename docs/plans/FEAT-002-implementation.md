@@ -1,9 +1,9 @@
 # Implementation Plan: FEAT-002 Ponytail cleanup
 
 Created: 2026-11-21T16:50:00+08:00
-Updated: 2026-11-21T16:56:00+08:00
+Updated: 2026-11-21T17:26:00+08:00
 Revision: 1
-Status: Approved
+Status: Complete
 Feature spec and revision: [FEAT-002 revision 1](../features/FEAT-002-ponytail-cleanup.md)
 Approved baseline and architecture revisions: `docs/DESIGN_SPEC.md` and `docs/IMPLEMENTATION_PLAN.md` at commit `dc407c5`; the tile cache stays in `sqflite` per T17
 Len's chat approval: 2026-11-21 chat: "I, Len, approve FEAT-002 revision 1 (docs/features/FEAT-002-ponytail-cleanup.md) and its plan revision 1 (docs/plans/FEAT-002-implementation.md), including decisions D-1 and D-2."
@@ -196,17 +196,17 @@ Continue automatically to Phase 4.
 ## Phase 4: Repository clutter and final verification
 
 Requirements: REQ-012, REQ-013, REQ-014
-State: Awaiting approval
+State: Complete
 Expected test count: 97 (or 97 if Phase 3 was skipped, because it nets to zero)
 
 ### Tasks
 
-- [ ] `git rm -r _to_delete "docs/Warang design implementation.html" "docs/Warang design implementation_files"`.
-- [ ] `git mv DESIGN_UPDATE_IMPLEMENTATION_PLAN.md docs/archive/DESIGN_UPDATE_IMPLEMENTATION_PLAN.md` and `git mv warang-design-prompt.md docs/archive/warang-design-prompt.md`.
-- [ ] Fix every reference to the moved or removed files: run `grep -rn "DESIGN_UPDATE_IMPLEMENTATION_PLAN\|warang-design-prompt\|Warang design implementation\|_to_delete" --include=*.md . | grep -v "^./.agents\|^./.claude"` and update the paths in `docs/SPEC_INDEX.md`, `docs/IMPLEMENTATION_PLAN.md`, and the archived plan itself.
+- [x] `git rm -r _to_delete "docs/Warang design implementation.html" "docs/Warang design implementation_files"`.
+- [x] `git mv DESIGN_UPDATE_IMPLEMENTATION_PLAN.md docs/archive/DESIGN_UPDATE_IMPLEMENTATION_PLAN.md` and `git mv warang-design-prompt.md docs/archive/warang-design-prompt.md`.
+- [x] Fix every reference to the moved or removed files: run `grep -rn "DESIGN_UPDATE_IMPLEMENTATION_PLAN\|warang-design-prompt\|Warang design implementation\|_to_delete" --include=*.md . | grep -v "^./.agents\|^./.claude"` and update the paths in `docs/SPEC_INDEX.md`, `docs/IMPLEMENTATION_PLAN.md`, and the archived plan itself.
   Historical prose in completed plans may keep the old name if it is not a link, but every Markdown link must resolve.
-- [ ] Update `docs/SPEC_INDEX.md`: add rows for the FEAT-002 feature, plan, and evidence; point the UI design update row at `docs/archive/`; set the timestamps.
-- [ ] Set FEAT-002 spec status to "Implemented - physical-device checks pending" and this plan's status to "Complete".
+- [x] Update `docs/SPEC_INDEX.md`: add rows for the FEAT-002 feature, plan, and evidence; point the UI design update row at `docs/archive/`; set the timestamps.
+- [x] Set FEAT-002 spec status to "Implemented - physical-device checks pending" and this plan's status to "Complete".
 
 ### Success metrics (feature totals)
 
@@ -219,15 +219,15 @@ Expected test count: 97 (or 97 if Phase 3 was skipped, because it nets to zero)
 
 ### Verification
 
-- [ ] Gates 1-6 pass on the final tree.
-- [ ] Record the before and after numbers for lines, dependencies, and tests in the evidence log.
+- [x] Gates 1-6 pass on the final tree.
+- [x] Record the before and after numbers for lines, dependencies, and tests in the evidence log.
 
 ### Review and checkpoint
 
-- [ ] Review the full FEAT-002 diff (`git diff a85a915..HEAD`) for correctness, scope, and Ponytail simplicity.
-- [ ] Update plan, evidence, `docs/SPEC_INDEX.md`, and `HANDOFF.md`, with the next action being "Len runs the FEAT-001 and FEAT-002 physical-device checklists".
-- [ ] Stage only reviewed phase paths and verify the staged diff.
-- [ ] Commit and verify that Git reports success.
+- [x] Review the full FEAT-002 diff (`git diff a85a915..HEAD`) for correctness, scope, and Ponytail simplicity.
+- [x] Update plan, evidence, `docs/SPEC_INDEX.md`, and `HANDOFF.md`, with the next action being "Len runs the FEAT-001 and FEAT-002 physical-device checklists".
+- [x] Stage only reviewed phase paths and verify the staged diff.
+- [x] Commit and verify that Git reports success.
 
 Checkpoint message: `docs(plan): FEAT-002 phase 4 - clutter and final verification`
 FEAT-002 is complete once this commit succeeds.
