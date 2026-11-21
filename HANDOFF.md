@@ -1,18 +1,17 @@
 # Current handoff
 
 Created: 2026-10-16T22:55:00+08:00
-Updated: 2026-10-16T23:59:00+08:00
-State: Complete - awaiting physical-device checks
-Feature: FEAT-001
+Updated: 2026-11-21T16:56:00+08:00
+State: FEAT-002 approved; ready for Phases 1-4
+Feature: FEAT-002 (FEAT-001 complete, physical-device checks pending)
 
 ## Read first
 
-- [AGENTS.md](AGENTS.md) and [CLAUDE.md](CLAUDE.md)
+- [AGENTS.md](AGENTS.md), [GEMINI.md](GEMINI.md), and [CLAUDE.md](CLAUDE.md)
 - [docs/SPEC_INDEX.md](docs/SPEC_INDEX.md)
-- [docs/DESIGN_SPEC.md](docs/DESIGN_SPEC.md) and [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) section 3 (commit protocol)
-- [docs/REMEDIATION_IMPLEMENTATION_PLAN.md](docs/REMEDIATION_IMPLEMENTATION_PLAN.md) hard stops
-- [docs/features/FEAT-001-user-flow-quality.md](docs/features/FEAT-001-user-flow-quality.md)
-- [docs/plans/FEAT-001-implementation.md](docs/plans/FEAT-001-implementation.md)
+- [docs/DESIGN_SPEC.md](docs/DESIGN_SPEC.md) and [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) (architecture; T17 keeps the tile cache in `sqflite`)
+- [docs/features/FEAT-002-ponytail-cleanup.md](docs/features/FEAT-002-ponytail-cleanup.md)
+- [docs/plans/FEAT-002-implementation.md](docs/plans/FEAT-002-implementation.md)
 
 Reread these files and inspect actual Git status before acting; prior chat memory is not authoritative.
 
@@ -22,22 +21,22 @@ Reread these files and inspect actual Git status before acting; prior chat memor
 | --- | --- | --- |
 | FEAT-001 feature spec | Revision 1 | 2026-10-16 chat: "approved, go ahead with all four decisions" |
 | FEAT-001 plan | Revision 1 | 2026-10-16 chat: "approved, go ahead with all four decisions" |
+| FEAT-002 feature spec (includes D-1, D-2) | Revision 1 | 2026-11-21 chat: "I, Len, approve FEAT-002 revision 1 (docs/features/FEAT-002-ponytail-cleanup.md) and its plan revision 1 (docs/plans/FEAT-002-implementation.md), including decisions D-1 and D-2." |
+| FEAT-002 plan | Revision 1 | 2026-11-21 chat: "I, Len, approve FEAT-002 revision 1 (docs/features/FEAT-002-ponytail-cleanup.md) and its plan revision 1 (docs/plans/FEAT-002-implementation.md), including decisions D-1 and D-2." |
 
-Allowed phases: 1-7.
-Run Phases 1-7 continuously without hard stops (Len's instruction, 2026-10-16), with every gate passing in every phase.
-Architecture and behavior changes return to Len; this handoff cannot override the linked specs.
+Allowed phases: Phases 1-4 continuously without hard stops (Len's instruction, 2026-11-21), with every gate passing in every phase.
 
 ## Progress and working tree
 
-Phases 1-7 complete; the latest code commit before this checkpoint is `b4d36ab test(journey): walk capture to undo end to end [FEAT-001 P7]`.
-Each phase's commits and checkpoint are listed by `git log --oneline --grep "FEAT-001"`.
+FEAT-001 is complete; the latest commit is `a85a915 docs(evidence): point phase 7 renders at final/`.
+The FEAT-002 spec and plan are new, untracked files; commit them with the approval record before Phase 1.
 Preserve the existing untracked paths: `.agents/skills/*`, `.agents/templates/`, `.claude/`, `CLAUDE.md`, `releases/`, and `scripts/`.
 
 ## Checks and evidence
 
-See [docs/evidence/FEAT-001-verification.md](docs/evidence/FEAT-001-verification.md); the latest gates passed with 96 tests on 2026-10-16.
-Known environment issue: Flutter sometimes cannot delete stale, empty generated directories under `build/` or `ios/Flutter/ephemeral/`; removing the named directory and rerunning fixes it.
-No emulator or device was available, so the screen evidence comes from widget renders.
+Baseline on 2026-11-21 at `a85a915`: `flutter test` passed 96 tests, and `flutter analyze` reported `No issues found!`.
+`flutter test tool/ux_screenshots_test.dart --dart-define=UX_LABEL=final` failed 4 of 8 cases on clock-dependent screens (`08_home_scrolled_*` 3.91%, `12_capture_*` 0.07%); the FEAT-002 plan gate 5 accounts for this.
+FEAT-001 evidence: [docs/evidence/FEAT-001-verification.md](docs/evidence/FEAT-001-verification.md).
 
 ## Blockers and attempts
 
@@ -47,4 +46,5 @@ No emulator or device was available, so the screen evidence comes from widget re
 
 ## Next action
 
-FEAT-001 is complete. Next: Len runs the physical-device checklist in docs/evidence/FEAT-001-verification.md.
+Execute Phases 1-4 of [docs/plans/FEAT-002-implementation.md](docs/plans/FEAT-002-implementation.md) continuously, starting with rendering the `feat-002-baseline` screenshots before any code edits.
+Len still owes the FEAT-001 physical-device checklist.

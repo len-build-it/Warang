@@ -1,7 +1,7 @@
 # Specification index
 
 Created: 2026-10-16T22:55:00+08:00
-Updated: 2026-10-16T22:55:00+08:00
+Updated: 2026-11-21T16:56:00+08:00
 
 | Category | ID | Current path | Revision | Status | Replaces |
 | --- | --- | --- | --- | --- | --- |
@@ -12,4 +12,6 @@ Updated: 2026-10-16T22:55:00+08:00
 | Feature | FEAT-001 | [docs/features/FEAT-001-user-flow-quality.md](features/FEAT-001-user-flow-quality.md) | 1 | Implemented | - |
 | Plan | FEAT-001 | [docs/plans/FEAT-001-implementation.md](plans/FEAT-001-implementation.md) | 1 | Complete | - |
 | Evidence | FEAT-001 | [docs/evidence/FEAT-001-verification.md](evidence/FEAT-001-verification.md) | - | Phases 1-7 recorded; device checks pending | - |
+| Feature | FEAT-002 | [docs/features/FEAT-002-ponytail-cleanup.md](features/FEAT-002-ponytail-cleanup.md) | 1 | Approved | - |
+| Plan | FEAT-002 | [docs/plans/FEAT-002-implementation.md](plans/FEAT-002-implementation.md) | 1 | Approved | - |
 | Handoff | - | [HANDOFF.md](../HANDOFF.md) | - | Current | - |
