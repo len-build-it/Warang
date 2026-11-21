@@ -75,7 +75,7 @@ void main() {
             home: Scaffold(
               body: Center(
                 child: WarangGlassIconButton(
-                  icon: const Icon(Icons.menu),
+                  icon: const WarangIcon(WarangGlyphs.more),
                   onPressed: () => tapped = true,
                   semanticLabel: 'Open navigation menu',
                   tooltip: 'Menu',

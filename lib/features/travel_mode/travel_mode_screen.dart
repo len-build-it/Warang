@@ -4,7 +4,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import '../../app/app.dart';
 import '../../app/app_state.dart';
@@ -298,11 +297,11 @@ class _PlacementCrosshair extends StatelessWidget {
     // The pin's tip marks the exact centre of the map.
     return Transform.translate(
       offset: const Offset(0, -20),
-      child: Icon(
-        Icons.place,
+      child: WarangIcon(
+        WarangGlyphs.pin,
         size: 40,
         color: theme.colorScheme.onSurface,
-        shadows: [Shadow(color: theme.colorScheme.surface, blurRadius: 8)],
+        fillColor: theme.colorScheme.surface,
       ),
     );
   }
@@ -352,7 +351,7 @@ class _HomeMenuButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => WarangGlassIconButton(
-    icon: const Icon(Icons.menu),
+    icon: const WarangIcon(WarangGlyphs.more),
     onPressed: onPressed,
     semanticLabel: 'Open navigation drawer',
     tooltip: 'Menu',
@@ -365,7 +364,7 @@ class _RecenterButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => WarangGlassIconButton(
-    icon: const Icon(Icons.gps_fixed),
+    icon: const WarangIcon(WarangGlyphs.recenter),
     onPressed: onPressed,
     semanticLabel: 'Recenter map on current location',
     tooltip: 'Recenter',
@@ -461,7 +460,7 @@ class _MomentCardState extends State<MomentCard> {
     final timeText = formatMomentTime(moment.capturedAt);
     final placeholder = ColoredBox(
       color: theme.extension<MapPalette>()!.landAlt,
-      child: const Center(child: Icon(Icons.photo_outlined, size: 36)),
+      child: const Center(child: WarangIcon(WarangGlyphs.photo, size: 36)),
     );
 
     final meta = Container(
@@ -681,7 +680,7 @@ class MomentSearchDelegate extends SearchDelegate<Moment?> {
           query = '';
           showSuggestions(context);
         },
-        icon: const Icon(Icons.clear),
+        icon: const WarangIcon(WarangGlyphs.close),
       ),
   ];
 
@@ -689,7 +688,7 @@ class MomentSearchDelegate extends SearchDelegate<Moment?> {
   Widget? buildLeading(BuildContext context) => IconButton(
     tooltip: 'Back',
     onPressed: () => close(context, null),
-    icon: const Icon(Icons.arrow_back),
+    icon: const WarangIcon(WarangGlyphs.back),
   );
 
   @override
@@ -716,8 +715,8 @@ class MomentSearchDelegate extends SearchDelegate<Moment?> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.search_off_outlined,
+                    WarangIcon(
+                      WarangGlyphs.searchEmpty,
                       size: 48,
                       color: theme.colorScheme.onSurfaceVariant.withValues(
                         alpha: 0.6,
@@ -763,9 +762,7 @@ class MomentSearchDelegate extends SearchDelegate<Moment?> {
               final title = hasCaption
                   ? moment.caption!
                   : (hasPlace ? moment.placeLabel! : 'Untitled moment');
-              final dateStr = DateFormat(
-                'dd MMM yyyy',
-              ).format(moment.capturedAt);
+              final dateStr = formatDate(moment.capturedAt);
               final subtitle = hasCaption && hasPlace
                   ? '${moment.placeLabel} - $dateStr'
                   : dateStr;
@@ -790,8 +787,8 @@ class MomentSearchDelegate extends SearchDelegate<Moment?> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 trailing: moment.latitude != null && moment.longitude != null
-                    ? Icon(
-                        Icons.near_me_outlined,
+                    ? WarangIcon(
+                        WarangGlyphs.recenter,
                         size: 18,
                         color: theme.colorScheme.primary.withValues(alpha: 0.7),
                       )
@@ -861,8 +858,8 @@ class _MomentSearchThumbnailState extends State<_MomentSearchThumbnail> {
       ),
       clipBehavior: Clip.antiAlias,
       child: _fileFuture == null
-          ? Icon(
-              Icons.image_outlined,
+          ? WarangIcon(
+              WarangGlyphs.photo,
               size: 20,
               color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
             )
@@ -873,8 +870,8 @@ class _MomentSearchThumbnailState extends State<_MomentSearchThumbnail> {
                 if (file != null) {
                   return Image.file(file, fit: BoxFit.cover);
                 }
-                return Icon(
-                  Icons.image_outlined,
+                return WarangIcon(
+                  WarangGlyphs.photo,
                   size: 20,
                   color: theme.colorScheme.onSurfaceVariant.withValues(
                     alpha: 0.5,

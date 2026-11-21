@@ -113,7 +113,6 @@ void main() {
     await tester.pump();
 
     expect(find.byTooltip('Map layers'), findsNothing);
-    expect(find.byIcon(Icons.layers_outlined), findsNothing);
   });
 
   testWidgets('moment card shows only actions that work', (tester) async {

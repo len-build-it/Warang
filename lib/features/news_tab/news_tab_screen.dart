@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/formatting.dart';
+import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
 
 sealed class NewsListEntry {
@@ -22,7 +23,7 @@ final class NewsArticle extends NewsListEntry {
   final String title;
   final String body;
   final String category;
-  final IconData icon;
+  final WarangGlyph icon;
   final DateTime date;
 
   factory NewsArticle.fromJson(Map<String, dynamic> json) => NewsArticle(
@@ -143,7 +144,7 @@ class _NewsArticleCard extends StatelessWidget {
             color: Theme.of(context).scaffoldBackgroundColor,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(
+          child: WarangIcon(
             article.icon,
             size: 21,
             color: WarangNeutrals.of(context).inkSoft,
@@ -209,8 +210,8 @@ class _NewsEmptyState extends StatelessWidget {
   );
 }
 
-IconData _iconFor(String? name) => switch (name) {
-  'camera_alt' => Icons.camera_alt_outlined,
-  'auto_stories' => Icons.auto_stories_outlined,
-  _ => Icons.explore_outlined,
+WarangGlyph _iconFor(String? name) => switch (name) {
+  'camera_alt' => WarangGlyphs.capture,
+  'auto_stories' => WarangGlyphs.news,
+  _ => WarangGlyphs.explore,
 };

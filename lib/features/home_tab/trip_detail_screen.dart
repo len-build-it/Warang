@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import '../../core/formatting.dart';
 import '../../app/app.dart';
@@ -186,10 +185,8 @@ class _TripDetailView extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                subtitle: Text(
-                  DateFormat('dd MMM yyyy · h:mm a').format(moment.capturedAt),
-                ),
-                trailing: const Icon(Icons.chevron_right),
+                subtitle: Text(formatMomentTime(moment.capturedAt)),
+                trailing: const WarangIcon(WarangGlyphs.chevron),
               ),
             ),
         ],
@@ -272,7 +269,7 @@ class _TripCoverImageState extends State<_TripCoverImage> {
       color: Theme.of(context).extension<MapPalette>()!.landAlt,
       borderRadius: BorderRadius.circular(14),
     ),
-    child: const Center(child: Icon(Icons.landscape_outlined, size: 42)),
+    child: const Center(child: WarangIcon(WarangGlyphs.photo, size: 42)),
   );
 }
 
@@ -352,6 +349,6 @@ class _MomentTileThumbnailState extends State<_MomentTileThumbnail> {
       color: Theme.of(context).extension<MapPalette>()!.landAlt,
       borderRadius: BorderRadius.circular(8),
     ),
-    child: const Center(child: Icon(Icons.photo_camera_outlined, size: 20)),
+    child: const Center(child: WarangIcon(WarangGlyphs.capture, size: 20)),
   );
 }

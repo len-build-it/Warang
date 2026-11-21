@@ -93,6 +93,7 @@ void main() {
     await _loadFont('Shantell Sans', [
       p.join(fonts, 'ShantellSans-Medium.ttf'),
     ]);
+    await _loadFont('WarangIcons', [p.join(fonts, 'WarangIcons.ttf')]);
     final material = _materialFontsDirectory();
     await _loadFont('MaterialIcons', [
       p.join(material, 'materialicons-regular.otf'),

@@ -240,8 +240,8 @@ class _ProfileRow extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(
-              Icons.edit_outlined,
+            WarangIcon(
+              WarangGlyphs.edit,
               size: 18,
               color: WarangNeutrals.of(context).inkSoft,
             ),

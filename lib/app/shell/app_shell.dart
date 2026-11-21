@@ -24,21 +24,9 @@ class _AppShellState extends ConsumerState<AppShell> {
   bool _drawerOpen = false;
 
   static const _items = [
-    _ShellItem(
-      unselectedIcon: Icons.map_outlined,
-      selectedIcon: Icons.map,
-      label: 'Travel Mode',
-    ),
-    _ShellItem(
-      unselectedIcon: Icons.home_outlined,
-      selectedIcon: Icons.home,
-      label: 'Home',
-    ),
-    _ShellItem(
-      unselectedIcon: Icons.article_outlined,
-      selectedIcon: Icons.article,
-      label: 'News',
-    ),
+    _ShellItem(glyph: WarangGlyphs.map, label: 'Travel Mode'),
+    _ShellItem(glyph: WarangGlyphs.trips, label: 'Home'),
+    _ShellItem(glyph: WarangGlyphs.news, label: 'News'),
   ];
 
   late final _tabs = [
@@ -163,13 +151,8 @@ class _AppShellState extends ConsumerState<AppShell> {
 }
 
 class _ShellItem {
-  const _ShellItem({
-    required this.unselectedIcon,
-    required this.selectedIcon,
-    required this.label,
-  });
-  final IconData unselectedIcon;
-  final IconData selectedIcon;
+  const _ShellItem({required this.glyph, required this.label});
+  final WarangGlyph glyph;
   final String label;
 }
 
@@ -315,7 +298,6 @@ class _NavigationItem extends StatelessWidget {
     final background = selected
         ? WarangColors.accent.withValues(alpha: dark ? .22 : .16)
         : Colors.transparent;
-    final iconData = selected ? item.selectedIcon : item.unselectedIcon;
 
     return Semantics(
       selected: selected,
@@ -341,7 +323,7 @@ class _NavigationItem extends StatelessWidget {
               child: horizontal
                   ? Row(
                       children: [
-                        Icon(iconData, color: color, size: 21),
+                        WarangIcon(item.glyph, selected: selected, size: 24),
                         const SizedBox(width: 12),
                         Text(
                           item.label,
@@ -359,7 +341,7 @@ class _NavigationItem extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(iconData, color: color, size: 21),
+                        WarangIcon(item.glyph, selected: selected, size: 24),
                         const SizedBox(height: 3),
                         Text(
                           item.label,

@@ -4,6 +4,9 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 import 'tokens.dart';
+import 'warang_icons.dart';
+
+export 'warang_icons.dart';
 
 InputDecoration warangInputDecoration(
   BuildContext context, {
@@ -38,6 +41,52 @@ ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showWarangSnackBar(
       margin: EdgeInsets.fromLTRB(16, 0, 16, bottom),
     ),
   );
+}
+
+/// A two-layer clay icon: a soft fill glyph under a 2.5 px stroke glyph.
+///
+/// Unselected icons use an `inkSoft` stroke on a `hairline` fill; selected
+/// icons fill with amber and take an `ink` stroke (FEAT-003 V7).
+class WarangIcon extends StatelessWidget {
+  const WarangIcon(
+    this.glyph, {
+    super.key,
+    this.size,
+    this.color,
+    this.fillColor,
+    this.selected = false,
+    this.semanticLabel,
+  });
+
+  final WarangGlyph glyph;
+  final double? size;
+  final Color? color;
+  final Color? fillColor;
+  final bool selected;
+  final String? semanticLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final neutrals = WarangNeutrals.of(context);
+    final size = this.size ?? IconTheme.of(context).size ?? 24;
+    final stroke = color ?? (selected ? neutrals.ink : neutrals.inkSoft);
+    final fill =
+        fillColor ?? (selected ? WarangColors.accent : neutrals.hairline);
+    final fillGlyph = glyph.fill;
+    return Semantics(
+      label: semanticLabel,
+      excludeSemantics: true,
+      child: SizedBox.square(
+        dimension: size,
+        child: Stack(
+          children: [
+            if (fillGlyph != null) Icon(fillGlyph, size: size, color: fill),
+            Icon(glyph.stroke, size: size, color: stroke),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class WarangPrimaryButton extends StatelessWidget {

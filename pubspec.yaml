@@ -57,6 +57,9 @@ flutter:
       fonts:
         - asset: assets/fonts/ShantellSans-Medium.ttf
           weight: 500
+    - family: WarangIcons
+      fonts:
+        - asset: assets/fonts/WarangIcons.ttf
 
 flutter_launcher_icons:
   android: true

@@ -137,12 +137,20 @@ void main() {
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 100));
 
-        // Travel Mode is selected: uses filled icon Icons.map, w600 weight
-        expect(find.byIcon(Icons.map), findsWidgets);
+        Finder navIcon(WarangGlyph glyph, {required bool selected}) =>
+            find.byWidgetPredicate(
+              (widget) =>
+                  widget is WarangIcon &&
+                  widget.glyph == glyph &&
+                  widget.selected == selected,
+            );
 
-        // Home is unselected: uses outline icon Icons.home_outlined
-        expect(find.byIcon(Icons.home_outlined), findsOneWidget);
-        expect(find.byIcon(Icons.home), findsNothing);
+        // Travel Mode is selected: its map icon fills with amber.
+        expect(navIcon(WarangGlyphs.map, selected: true), findsWidgets);
+
+        // Home is unselected: its suitcase keeps the hairline fill.
+        expect(navIcon(WarangGlyphs.trips, selected: false), findsOneWidget);
+        expect(navIcon(WarangGlyphs.trips, selected: true), findsNothing);
 
         // Check text weight of selected vs unselected
         final travelText = tester.widget<Text>(find.text('Travel Mode').first);

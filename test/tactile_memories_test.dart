@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:warang/app/theme/components.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:warang/app/app.dart';
@@ -162,7 +163,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
 
       // Fallback landscape icon is present
-      expect(find.byIcon(Icons.landscape_outlined), findsOneWidget);
+      expect(find.byIcon(WarangGlyphs.photo.stroke), findsOneWidget);
       expect(
         find.textContaining('Your moments from this trip will appear here.'),
         findsOneWidget,

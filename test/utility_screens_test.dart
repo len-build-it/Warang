@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:warang/app/theme/components.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -81,7 +82,7 @@ void main() {
       });
       await tester.pump();
 
-      expect(find.byIcon(Icons.search_off_outlined), findsOneWidget);
+      expect(find.byIcon(WarangGlyphs.searchEmpty.stroke), findsOneWidget);
       expect(
         find.text('No matches found for "nonexistentquery123"'),
         findsOneWidget,
@@ -242,7 +243,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
 
       expect(find.text('Retake'), findsOneWidget);
-      expect(find.byIcon(Icons.close), findsOneWidget);
+      expect(find.byIcon(WarangGlyphs.close.stroke), findsOneWidget);
       expect(find.text('Say something (optional)'), findsOneWidget);
       expect(find.text('Save'), findsOneWidget);
 

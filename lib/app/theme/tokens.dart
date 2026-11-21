@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'components.dart' show WarangIcon;
 import 'typography.dart';
+import 'warang_icons.dart';
 
 export 'typography.dart';
 
@@ -288,6 +290,10 @@ ThemeData buildWarangTheme(Brightness brightness) {
       labelLarge: WarangType.button.copyWith(color: ink),
       labelMedium: WarangType.meta.copyWith(color: neutrals.inkFaint),
       labelSmall: WarangType.caption.copyWith(color: soft),
+    ),
+    actionIconTheme: ActionIconThemeData(
+      backButtonIconBuilder: (context) => const WarangIcon(WarangGlyphs.back),
+      closeButtonIconBuilder: (context) => const WarangIcon(WarangGlyphs.close),
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(

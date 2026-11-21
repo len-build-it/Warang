@@ -1,7 +1,7 @@
 # Implementation Plan: FEAT-003 Clay keepsake redesign
 
 Created: 2026-11-21T20:38:00+08:00
-Updated: 2026-11-21T21:32:00+08:00
+Updated: 2026-11-21T21:49:00+08:00
 Revision: 1
 Status: Approved - in progress
 Feature spec and revision: [FEAT-003 revision 1](../features/FEAT-003-clay-keepsake-redesign.md)
@@ -108,14 +108,14 @@ Checkpoint message: `docs(plan): FEAT-003 phase 2 - keepsake typography`
 ## Phase 3: Icons
 
 Requirements: REQ-005, REQ-006
-State: Approved - not started
+State: Complete (checkpoint commit recorded in `HANDOFF.md`)
 
 ### Tasks
 
-- [ ] Draw the 21 glyphs in spec V7 as 24 by 24 SVG under `design/icons/`, with a 2.5 px rounded stroke and a separate duotone fill layer.
-- [ ] Convert them to `assets/fonts/WarangIcons.ttf` per P-2, and add `lib/app/theme/warang_icons.dart` with one `IconData` per glyph.
-- [ ] Replace every `Icons.*` use.
-- [ ] Add a widget test that walks the main screens and asserts every tappable icon has a tooltip or semantic label.
+- [x] Draw the 21 glyphs in spec V7 as 24 by 24 SVG under `design/icons/`, with a 2.5 px rounded stroke and a separate duotone fill layer.
+- [x] Convert them to `assets/fonts/WarangIcons.ttf` per P-2, and add `lib/app/theme/warang_icons.dart` with one `IconData` per glyph.
+- [x] Replace every `Icons.*` use.
+- [x] Add a widget test that walks the main screens and asserts every tappable icon has a tooltip or semantic label.
 
 ### Success metrics
 

@@ -171,12 +171,12 @@ class _TripFormScreenState extends ConsumerState<TripFormScreen> {
                   IconButton(
                     tooltip: 'Clear dates',
                     onPressed: () => setState(() => _dates = null),
-                    icon: const Icon(Icons.close),
+                    icon: const WarangIcon(WarangGlyphs.close),
                   ),
                 IconButton(
                   tooltip: 'Choose dates',
                   onPressed: _pickDates,
-                  icon: const Icon(Icons.date_range_outlined),
+                  icon: const WarangIcon(WarangGlyphs.calendar),
                 ),
               ],
             ),

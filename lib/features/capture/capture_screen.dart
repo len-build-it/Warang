@@ -163,7 +163,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
                                   theme.extension<MapPalette>()?.landAlt ??
                                   theme.colorScheme.surfaceContainerHighest,
                               child: const Center(
-                                child: Icon(Icons.photo_outlined, size: 36),
+                                child: WarangIcon(WarangGlyphs.photo, size: 36),
                               ),
                             ),
                           ),
@@ -215,8 +215,8 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(
-                                  Icons.refresh,
+                                WarangIcon(
+                                  WarangGlyphs.refresh,
                                   size: 18,
                                   color: Colors.white,
                                 ),
@@ -254,8 +254,8 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
                                 color: Colors.white.withValues(alpha: 0.2),
                               ),
                             ),
-                            child: const Icon(
-                              Icons.close,
+                            child: const WarangIcon(
+                              WarangGlyphs.close,
                               size: 20,
                               color: Colors.white,
                             ),

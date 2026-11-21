@@ -7,6 +7,7 @@ import '../../core/memory_stats.dart';
 import '../../core/models.dart';
 import '../../data/files/photo_store.dart';
 import '../../data/repository.dart';
+import '../theme/components.dart';
 import '../theme/tokens.dart';
 
 /// Navigation drawer hosted by the shell scaffold, so it covers every tab and
@@ -74,7 +75,7 @@ class WarangDrawer extends StatelessWidget {
                   IconButton(
                     tooltip: 'Edit name',
                     onPressed: () => editProfileName(context, repository),
-                    icon: const Icon(Icons.edit_outlined, size: 18),
+                    icon: const WarangIcon(WarangGlyphs.edit, size: 18),
                   ),
                 ],
               ),
@@ -103,17 +104,17 @@ class WarangDrawer extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 children: [
                   _DrawerRow(
-                    icon: Icons.search,
+                    icon: WarangGlyphs.search,
                     label: 'Search',
                     onTap: onSearch,
                   ),
                   _DrawerRow(
-                    icon: Icons.tune,
+                    icon: WarangGlyphs.settings,
                     label: 'Settings',
                     onTap: onSettings,
                   ),
                   _DrawerRow(
-                    icon: Icons.info_outline,
+                    icon: WarangGlyphs.info,
                     label: 'About Warang',
                     onTap: onAbout,
                   ),
@@ -304,7 +305,7 @@ class _DrawerRow extends StatelessWidget {
     required this.label,
     required this.onTap,
   });
-  final IconData icon;
+  final WarangGlyph icon;
   final String label;
   final VoidCallback onTap;
 
@@ -318,7 +319,7 @@ class _DrawerRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: WarangNeutrals.of(context).inkSoft),
+            WarangIcon(icon, size: 22),
             const SizedBox(width: 14),
             Text(label, style: const TextStyle(fontSize: 15.5)),
           ],

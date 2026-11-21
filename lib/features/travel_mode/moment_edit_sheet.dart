@@ -109,6 +109,10 @@ class _MomentEditSheetState extends State<MomentEditSheet> {
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
+              icon: const RotatedBox(
+                quarterTurns: 1,
+                child: WarangIcon(WarangGlyphs.chevron, size: 20),
+              ),
               initialValue: _tripId,
               style: theme.textTheme.bodyLarge,
               decoration: const InputDecoration(labelText: 'Trip'),

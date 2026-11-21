@@ -117,7 +117,7 @@ class _HomeTabContentState extends State<_HomeTabContent> {
                   IconButton(
                     tooltip: 'Search moments',
                     onPressed: widget.onSearch,
-                    icon: const Icon(Icons.search),
+                    icon: const WarangIcon(WarangGlyphs.search),
                   ),
               ],
             ),
@@ -443,7 +443,7 @@ class _EverydayThumbnailState extends State<_EverydayThumbnail> {
   @override
   Widget build(BuildContext context) {
     if (_future == null) {
-      return const Icon(Icons.wb_sunny_outlined, size: 22);
+      return const WarangIcon(WarangGlyphs.theme, size: 22);
     }
     return FutureBuilder<File?>(
       future: _future,
@@ -454,10 +454,10 @@ class _EverydayThumbnailState extends State<_EverydayThumbnail> {
             file,
             fit: BoxFit.cover,
             errorBuilder: (_, _, _) =>
-                const Icon(Icons.wb_sunny_outlined, size: 22),
+                const WarangIcon(WarangGlyphs.theme, size: 22),
           );
         }
-        return const Icon(Icons.wb_sunny_outlined, size: 22);
+        return const WarangIcon(WarangGlyphs.theme, size: 22);
       },
     );
   }
@@ -605,7 +605,7 @@ class _TripBannerImageState extends State<_TripBannerImage> {
 
   Widget _fallback(BuildContext context) => ColoredBox(
     color: Theme.of(context).extension<MapPalette>()!.landAlt,
-    child: const Center(child: Icon(Icons.landscape_outlined, size: 34)),
+    child: const Center(child: WarangIcon(WarangGlyphs.photo, size: 34)),
   );
 }
 

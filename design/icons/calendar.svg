@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <g id="fill" fill="#E2DFD4" stroke="none">
+    <rect x="3.5" y="5" width="17" height="15" rx="3"/>
+  </g>
+  <g id="stroke" fill="none" stroke="#4F544A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3.5" y="5" width="17" height="15" rx="3"/>
+    <line x1="8" y1="3" x2="8" y2="7"/>
+    <line x1="16" y1="3" x2="16" y2="7"/>
+    <line x1="3.5" y1="10" x2="20.5" y2="10"/>
+    <path d="M10.1 14.75L10.069 15.062L9.978 15.362L9.83 15.639L9.631 15.881L9.389 16.08L9.112 16.228L8.812 16.319L8.5 16.35L8.188 16.319L7.888 16.228L7.611 16.08L7.369 15.881L7.17 15.639L7.022 15.362L6.931 15.062L6.9 14.75L6.931 14.438L7.022 14.138L7.17 13.861L7.369 13.619L7.611 13.42L7.888 13.272L8.188 13.181L8.5 13.15L8.812 13.181L9.112 13.272L9.389 13.42L9.631 13.619L9.83 13.861L9.978 14.138L10.069 14.438Z" fill="currentColor" stroke="none"/>
+  </g>
+</svg>
