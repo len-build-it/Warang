@@ -57,19 +57,19 @@ Line-count command (hand-written Dart under `lib/`):
 ## Phase 1: Remove the unexposed archive and share code
 
 Requirements: REQ-001, REQ-002, REQ-003, REQ-004, REQ-013 (README and remediation note)
-State: Awaiting approval
+State: Complete
 Expected test count: 96 (no test covers this code)
 
 ### Tasks
 
-- [ ] Before editing any code, render `docs/evidence/FEAT-001/feat-002-baseline/` as described in gate 5, and commit it alone as `test(evidence): FEAT-002 visual baseline at a85a915`.
-- [ ] Delete `lib/features/travelbook/` and `lib/features/share/`.
-- [ ] Remove `toJson` and every `fromJson` factory from `Profile`, `Trip`, and `Moment` in `lib/core/models.dart`.
+- [x] Before editing any code, render `docs/evidence/FEAT-001/feat-002-baseline/` as described in gate 5, and commit it alone as `test(evidence): FEAT-002 visual baseline at a85a915`.
+- [x] Delete `lib/features/travelbook/` and `lib/features/share/`.
+- [x] Remove `toJson` and every `fromJson` factory from `Profile`, `Trip`, and `Moment` in `lib/core/models.dart`.
   Leave `NewsArticle.fromJson` in `news_tab_screen.dart` alone, because it parses the bundled news asset.
-- [ ] Remove `archive`, `share_plus`, and `cross_file` from `pubspec.yaml`, then run `flutter pub get` so `pubspec.lock` updates.
-- [ ] In `README.md`, remove the "Planned sharing/archive primitives" row and the `share/` and `travelbook/` lines from the layout.
+- [x] Remove `archive`, `share_plus`, and `cross_file` from `pubspec.yaml`, then run `flutter pub get` so `pubspec.lock` updates.
+- [x] In `README.md`, remove the "Planned sharing/archive primitives" row and the `share/` and `travelbook/` lines from the layout.
   Keep the sentence that says backup, restore, sharing, and `.travelbook` are tracked in the remediation plan.
-- [ ] Add a dated note under Phase 3 of `docs/REMEDIATION_IMPLEMENTATION_PLAN.md`: "2026-11-21: unexposed `TravelbookService` and `WarangShareService` removed in FEAT-002 (last present at `a85a915`); rebuild against this phase's spec."
+- [x] Add a dated note under Phase 3 of `docs/REMEDIATION_IMPLEMENTATION_PLAN.md`: "2026-11-21: unexposed `TravelbookService` and `WarangShareService` removed in FEAT-002 (last present at `a85a915`); rebuild against this phase's spec."
 
 ### Success metrics
 
@@ -81,15 +81,15 @@ Expected test count: 96 (no test covers this code)
 
 ### Verification
 
-- [ ] Gates 1-6 pass.
-- [ ] Results are recorded in `docs/evidence/FEAT-002-verification.md`.
+- [x] Gates 1-6 pass.
+- [x] Results are recorded in `docs/evidence/FEAT-002-verification.md`.
 
 ### Review and checkpoint
 
-- [ ] Review correctness, scope, dependencies, and unrelated changes (Ponytail review).
-- [ ] Update plan, evidence, and `HANDOFF.md`.
-- [ ] Stage only reviewed phase paths and verify the staged diff.
-- [ ] Commit and verify that Git reports success.
+- [x] Review correctness, scope, dependencies, and unrelated changes (Ponytail review).
+- [x] Update plan, evidence, and `HANDOFF.md`.
+- [x] Stage only reviewed phase paths and verify the staged diff.
+- [x] Commit and verify that Git reports success.
 
 Checkpoint message: `docs(plan): FEAT-002 phase 1 - remove unexposed archive and share code`
 Continue automatically to Phase 2.

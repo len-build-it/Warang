@@ -1,8 +1,8 @@
 # Current handoff
 
 Created: 2026-10-16T22:55:00+08:00
-Updated: 2026-11-21T16:56:00+08:00
-State: FEAT-002 approved; ready for Phases 1-4
+Updated: 2026-11-21T17:07:00+08:00
+State: FEAT-002 Phase 1 complete; continuing to Phase 2
 Feature: FEAT-002 (FEAT-001 complete, physical-device checks pending)
 
 ## Read first
@@ -28,14 +28,14 @@ Allowed phases: Phases 1-4 continuously without hard stops (Len's instruction, 2
 
 ## Progress and working tree
 
-FEAT-001 is complete; the latest commit is `a85a915 docs(evidence): point phase 7 renders at final/`.
-The FEAT-002 spec and plan are new, untracked files; commit them with the approval record before Phase 1.
+FEAT-001 is complete (`a85a915`).
+FEAT-002 revision 1 approved at `cfeccc6`; visual baseline committed at `5d679f1`; Phase 1 complete (travelbook/share removed, model JSON removed, 3 unused dependencies removed, docs updated, gates 1-6 passed with 96 tests and 7720 `lib/` lines).
 Preserve the existing untracked paths: `.agents/skills/*`, `.agents/templates/`, `.claude/`, `CLAUDE.md`, `releases/`, and `scripts/`.
 
 ## Checks and evidence
 
 Baseline on 2026-11-21 at `a85a915`: `flutter test` passed 96 tests, and `flutter analyze` reported `No issues found!`.
-`flutter test tool/ux_screenshots_test.dart --dart-define=UX_LABEL=final` failed 4 of 8 cases on clock-dependent screens (`08_home_scrolled_*` 3.91%, `12_capture_*` 0.07%); the FEAT-002 plan gate 5 accounts for this.
+FEAT-002 evidence: [docs/evidence/FEAT-002-verification.md](docs/evidence/FEAT-002-verification.md).
 FEAT-001 evidence: [docs/evidence/FEAT-001-verification.md](docs/evidence/FEAT-001-verification.md).
 
 ## Blockers and attempts
@@ -46,5 +46,5 @@ FEAT-001 evidence: [docs/evidence/FEAT-001-verification.md](docs/evidence/FEAT-0
 
 ## Next action
 
-Execute Phases 1-4 of [docs/plans/FEAT-002-implementation.md](docs/plans/FEAT-002-implementation.md) continuously, starting with rendering the `feat-002-baseline` screenshots before any code edits.
+Continue to Phase 2 of [docs/plans/FEAT-002-implementation.md](docs/plans/FEAT-002-implementation.md).
 Len still owes the FEAT-001 physical-device checklist.
