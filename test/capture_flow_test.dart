@@ -4,10 +4,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
-import 'package:permission_handler/permission_handler.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:warang/app/app.dart';
@@ -59,18 +59,11 @@ void main() {
     } catch (_) {}
   });
 
-  Widget host(
-    Widget home, {
-    LocationReader? locate,
-    CameraPermissionRequest? permission,
-  }) => ProviderScope(
+  Widget host(Widget home, {LocationReader? locate}) => ProviderScope(
     overrides: [
       repositoryProvider.overrideWithValue(repository),
       mapTileStoreProvider.overrideWithValue(tileStore),
       locationReaderProvider.overrideWithValue(locate ?? () async => null),
-      cameraPermissionProvider.overrideWithValue(
-        permission ?? () async => PermissionStatus.granted,
-      ),
       cameraPickerProvider.overrideWithValue(() async => XFile(photo.path)),
     ],
     child: MaterialApp(theme: buildWarangTheme(Brightness.light), home: home),
@@ -166,26 +159,25 @@ void main() {
     expect(repository.moments, isEmpty);
   });
 
-  testWidgets('a permanently denied camera offers system settings', (
-    tester,
-  ) async {
-    phone(tester);
-    await tester.pumpWidget(
-      host(
-        const AppShell(),
-        permission: () async => PermissionStatus.permanentlyDenied,
-      ),
-    );
-    await tester.pump(const Duration(milliseconds: 100));
+  test(
+    'locationReaderProvider returns null when permission is denied',
+    () async {
+      for (final status in [
+        LocationPermission.denied,
+        LocationPermission.deniedForever,
+        LocationPermission.unableToDetermine,
+      ]) {
+        final container = ProviderContainer(
+          overrides: [
+            locationPermissionProvider.overrideWithValue(() async => status),
+          ],
+        );
+        addTearDown(container.dispose);
 
-    await tester.tap(find.byType(WarangCaptureButton));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
-
-    expect(find.text('Camera access is off for Warang.'), findsOneWidget);
-    expect(find.text('Open settings'), findsOneWidget);
-    expect(find.byType(CaptureScreen), findsNothing);
-  });
+        expect(await container.read(locationReaderProvider)(), isNull);
+      }
+    },
+  );
 
   testWidgets('a capture saves, returns to the map, and confirms the trip', (
     tester,

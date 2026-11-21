@@ -5,11 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 import '../../app/app.dart';
 import '../../app/app_state.dart';
-import '../../app/device_providers.dart';
 import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
 import '../../core/formatting.dart';
@@ -37,27 +35,6 @@ class _TravelModeScreenState extends ConsumerState<TravelModeScreen> {
   String? _placingId;
 
   Future<void> _capture() async {
-    final camera = await ref.read(cameraPermissionProvider)();
-    if (!mounted) return;
-    if (camera.isPermanentlyDenied) {
-      showWarangSnackBar(
-        context,
-        'Camera access is off for Warang.',
-        duration: const Duration(seconds: 8),
-        action: const SnackBarAction(
-          label: 'Open settings',
-          onPressed: openAppSettings,
-        ),
-      );
-      return;
-    }
-    if (!camera.isGranted) {
-      showWarangSnackBar(
-        context,
-        'Camera access is needed to save a photograph.',
-      );
-      return;
-    }
     final moment = await Navigator.of(
       context,
     ).push<Moment>(MaterialPageRoute(builder: (_) => const CaptureScreen()));

@@ -10,7 +10,6 @@ import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
-import 'package:permission_handler/permission_handler.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:warang/app/app.dart';
@@ -78,9 +77,6 @@ void main() {
         overrides: [
           repositoryProvider.overrideWithValue(repository),
           mapTileStoreProvider.overrideWithValue(tileStore),
-          cameraPermissionProvider.overrideWithValue(
-            () async => PermissionStatus.granted,
-          ),
           cameraPickerProvider.overrideWithValue(() async => XFile(photo.path)),
           // No GPS fix: the capture must still save.
           locationReaderProvider.overrideWithValue(() async => null),
