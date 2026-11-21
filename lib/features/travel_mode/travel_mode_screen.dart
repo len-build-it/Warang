@@ -452,18 +452,13 @@ class _MomentCardState extends State<MomentCard> {
     final hasCoordinates = moment.latitude != null && moment.longitude != null;
     final canAddLocation = !hasCoordinates && widget.onPlaceOnMap != null;
     final placeText = label != null && label.isNotEmpty
-        ? label.toUpperCase()
+        ? label
         : hasCoordinates
         ? formatCoordinates(moment.latitude!, moment.longitude!)
         : canAddLocation
-        ? 'ADD LOCATION'
-        : 'NO LOCATION';
-    final dateText = DateFormat(
-      'dd MMM yyyy',
-    ).format(moment.capturedAt).toUpperCase();
-    final timeText = DateFormat(
-      'h:mm a',
-    ).format(moment.capturedAt).toUpperCase();
+        ? 'Add location'
+        : 'No location';
+    final timeText = formatMomentTime(moment.capturedAt);
     final placeholder = ColoredBox(
       color: theme.extension<MapPalette>()!.landAlt,
       child: const Center(child: Icon(Icons.photo_outlined, size: 36)),
@@ -484,10 +479,7 @@ class _MomentCardState extends State<MomentCard> {
       ),
       child: RichText(
         text: TextSpan(
-          style: TextStyle(
-            fontFamily: 'DM Mono',
-            fontSize: 11,
-            letterSpacing: 1.4,
+          style: WarangType.meta.copyWith(
             color: WarangNeutrals.of(context).inkSoft,
           ),
           children: [
@@ -497,11 +489,11 @@ class _MomentCardState extends State<MomentCard> {
                 color: canAddLocation
                     ? (dark ? WarangColors.darkSoft : WarangColors.lightSoft)
                     : WarangNeutrals.of(context).ink,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w700,
                 decoration: canAddLocation ? TextDecoration.underline : null,
               ),
             ),
-            TextSpan(text: ' · $dateText · $timeText'),
+            TextSpan(text: ' · $timeText'),
           ],
         ),
       ),
@@ -658,8 +650,7 @@ class MomentSearchDelegate extends SearchDelegate<Moment?> {
 
   // Typed queries read as body text, not as a display headline.
   @override
-  TextStyle? get searchFieldStyle =>
-      const TextStyle(fontFamily: 'Public Sans', fontSize: 17);
+  TextStyle? get searchFieldStyle => WarangType.bodyL;
 
   @override
   ThemeData appBarTheme(BuildContext context) {

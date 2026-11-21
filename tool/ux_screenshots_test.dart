@@ -82,18 +82,16 @@ void main() {
     sqfliteFfiInit();
     sqflite.databaseFactory = databaseFactoryFfi;
     final fonts = p.join(Directory.current.path, 'assets', 'fonts');
-    await _loadFont('Bricolage Grotesque', [
-      p.join(fonts, 'BricolageGrotesque-Bold.ttf'),
-      p.join(fonts, 'BricolageGrotesque-ExtraBold.ttf'),
+    await _loadFont('Bagel Fat One', [
+      p.join(fonts, 'BagelFatOne-Regular.ttf'),
     ]);
-    await _loadFont('Public Sans', [
-      p.join(fonts, 'PublicSans-Regular.ttf'),
-      p.join(fonts, 'PublicSans-Medium.ttf'),
-      p.join(fonts, 'PublicSans-SemiBold.ttf'),
+    await _loadFont('Atkinson Hyperlegible Next', [
+      p.join(fonts, 'AtkinsonHyperlegibleNext-Regular.ttf'),
+      p.join(fonts, 'AtkinsonHyperlegibleNext-SemiBold.ttf'),
+      p.join(fonts, 'AtkinsonHyperlegibleNext-Bold.ttf'),
     ]);
-    await _loadFont('DM Mono', [
-      p.join(fonts, 'DMMono-Regular.ttf'),
-      p.join(fonts, 'DMMono-Medium.ttf'),
+    await _loadFont('Shantell Sans', [
+      p.join(fonts, 'ShantellSans-Medium.ttf'),
     ]);
     final material = _materialFontsDirectory();
     await _loadFont('MaterialIcons', [

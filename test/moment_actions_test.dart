@@ -115,7 +115,7 @@ void main() {
     expect(saved.tripId, repository.trips.firstWhere((t) => !t.isEveryday).id);
     expect(find.text('Sunset at White Beach'), findsOneWidget);
     expect(
-      find.textContaining('WHITE BEACH ·', findRichText: true),
+      find.textContaining('White Beach ·', findRichText: true),
       findsOneWidget,
     );
   });

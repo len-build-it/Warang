@@ -101,8 +101,8 @@ void main() {
     // Capture without GPS.
     await tester.tap(find.byType(WarangCaptureButton));
     await settle(tester);
-    expect(find.textContaining('NO LOCATION YET'), findsOneWidget);
-    expect(find.text('SAVING TO EVERYDAY'), findsOneWidget);
+    expect(find.textContaining('No location yet'), findsOneWidget);
+    expect(find.text('Saving to Everyday'), findsOneWidget);
     await tester.runAsync(() async {
       await tester.tap(find.text('Save'));
       for (var i = 0; i < 40 && repository.moments.isEmpty; i++) {
@@ -190,9 +190,7 @@ void main() {
     await settle(tester);
     expect(find.byType(TripDetailScreen), findsOneWidget);
     expect(
-      find.textContaining(
-        DateFormat('dd MMM yyyy').format(today).toUpperCase(),
-      ),
+      find.textContaining(DateFormat('d MMM yyyy').format(today)),
       findsWidgets,
     );
     await tester.tap(find.text('Sunset at White Beach'));

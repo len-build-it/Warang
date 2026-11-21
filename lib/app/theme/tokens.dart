@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'typography.dart';
+
+export 'typography.dart';
+
 abstract final class WarangColors {
   static const accent = Color(0xFFE8A020);
   static const accentInk = Color(0xFF231F0E);
@@ -238,8 +242,6 @@ class MapPalette extends ThemeExtension<MapPalette> {
   }
 }
 
-const _body = 'Public Sans';
-
 ThemeData buildWarangTheme(Brightness brightness) {
   final dark = brightness == Brightness.dark;
   final ink = dark ? WarangColors.darkInk : WarangColors.lightInk;
@@ -265,70 +267,27 @@ ThemeData buildWarangTheme(Brightness brightness) {
     brightness: brightness,
     colorScheme: scheme,
     scaffoldBackgroundColor: ground,
-    fontFamily: _body,
+    fontFamily: WarangType.textFamily,
     useMaterial3: true,
   );
   return base.copyWith(
     extensions: [dark ? MapPalette.dark : MapPalette.light, neutrals],
     textTheme: base.textTheme.copyWith(
-      displayLarge: TextStyle(
-        fontFamily: 'Bricolage Grotesque',
-        fontSize: 54,
-        height: 1.0,
-        fontWeight: FontWeight.w800,
-        color: ink,
-        letterSpacing: -2.16,
-      ),
-      displaySmall: TextStyle(
-        fontFamily: 'Bricolage Grotesque',
-        fontSize: 30,
-        height: 1.0,
-        fontWeight: FontWeight.w700,
-        color: ink,
-        letterSpacing: -0.9,
-      ),
-      titleLarge: TextStyle(
-        fontFamily: 'Bricolage Grotesque',
-        fontSize: 28,
-        height: 1.0,
-        fontWeight: FontWeight.w700,
-        color: ink,
-        letterSpacing: -0.84,
-      ),
-      titleMedium: TextStyle(
-        fontFamily: 'Bricolage Grotesque',
-        fontSize: 21,
-        height: 1.0,
-        fontWeight: FontWeight.w700,
-        color: ink,
-        letterSpacing: -0.525,
-      ),
-      bodyLarge: TextStyle(
-        fontFamily: _body,
-        fontSize: 17,
-        height: 1.45,
-        color: ink,
-      ),
-      bodyMedium: TextStyle(
-        fontFamily: _body,
-        fontSize: 15.5,
-        height: 1.45,
-        color: soft,
-      ),
-      bodySmall: TextStyle(
-        fontFamily: _body,
-        fontSize: 12.5,
-        height: 1.6,
-        color: soft,
-      ),
-      labelLarge: TextStyle(
-        fontFamily: _body,
-        fontSize: 16.5,
-        fontWeight: FontWeight.w600,
-        color: ink,
-      ),
-      labelMedium: TextStyle(fontFamily: _body, fontSize: 13.5, color: soft),
-      labelSmall: TextStyle(fontFamily: _body, fontSize: 10, color: soft),
+      displayLarge: WarangType.wordmark.copyWith(color: ink),
+      displayMedium: WarangType.displayL.copyWith(color: ink),
+      displaySmall: WarangType.displayL.copyWith(color: ink),
+      headlineLarge: WarangType.displayL.copyWith(color: ink),
+      headlineMedium: WarangType.displayM.copyWith(color: ink),
+      headlineSmall: WarangType.stampNumber.copyWith(color: ink),
+      titleLarge: WarangType.titleS.copyWith(color: ink),
+      titleMedium: WarangType.titleS.copyWith(color: ink),
+      titleSmall: WarangType.titleS.copyWith(color: ink),
+      bodyLarge: WarangType.bodyL.copyWith(color: ink),
+      bodyMedium: WarangType.body.copyWith(color: soft),
+      bodySmall: WarangType.body.copyWith(fontSize: 13.5, color: soft),
+      labelLarge: WarangType.button.copyWith(color: ink),
+      labelMedium: WarangType.meta.copyWith(color: neutrals.inkFaint),
+      labelSmall: WarangType.caption.copyWith(color: soft),
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(

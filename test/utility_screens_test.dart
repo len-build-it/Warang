@@ -173,12 +173,12 @@ void main() {
       await tester.pump();
 
       expect(find.text('Settings'), findsOneWidget);
-      expect(find.text('YOU'), findsOneWidget);
-      expect(find.text('STORAGE'), findsOneWidget);
-      expect(find.text('MAP'), findsOneWidget);
-      expect(find.text('FOLLOWS PHONE'), findsOneWidget);
+      expect(find.text('You'), findsOneWidget);
+      expect(find.text('Storage'), findsOneWidget);
+      expect(find.text('Map'), findsOneWidget);
+      expect(find.text('Follows your phone'), findsOneWidget);
       expect(find.text('Clean up'), findsNothing);
-      expect(find.text('SHARING'), findsNothing);
+      expect(find.text('Sharing'), findsNothing);
       expect(find.text('Copy caption on share'), findsNothing);
       expect(find.text('Corner mark on images'), findsNothing);
       expect(find.textContaining('Nothing leaves it'), findsNothing);

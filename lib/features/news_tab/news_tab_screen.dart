@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 
+import '../../core/formatting.dart';
 import '../../app/theme/tokens.dart';
 
 sealed class NewsListEntry {
@@ -156,10 +156,8 @@ class _NewsArticleCard extends StatelessWidget {
             children: [
               Text(
                 article.category,
-                style: const TextStyle(
-                  fontFamily: 'DM Mono',
-                  fontSize: 9,
-                  letterSpacing: 1.3,
+                style: WarangType.caption.copyWith(
+                  color: WarangNeutrals.of(context).inkSoft,
                 ),
               ),
               const SizedBox(height: 6),
@@ -173,11 +171,8 @@ class _NewsArticleCard extends StatelessWidget {
               Text(article.body, style: Theme.of(context).textTheme.bodyMedium),
               const SizedBox(height: 11),
               Text(
-                DateFormat('dd MMM yyyy').format(article.date).toUpperCase(),
-                style: TextStyle(
-                  fontFamily: 'DM Mono',
-                  fontSize: 9,
-                  letterSpacing: 1.2,
+                formatDate(article.date),
+                style: WarangType.caption.copyWith(
                   color: WarangNeutrals.of(context).inkFaint,
                 ),
               ),

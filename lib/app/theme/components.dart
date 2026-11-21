@@ -63,11 +63,7 @@ class WarangPrimaryButton extends StatelessWidget {
         disabledBackgroundColor: WarangColors.accent,
         disabledForegroundColor: WarangColors.accentInk,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        textStyle: TextStyle(
-          fontFamily: 'Public Sans',
-          fontSize: height == 54 ? 16 : 16.5,
-          fontWeight: FontWeight.w600,
-        ),
+        textStyle: WarangType.button,
       ),
       child: Text(label),
     ),
@@ -95,11 +91,7 @@ class WarangQuietButton extends StatelessWidget {
         foregroundColor: WarangNeutrals.of(context).inkSoft,
         side: BorderSide(color: Theme.of(context).colorScheme.outline),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        textStyle: const TextStyle(
-          fontFamily: 'Public Sans',
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
+        textStyle: WarangType.button,
       ),
       child: Text(label),
     ),
@@ -119,17 +111,12 @@ class WarangMetadata extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Text(
-    text.toUpperCase(),
+    text,
     textAlign: align,
-    style: TextStyle(
-      fontFamily: 'DM Mono',
-      fontSize: 11,
-      height: 1.25,
-      letterSpacing: 1.6,
+    style: WarangType.meta.copyWith(
       color: water
           ? Theme.of(context).extension<MapPalette>()!.labelWater
           : WarangNeutrals.of(context).inkFaint,
-      fontFeatures: const [FontFeature.tabularFigures()],
     ),
   );
 }
@@ -142,13 +129,9 @@ class WarangSectionLabel extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(left: 2),
     child: Text(
-      label.toUpperCase(),
-      style: TextStyle(
-        fontFamily: 'DM Mono',
-        fontSize: 10,
-        fontWeight: FontWeight.w500,
-        letterSpacing: 1.8,
-        color: WarangNeutrals.of(context).inkFaint,
+      label,
+      style: WarangType.meta.copyWith(
+        color: WarangNeutrals.of(context).inkSoft,
       ),
     ),
   );
@@ -492,13 +475,9 @@ class WarangClusterPin extends StatelessWidget {
             ),
             child: Text(
               '$count',
-              style: const TextStyle(
-                fontFamily: 'DM Mono',
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-                letterSpacing: -.6,
+              style: WarangType.stampNumber.copyWith(
+                fontSize: 20,
                 color: WarangColors.accentInk,
-                fontFeatures: [FontFeature.tabularFigures()],
               ),
             ),
           ),
@@ -559,9 +538,8 @@ class WarangSettingsRow extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: TextStyle(
-                  fontSize: 15.5,
-                  fontWeight: emphasized ? FontWeight.w500 : FontWeight.w400,
+                style: WarangType.body.copyWith(
+                  fontWeight: emphasized ? FontWeight.w600 : FontWeight.w400,
                   color: emphasized
                       ? (Theme.of(context).brightness == Brightness.dark
                             ? WarangColors.darkAccentText
@@ -573,11 +551,8 @@ class WarangSettingsRow extends StatelessWidget {
             if (value != null)
               Text(
                 value!,
-                style: TextStyle(
-                  fontFamily: 'DM Mono',
-                  fontSize: 12.5,
+                style: WarangType.meta.copyWith(
                   color: WarangNeutrals.of(context).inkSoft,
-                  fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),
             if (trailing != null) ...[const SizedBox(width: 10), trailing!],

@@ -7,6 +7,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../../core/formatting.dart';
 import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
 import '../../core/models.dart';
@@ -131,11 +132,8 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
                     vertical: 5,
                   ),
                   child: Text(
-                    'MAP · CACHED ${_ageDays(_staleSince!)} DAYS AGO',
-                    style: TextStyle(
-                      fontFamily: 'DM Mono',
-                      fontSize: 9,
-                      letterSpacing: 1.2,
+                    'Map saved ${countLabel(_ageDays(_staleSince!), 'day')} ago',
+                    style: WarangType.caption.copyWith(
                       color: WarangNeutrals.of(context).inkFaint,
                     ),
                   ),

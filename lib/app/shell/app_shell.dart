@@ -269,12 +269,8 @@ class _DesktopNavigation extends StatelessWidget {
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      'WARANG',
-                      style: TextStyle(
-                        fontFamily: 'DM Mono',
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 1.8,
+                      'Warang',
+                      style: WarangType.meta.copyWith(
                         color: WarangNeutrals.of(context).inkFaint,
                       ),
                     ),

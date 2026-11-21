@@ -123,11 +123,8 @@ class WarangDrawer extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 18),
               child: Text(
-                'WARANG  ·  VERSION 1.0.0  ·  BUILD 1',
-                style: TextStyle(
-                  fontFamily: 'DM Mono',
-                  fontSize: 9,
-                  letterSpacing: 1.2,
+                'Warang · version 1.0.0 · build 1',
+                style: WarangType.caption.copyWith(
                   color: WarangNeutrals.of(context).inkFaint,
                 ),
               ),
@@ -271,7 +268,7 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
     child: Text(
       letter,
       style: TextStyle(
-        fontFamily: 'Bricolage Grotesque',
+        fontFamily: WarangType.textFamily,
         fontSize: widget.size * .38,
         fontWeight: FontWeight.w700,
         color: WarangColors.accentInk,
@@ -289,21 +286,11 @@ class _DrawerCount extends StatelessWidget {
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(
-        '$value',
-        style: const TextStyle(
-          fontFamily: 'DM Mono',
-          fontSize: 17,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
+      Text('$value', style: WarangType.titleS),
       const SizedBox(height: 2),
       Text(
-        label.toUpperCase(),
-        style: TextStyle(
-          fontFamily: 'DM Mono',
-          fontSize: 9,
-          letterSpacing: 1.2,
+        label,
+        style: WarangType.caption.copyWith(
           color: WarangNeutrals.of(context).inkFaint,
         ),
       ),

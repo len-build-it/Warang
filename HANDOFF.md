@@ -1,8 +1,8 @@
 # Current handoff
 
 Created: 2026-10-16T22:55:00+08:00
-Updated: 2026-11-21T21:21:00+08:00
-State: FEAT-003 in progress (Phase 1 of 10 complete); FEAT-001 and FEAT-002 physical-device checks pending
+Updated: 2026-11-21T21:32:00+08:00
+State: FEAT-003 in progress (Phases 1-2 of 10 complete); FEAT-001 and FEAT-002 physical-device checks pending
 Feature: FEAT-003 clay keepsake redesign (spec and plan revision 1)
 
 ## Read first
@@ -37,13 +37,14 @@ FEAT-001 is complete (`a85a915`).
 FEAT-002 revision 1 approved at `cfeccc6`; visual baseline committed at `5d679f1`; Phase 1 complete at `c1602c5`; Phase 2 complete at `1ac6fe8`; Phase 3 complete at `549f571`; Phase 4 complete (clutter removed, completed design docs archived to `docs/archive/`, references and `docs/SPEC_INDEX.md` updated, final gates 1-6 passed with 97 tests, 13 direct dependencies, and 7650 hand-written `lib/` lines).
 FEAT-003 spec, plan, and research committed at `9a5b3f7`; visual baseline committed at `0491ab7`.
 FEAT-003 Phase 1 (contrast and neutral tokens) complete in the commit `docs(plan): FEAT-003 phase 1 - contrast and neutral tokens`.
+FEAT-003 Phase 2 (keepsake typography) complete in the commit `docs(plan): FEAT-003 phase 2 - keepsake typography`.
 Preserve the existing untracked paths: `.agents/skills/*`, `.agents/templates/`, `.claude/`, `CLAUDE.md`, `releases/`, and `scripts/`.
 
 ## Checks and evidence
 
 Baseline on 2026-11-21 at `a85a915`: `flutter test` passed 96 tests, and `flutter analyze` reported `No issues found!`.
 FEAT-003 evidence: [docs/evidence/FEAT-003-verification.md](docs/evidence/FEAT-003-verification.md), with screenshots under `docs/evidence/FEAT-001/feat-003-*`.
-Latest FEAT-003 gates (Phase 1): format clean, `flutter analyze` clean, `flutter test` 128 passed, debug APK built.
+
 FEAT-002 evidence: [docs/evidence/FEAT-002-verification.md](docs/evidence/FEAT-002-verification.md).
 FEAT-001 evidence: [docs/evidence/FEAT-001-verification.md](docs/evidence/FEAT-001-verification.md).
 
@@ -55,7 +56,7 @@ FEAT-001 evidence: [docs/evidence/FEAT-001-verification.md](docs/evidence/FEAT-0
 
 ## Next action
 
-0. **FEAT-003:** continue with Phase 2 (typography) of [docs/plans/FEAT-003-implementation.md](docs/plans/FEAT-003-implementation.md), then Phases 3 to 6, and stop after Phase 6 for Len's visual review (P-1) before Phase 7.
+0. **FEAT-003:** continue with Phase 3 (icons) of [docs/plans/FEAT-003-implementation.md](docs/plans/FEAT-003-implementation.md), then Phases 4 to 6, and stop after Phase 6 for Len's visual review (P-1) before Phase 7.
 1. **Claude UI screenshot capture (requested 2026-11-21):** capture fresh UI screenshots from the current codebase (`ba0c56a`) using [tool/ux_screenshots_test.dart](tool/ux_screenshots_test.dart).
    - Working directory: `C:\Users\User\Desktop\PersonalProjects\04-FUN-STUFF\WARANG\Warang` (inner repo root, not the outer `WARANG/` folder).
    - Command (choose a fresh label such as `claude-review` or `latest`):

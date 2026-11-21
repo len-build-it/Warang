@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/formatting.dart';
 import '../../app/app.dart';
 import '../../app/app_state.dart';
 import '../../app/theme/components.dart';
@@ -117,10 +118,10 @@ class _TripDetailView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dates = trip.isEveryday
-        ? 'CASUAL CAPTURES'
+        ? 'Casual captures'
         : trip.startDate == null
-        ? 'NO DATES'
-        : '${DateFormat('dd MMM yyyy').format(trip.startDate!).toUpperCase()}${trip.endDate == null ? '' : ' - ${DateFormat('dd MMM yyyy').format(trip.endDate!).toUpperCase()}'}';
+        ? 'No dates'
+        : '${formatDate(trip.startDate!)}${trip.endDate == null ? '' : ' - ${formatDate(trip.endDate!)}'}';
     final coverMoment = _findCoverMoment();
     final coverPath = coverMoment?.relPath ?? coverMoment?.thumbRelPath;
 
@@ -153,7 +154,7 @@ class _TripDetailView extends StatelessWidget {
           if (trip.place != null && trip.place!.isNotEmpty)
             Text(trip.place!, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 6),
-          WarangMetadata('$dates · ${moments.length} MOMENTS'),
+          WarangMetadata('$dates · ${countLabel(moments.length, 'moment')}'),
           if (trip.description != null && trip.description!.isNotEmpty) ...[
             const SizedBox(height: 18),
             Text(

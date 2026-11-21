@@ -85,17 +85,14 @@ void main() {
       );
       expect(photoFrameFinder, findsOneWidget);
 
-      // Verify readable metadata area containing uppercase place and formatted timestamp
+      // The metadata reads in sentence case: place, then day and time.
       expect(
-        find.textContaining('WHITE BEACH', findRichText: true),
+        find.textContaining('White Beach', findRichText: true),
         findsOneWidget,
       );
+      expect(find.textContaining('15 Apr', findRichText: true), findsOneWidget);
       expect(
-        find.textContaining('15 APR 2026', findRichText: true),
-        findsOneWidget,
-      );
-      expect(
-        find.textContaining('5:30 PM', findRichText: true),
+        find.textContaining('5:30 pm', findRichText: true),
         findsOneWidget,
       );
 
@@ -149,7 +146,7 @@ void main() {
 
       // Verify date range uses plain dash '-' and NOT en dash
       expect(
-        find.textContaining('01 MAR 2026 - 05 MAR 2026', findRichText: true),
+        find.textContaining('1 Mar 2026 - 5 Mar 2026', findRichText: true),
         findsOneWidget,
       );
       expect(find.textContaining('\u2013', findRichText: true), findsNothing);
@@ -203,16 +200,27 @@ void main() {
 
       // Verify date range uses plain dash and no en dash
       expect(
-        find.textContaining('FEB 10-14', findRichText: true),
+        find.textContaining('10-14 Feb', findRichText: true),
         findsOneWidget,
       );
       expect(find.textContaining('\u2013', findRichText: true), findsNothing);
 
       // Verify stat cards (subordinated summaries) are present
-      expect(find.text('MOMENTS'), findsOneWidget);
-      expect(find.text('PLACES'), findsOneWidget);
-      expect(find.text('DAYS'), findsOneWidget);
-      expect(find.text('STREAK'), findsNothing);
+      final list = find.byType(Scrollable).first;
+      await tester.scrollUntilVisible(
+        find.text('Moments'),
+        200,
+        scrollable: list,
+      );
+      expect(find.text('Moments'), findsOneWidget);
+      expect(find.text('Places'), findsOneWidget);
+      expect(find.text('Days'), findsOneWidget);
+      expect(find.text('Streak'), findsNothing);
+      await tester.scrollUntilVisible(
+        find.text('Cordillera Trek'),
+        -200,
+        scrollable: list,
+      );
 
       // Tap trip card to verify navigation
       await tester.tap(find.text('Cordillera Trek'));

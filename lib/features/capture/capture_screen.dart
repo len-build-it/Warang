@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 
 import '../../app/app.dart';
 import '../../app/device_providers.dart';
@@ -104,13 +103,13 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
   }
 
   String get _locationLine {
-    final time = DateFormat('h:mm a').format(_capturedAt);
+    final time = formatTime(_capturedAt);
     final position = _position;
     return switch (_location) {
-      _LocationState.locating => 'LOCATING… · $time',
+      _LocationState.locating => 'Locating… · $time',
       _LocationState.located =>
         '${formatCoordinates(position!.latitude, position.longitude)} · $time',
-      _LocationState.unavailable => 'NO LOCATION YET · $time',
+      _LocationState.unavailable => 'No location yet · $time',
     };
   }
 
@@ -278,7 +277,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
                     ),
                     const SizedBox(height: 6),
                     WarangMetadata(
-                      'SAVING TO ${ref.watch(repositoryProvider).tripForCapture(_capturedAt).title}',
+                      'Saving to ${ref.watch(repositoryProvider).tripForCapture(_capturedAt).title}',
                     ),
                     const SizedBox(height: 14),
                     TextField(

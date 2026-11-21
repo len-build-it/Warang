@@ -118,7 +118,7 @@ void main() {
     expect(trip.startDate, DateTime(now.year, now.month, 12));
     expect(trip.endDate, DateTime(now.year, now.month, 19));
     expect(find.text('Trip "Boracay long weekend" created.'), findsOneWidget);
-    expect(find.textContaining('$range · 0 MOMENTS'), findsOneWidget);
+    expect(find.textContaining('$range · 0 moments'), findsOneWidget);
   });
 
   testWidgets('trip detail stays live and opens moments on the map', (

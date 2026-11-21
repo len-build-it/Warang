@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as p;
-import 'package:drift/drift.dart' show Value;
+import 'package:drift/drift.dart' show Value, driftRuntimeOptions;
 import 'package:warang/core/ids.dart';
 import 'package:warang/core/models.dart';
 import 'package:warang/data/db/database.dart';
@@ -123,6 +123,12 @@ void main() {
   test('captureMoment removes stored files when recording fails', () async {
     final documents = Directory.systemTemp.createTempSync('warang_capture_');
     addTearDown(() => documents.deleteSync(recursive: true));
+    // A second, separate in-memory database is deliberate here; each has its
+    // own executor, so drift's shared-executor warning does not apply.
+    driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+    addTearDown(
+      () => driftRuntimeOptions.dontWarnAboutMultipleDatabases = false,
+    );
     final failingDatabase = WarangDatabase.memory();
     final failing = WarangRepository(
       failingDatabase,

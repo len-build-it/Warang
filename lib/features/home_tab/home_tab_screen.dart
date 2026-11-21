@@ -171,7 +171,7 @@ class _HomeTabContentState extends State<_HomeTabContent> {
             else ...[
               _ChartCard(
                 title: 'Moments captured',
-                subtitle: 'LAST SIX MONTHS',
+                subtitle: 'Last six months',
                 child: MomentsBarChart(
                   values: analytics.monthlyMoments,
                   labels: analytics.monthLabels,
@@ -180,7 +180,7 @@ class _HomeTabContentState extends State<_HomeTabContent> {
               const SizedBox(height: 14),
               _ChartCard(
                 title: 'Trips over time',
-                subtitle: 'CUMULATIVE',
+                subtitle: 'Cumulative',
                 child: TripTrendChart(
                   values: analytics.cumulativeTrips,
                   labels: analytics.monthLabels,
@@ -238,10 +238,7 @@ class _StatCard extends StatelessWidget {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '$value',
-          style: const TextStyle(fontFamily: 'DM Mono', fontSize: 19),
-        ),
+        Text('$value', style: WarangType.titleS),
         const SizedBox(height: 3),
         WarangMetadata(label),
       ],
@@ -392,7 +389,9 @@ class _EverydayRow extends StatelessWidget {
                     ).textTheme.titleMedium?.copyWith(fontSize: 18),
                   ),
                   const SizedBox(height: 5),
-                  WarangMetadata('CASUAL CAPTURES · $count MOMENTS'),
+                  WarangMetadata(
+                    'Casual captures · ${countLabel(count, 'moment')}',
+                  ),
                 ],
               ),
             ),
@@ -487,8 +486,8 @@ class _TripCard extends StatelessWidget {
     final start = trip.startDate;
     final end = trip.endDate ?? start;
     final range = start == null || end == null
-        ? 'NO DATES · $count MOMENTS'
-        : '${formatTripRange(start, end)} · $count MOMENTS';
+        ? 'No dates · ${countLabel(count, 'moment')}'
+        : '${formatTripRange(start, end)} · ${countLabel(count, 'moment')}';
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
@@ -621,15 +620,7 @@ class _PlannedChip extends StatelessWidget {
     ),
     child: const Padding(
       padding: EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-      child: Text(
-        'PLANNED',
-        style: TextStyle(
-          fontFamily: 'DM Mono',
-          fontSize: 9,
-          fontWeight: FontWeight.w500,
-          letterSpacing: 1.4,
-        ),
-      ),
+      child: Text('Planned', style: WarangType.caption),
     ),
   );
 }

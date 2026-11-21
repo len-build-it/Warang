@@ -1,7 +1,7 @@
 # Implementation Plan: FEAT-003 Clay keepsake redesign
 
 Created: 2026-11-21T20:38:00+08:00
-Updated: 2026-11-21T21:21:00+08:00
+Updated: 2026-11-21T21:32:00+08:00
 Revision: 1
 Status: Approved - in progress
 Feature spec and revision: [FEAT-003 revision 1](../features/FEAT-003-clay-keepsake-redesign.md)
@@ -87,15 +87,15 @@ Checkpoint message: `docs(plan): FEAT-003 phase 1 - contrast and neutral tokens`
 ## Phase 2: Typography
 
 Requirements: REQ-004
-State: Approved - not started
+State: Complete (checkpoint commit recorded in `HANDOFF.md`)
 
 ### Tasks
 
-- [ ] Add Bagel Fat One (400), Atkinson Hyperlegible Next (400, 600, 700), and Shantell Sans (500) to `assets/fonts/`, each with its `OFL.txt`, per P-3.
-- [ ] Declare them in `pubspec.yaml` and remove Bricolage Grotesque, Public Sans, and DM Mono and their files.
-- [ ] Define the V3 roles in the theme, with tabular figures where numbers appear.
-- [ ] Change `WarangMetadata` and every uppercase, letter-spaced mono string to sentence case with the `meta` role, using `intl` date formats such as "Sat 14 Mar, 4:42 pm".
-- [ ] Update tests that match the old uppercase strings.
+- [x] Add Bagel Fat One (400), Atkinson Hyperlegible Next (400, 600, 700), and Shantell Sans (500) to `assets/fonts/`, each with its `OFL.txt`, per P-3.
+- [x] Declare them in `pubspec.yaml` and remove Bricolage Grotesque, Public Sans, and DM Mono and their files.
+- [x] Define the V3 roles in the theme, with tabular figures where numbers appear.
+- [x] Change `WarangMetadata` and every uppercase, letter-spaced mono string to sentence case with the `meta` role, using `intl` date formats such as "Sat 14 Mar, 4:42 pm".
+- [x] Update tests that match the old uppercase strings.
 
 ### Success metrics
 

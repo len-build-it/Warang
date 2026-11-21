@@ -75,12 +75,7 @@ class _MomentsBarPainter extends CustomPainter {
     final slot = chart.width / values.length;
     final barWidth = slot * .46;
     final barPaint = Paint()..color = barColor;
-    final labelStyle = TextStyle(
-      fontFamily: 'DM Mono',
-      fontSize: 9,
-      letterSpacing: 1.1,
-      color: labelColor,
-    );
+    final labelStyle = WarangType.caption.copyWith(color: labelColor);
     for (var index = 0; index < values.length; index++) {
       final height = chart.height * values[index] / maxY;
       final left = chart.left + slot * index + (slot - barWidth) / 2;
@@ -169,12 +164,7 @@ class _TripTrendPainter extends CustomPainter {
       canvas.drawPath(trend, line);
     }
     final pointPaint = Paint()..color = pointColor;
-    final labelStyle = TextStyle(
-      fontFamily: 'DM Mono',
-      fontSize: 9,
-      letterSpacing: 1.1,
-      color: labelColor,
-    );
+    final labelStyle = WarangType.caption.copyWith(color: labelColor);
     for (var index = 0; index < points.length; index++) {
       canvas.drawCircle(points[index], 3.5, pointPaint);
       final text = TextPainter(

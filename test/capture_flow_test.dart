@@ -94,14 +94,14 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(find.textContaining('LOCATING… · '), findsOneWidget);
+    expect(find.textContaining('Locating… · '), findsOneWidget);
 
     fix.complete((latitude: 11.96864, longitude: 121.91804));
     await tester.pump();
     await tester.pump();
 
     expect(find.textContaining('11.969°N · 121.918°E · '), findsOneWidget);
-    expect(find.textContaining('LOCATING'), findsNothing);
+    expect(find.textContaining('Locating'), findsNothing);
   });
 
   testWidgets('meta line says no location yet when no fix arrives', (
@@ -113,8 +113,8 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    expect(find.textContaining('NO LOCATION YET · '), findsOneWidget);
-    expect(find.text('SAVING TO EVERYDAY'), findsOneWidget);
+    expect(find.textContaining('No location yet · '), findsOneWidget);
+    expect(find.text('Saving to Everyday'), findsOneWidget);
   });
 
   testWidgets('trip line names the dated trip covering today', (tester) async {
@@ -134,7 +134,7 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.text('SAVING TO BORACAY'), findsOneWidget);
+    expect(find.text('Saving to Boracay'), findsOneWidget);
   });
 
   testWidgets('a failed save keeps the photo and offers retry', (tester) async {

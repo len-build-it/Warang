@@ -89,20 +89,38 @@ void main() {
     test('uses plain dashes and drops repeated parts', () {
       expect(
         formatTripRange(DateTime(2026, 3, 12), DateTime(2026, 3, 19)),
-        'MAR 12-19',
+        '12-19 Mar',
       );
       expect(
         formatTripRange(DateTime(2026, 3, 30), DateTime(2026, 4, 4)),
-        'MAR 30 - APR 4',
+        '30 Mar - 4 Apr',
       );
       expect(
         formatTripRange(DateTime(2026, 12, 30), DateTime(2027, 1, 2)),
-        'DEC 30, 2026 - JAN 2, 2027',
+        '30 Dec 2026 - 2 Jan 2027',
       );
       expect(
         formatTripRange(DateTime(2026, 3, 12), DateTime(2026, 3, 12)),
-        'MAR 12',
+        '12 Mar',
       );
+    });
+  });
+
+  group('sentence-case metadata', () {
+    test('formats moment times, dates, and counts', () {
+      final date = DateTime(2026, 3, 14, 16, 42);
+      expect(
+        formatMomentTime(date, now: DateTime(2026, 11, 21)),
+        'Sat 14 Mar, 4:42 pm',
+      );
+      expect(
+        formatMomentTime(date, now: DateTime(2027, 1, 2)),
+        'Sat 14 Mar 2026, 4:42 pm',
+      );
+      expect(formatTime(DateTime(2026, 3, 14, 9, 5)), '9:05 am');
+      expect(formatDate(date), '14 Mar 2026');
+      expect(countLabel(1, 'moment'), '1 moment');
+      expect(countLabel(2, 'moment'), '2 moments');
     });
   });
 
@@ -130,7 +148,7 @@ void main() {
       expect(stats.moments, 4);
       expect(stats.days, 3);
       expect(stats.places, 2);
-      expect(stats.monthLabels, ['MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT']);
+      expect(stats.monthLabels, ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct']);
       expect(stats.monthlyMoments, [0, 0, 0, 0, 3, 0]);
       expect(stats.cumulativeTrips, [1, 1, 1, 1, 1, 1]);
       expect(stats.ready, isTrue);

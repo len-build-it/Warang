@@ -8,13 +8,11 @@ void main() {
     'bundled identity fonts are present in the application bundle',
     () async {
       const fontAssets = [
-        'assets/fonts/BricolageGrotesque-Bold.ttf',
-        'assets/fonts/BricolageGrotesque-ExtraBold.ttf',
-        'assets/fonts/PublicSans-Regular.ttf',
-        'assets/fonts/PublicSans-Medium.ttf',
-        'assets/fonts/PublicSans-SemiBold.ttf',
-        'assets/fonts/DMMono-Regular.ttf',
-        'assets/fonts/DMMono-Medium.ttf',
+        'assets/fonts/BagelFatOne-Regular.ttf',
+        'assets/fonts/AtkinsonHyperlegibleNext-Regular.ttf',
+        'assets/fonts/AtkinsonHyperlegibleNext-SemiBold.ttf',
+        'assets/fonts/AtkinsonHyperlegibleNext-Bold.ttf',
+        'assets/fonts/ShantellSans-Medium.ttf',
       ];
 
       for (final asset in fontAssets) {
@@ -23,4 +21,21 @@ void main() {
       }
     },
   );
+
+  test('each bundled font family ships its OFL licence', () async {
+    for (final family in [
+      'BagelFatOne',
+      'AtkinsonHyperlegibleNext',
+      'ShantellSans',
+    ]) {
+      final licence = await rootBundle.loadString(
+        'assets/fonts/$family-OFL.txt',
+      );
+      expect(
+        licence,
+        contains('SIL Open Font License, Version 1.1'),
+        reason: family,
+      );
+    }
+  });
 }

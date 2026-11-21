@@ -83,7 +83,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const SizedBox(height: 9),
             WarangSettingsCard(
               children: [
-                const WarangSettingsRow(label: 'Theme', value: 'FOLLOWS PHONE'),
+                const WarangSettingsRow(
+                  label: 'Theme',
+                  value: 'Follows your phone',
+                ),
                 const WarangDivider(),
                 _BytesRow(
                   label: 'Offline map cache',

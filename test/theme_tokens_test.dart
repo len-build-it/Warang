@@ -34,7 +34,11 @@ void main() {
       };
 
       test('every text style uses a bundled family', () {
-        const bundled = {'Public Sans', 'Bricolage Grotesque', 'DM Mono'};
+        const bundled = {
+          WarangType.displayFamily,
+          WarangType.textFamily,
+          WarangType.handFamily,
+        };
         for (final entry in styles.entries) {
           expect(
             bundled,
@@ -44,7 +48,7 @@ void main() {
         }
       });
 
-      test('body and label roles use Public Sans', () {
+      test('body and label roles use Atkinson Hyperlegible Next', () {
         for (final key in [
           'bodyLarge',
           'bodyMedium',
@@ -53,8 +57,22 @@ void main() {
           'labelMedium',
           'labelSmall',
         ]) {
-          expect(styles[key]?.fontFamily, 'Public Sans', reason: key);
+          expect(styles[key]?.fontFamily, WarangType.textFamily, reason: key);
         }
+      });
+
+      test('display roles use Bagel Fat One only at 24 and above', () {
+        for (final entry in styles.entries) {
+          if (entry.value?.fontFamily != WarangType.displayFamily) continue;
+          expect(
+            entry.value!.fontSize,
+            greaterThanOrEqualTo(24),
+            reason: entry.key,
+          );
+        }
+        expect(textTheme.displayLarge, isNot(null));
+        expect(textTheme.displayLarge!.fontSize, 56);
+        expect(textTheme.displaySmall!.fontSize, 34);
       });
 
       test('focused field labels use readable accent text', () {
