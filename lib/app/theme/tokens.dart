@@ -3,18 +3,27 @@ import 'package:flutter/material.dart';
 abstract final class WarangColors {
   static const accent = Color(0xFFE8A020);
   static const accentInk = Color(0xFF231F0E);
-  static const lightGround = Color(0xFFECEDE8);
-  static const lightSurface = Color(0xFFF7F8F3);
-  static const lightLine = Color(0xFFD2D5CB);
+
+  // FEAT-003 V1 neutrals.
+  static const lightGround = Color(0xFFF1EFE7);
+  static const lightSurface = Color(0xFFFBFAF5);
+  static const lightSurfaceRaised = Color(0xFFFFFFFF);
   static const lightInk = Color(0xFF1A1D18);
-  static const lightSoft = Color(0xFF5C6157);
-  static const lightFaint = Color(0xFF8A8F83);
-  static const darkGround = Color(0xFF121410);
-  static const darkSurface = Color(0xFF1B1E18);
-  static const darkLine = Color(0xFF2E332A);
-  static const darkInk = Color(0xFFE9EBE3);
-  static const darkSoft = Color(0xFFA0A697);
-  static const darkFaint = Color(0xFF767C6D);
+  static const lightSoft = Color(0xFF4F544A);
+  static const lightFaint = Color(0xFF646A5E);
+  static const lightBoundary = Color(0xFF7E8475);
+  static const lightLine = Color(0xFFE2DFD4);
+  static const lightShadowTint = Color(0xFF5B4A2E);
+  static const darkGround = Color(0xFF15130F);
+  static const darkSurface = Color(0xFF221F19);
+  static const darkSurfaceRaised = Color(0xFF2B2720);
+  static const darkInk = Color(0xFFEDEBE3);
+  static const darkSoft = Color(0xFFA9AE9F);
+  static const darkFaint = Color(0xFF8F9585);
+  static const darkBoundary = Color(0xFF6A7062);
+  static const darkLine = Color(0xFF34302A);
+  static const darkShadowTint = Color(0xFF000000);
+
   static const lightAccentText = Color(0xFF8A6412);
   static const darkAccentText = Color(0xFFE8A020);
   static const lightDotInactive = Color(0xFFC3C7BC);
@@ -32,6 +41,115 @@ abstract final class WarangColors {
 
   static Color accentText(Brightness brightness) =>
       brightness == Brightness.dark ? darkAccentText : lightAccentText;
+}
+
+/// The FEAT-003 V1 neutral colours for one theme.
+@immutable
+class WarangNeutrals extends ThemeExtension<WarangNeutrals> {
+  const WarangNeutrals({
+    required this.ground,
+    required this.surface,
+    required this.surfaceRaised,
+    required this.ink,
+    required this.inkSoft,
+    required this.inkFaint,
+    required this.boundary,
+    required this.hairline,
+    required this.shadowTint,
+  });
+
+  /// Screen background.
+  final Color ground;
+
+  /// Clay cards, sheets, and the dock.
+  final Color surface;
+
+  /// Polaroid borders, and raised clay in dark.
+  final Color surfaceRaised;
+
+  /// Primary text.
+  final Color ink;
+
+  /// Secondary text.
+  final Color inkSoft;
+
+  /// Metadata and hints.
+  final Color inkFaint;
+
+  /// Outlines that identify a control: fields, toggles, selected states.
+  final Color boundary;
+
+  /// Decorative dividers only, never the only cue.
+  final Color hairline;
+
+  /// Base colour of clay shadows.
+  final Color shadowTint;
+
+  static const light = WarangNeutrals(
+    ground: WarangColors.lightGround,
+    surface: WarangColors.lightSurface,
+    surfaceRaised: WarangColors.lightSurfaceRaised,
+    ink: WarangColors.lightInk,
+    inkSoft: WarangColors.lightSoft,
+    inkFaint: WarangColors.lightFaint,
+    boundary: WarangColors.lightBoundary,
+    hairline: WarangColors.lightLine,
+    shadowTint: WarangColors.lightShadowTint,
+  );
+  static const dark = WarangNeutrals(
+    ground: WarangColors.darkGround,
+    surface: WarangColors.darkSurface,
+    surfaceRaised: WarangColors.darkSurfaceRaised,
+    ink: WarangColors.darkInk,
+    inkSoft: WarangColors.darkSoft,
+    inkFaint: WarangColors.darkFaint,
+    boundary: WarangColors.darkBoundary,
+    hairline: WarangColors.darkLine,
+    shadowTint: WarangColors.darkShadowTint,
+  );
+
+  static WarangNeutrals of(BuildContext context) =>
+      Theme.of(context).extension<WarangNeutrals>() ??
+      (Theme.of(context).brightness == Brightness.dark ? dark : light);
+
+  @override
+  WarangNeutrals copyWith({
+    Color? ground,
+    Color? surface,
+    Color? surfaceRaised,
+    Color? ink,
+    Color? inkSoft,
+    Color? inkFaint,
+    Color? boundary,
+    Color? hairline,
+    Color? shadowTint,
+  }) => WarangNeutrals(
+    ground: ground ?? this.ground,
+    surface: surface ?? this.surface,
+    surfaceRaised: surfaceRaised ?? this.surfaceRaised,
+    ink: ink ?? this.ink,
+    inkSoft: inkSoft ?? this.inkSoft,
+    inkFaint: inkFaint ?? this.inkFaint,
+    boundary: boundary ?? this.boundary,
+    hairline: hairline ?? this.hairline,
+    shadowTint: shadowTint ?? this.shadowTint,
+  );
+
+  @override
+  WarangNeutrals lerp(covariant WarangNeutrals? other, double t) {
+    if (other == null) return this;
+    return WarangNeutrals(
+      ground: Color.lerp(ground, other.ground, t)!,
+      surface: Color.lerp(surface, other.surface, t)!,
+      surfaceRaised: Color.lerp(surfaceRaised, other.surfaceRaised, t)!,
+      ink: Color.lerp(ink, other.ink, t)!,
+      inkSoft: Color.lerp(inkSoft, other.inkSoft, t)!,
+      inkFaint: Color.lerp(inkFaint, other.inkFaint, t)!,
+      boundary: Color.lerp(boundary, other.boundary, t)!,
+      hairline: Color.lerp(hairline, other.hairline, t)!,
+      shadowTint: Color.lerp(shadowTint, other.shadowTint, t)!,
+    );
+  }
 }
 
 abstract final class WarangGlass {
@@ -128,7 +246,8 @@ ThemeData buildWarangTheme(Brightness brightness) {
   final soft = dark ? WarangColors.darkSoft : WarangColors.lightSoft;
   final surface = dark ? WarangColors.darkSurface : WarangColors.lightSurface;
   final ground = dark ? WarangColors.darkGround : WarangColors.lightGround;
-  final line = dark ? WarangColors.darkLine : WarangColors.lightLine;
+  final neutrals = dark ? WarangNeutrals.dark : WarangNeutrals.light;
+  final line = neutrals.hairline;
   final scheme = ColorScheme(
     brightness: brightness,
     primary: WarangColors.accent,
@@ -139,7 +258,7 @@ ThemeData buildWarangTheme(Brightness brightness) {
     onError: Colors.white,
     surface: surface,
     onSurface: ink,
-    outline: line,
+    outline: neutrals.boundary,
     outlineVariant: line,
   );
   final base = ThemeData(
@@ -150,7 +269,7 @@ ThemeData buildWarangTheme(Brightness brightness) {
     useMaterial3: true,
   );
   return base.copyWith(
-    extensions: [dark ? MapPalette.dark : MapPalette.light],
+    extensions: [dark ? MapPalette.dark : MapPalette.light, neutrals],
     textTheme: base.textTheme.copyWith(
       displayLarge: TextStyle(
         fontFamily: 'Bricolage Grotesque',
@@ -219,7 +338,7 @@ ThemeData buildWarangTheme(Brightness brightness) {
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: surface,
-      hintStyle: TextStyle(color: soft),
+      hintStyle: TextStyle(color: neutrals.inkFaint),
       // Amber fails contrast as text on light surfaces, so a focused label
       // uses the darker accent text token instead of the primary colour.
       floatingLabelStyle: WidgetStateTextStyle.resolveWith(
@@ -233,15 +352,15 @@ ThemeData buildWarangTheme(Brightness brightness) {
       ),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: line),
+        borderSide: BorderSide(color: neutrals.boundary),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: line),
+        borderSide: BorderSide(color: neutrals.boundary),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: WarangColors.accent, width: 1),
+        borderSide: const BorderSide(color: WarangColors.accent, width: 2),
       ),
     ),
     cardTheme: CardThemeData(

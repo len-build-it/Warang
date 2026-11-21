@@ -477,7 +477,9 @@ class _MomentCardState extends State<MomentCard> {
         color: theme.scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.65),
+          color: canAddLocation
+              ? theme.colorScheme.outline
+              : theme.colorScheme.outlineVariant,
         ),
       ),
       child: RichText(
@@ -486,7 +488,7 @@ class _MomentCardState extends State<MomentCard> {
             fontFamily: 'DM Mono',
             fontSize: 11,
             letterSpacing: 1.4,
-            color: theme.colorScheme.onSurface.withValues(alpha: .64),
+            color: WarangNeutrals.of(context).inkSoft,
           ),
           children: [
             TextSpan(
@@ -494,7 +496,7 @@ class _MomentCardState extends State<MomentCard> {
               style: TextStyle(
                 color: canAddLocation
                     ? (dark ? WarangColors.darkSoft : WarangColors.lightSoft)
-                    : theme.colorScheme.onSurface.withValues(alpha: .88),
+                    : WarangNeutrals.of(context).ink,
                 fontWeight: FontWeight.w500,
                 decoration: canAddLocation ? TextDecoration.underline : null,
               ),
@@ -625,7 +627,7 @@ class _MomentCardState extends State<MomentCard> {
             else
               meta,
             const SizedBox(height: 18),
-            Divider(height: 1, color: theme.colorScheme.outline),
+            Divider(height: 1, color: theme.colorScheme.outlineVariant),
             const SizedBox(height: 16),
             Row(
               children: [
@@ -758,7 +760,7 @@ class MomentSearchDelegate extends SearchDelegate<Moment?> {
             separatorBuilder: (context, index) => Divider(
               height: 1,
               indent: 72,
-              color: theme.colorScheme.outline.withValues(alpha: 0.25),
+              color: theme.colorScheme.outlineVariant,
             ),
             itemBuilder: (context, index) {
               final moment = moments[index];
@@ -864,9 +866,7 @@ class _MomentSearchThumbnailState extends State<_MomentSearchThumbnail> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: theme.colorScheme.outlineVariant),
       ),
       clipBehavior: Clip.antiAlias,
       child: _fileFuture == null

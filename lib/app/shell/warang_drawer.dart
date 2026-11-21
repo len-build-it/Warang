@@ -128,7 +128,7 @@ class WarangDrawer extends StatelessWidget {
                   fontFamily: 'DM Mono',
                   fontSize: 9,
                   letterSpacing: 1.2,
-                  color: theme.colorScheme.onSurface.withValues(alpha: .42),
+                  color: WarangNeutrals.of(context).inkFaint,
                 ),
               ),
             ),
@@ -304,7 +304,7 @@ class _DrawerCount extends StatelessWidget {
           fontFamily: 'DM Mono',
           fontSize: 9,
           letterSpacing: 1.2,
-          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .54),
+          color: WarangNeutrals.of(context).inkFaint,
         ),
       ),
     ],
@@ -331,13 +331,7 @@ class _DrawerRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         child: Row(
           children: [
-            Icon(
-              icon,
-              size: 20,
-              color: Theme.of(
-                context,
-              ).colorScheme.onSurface.withValues(alpha: .68),
-            ),
+            Icon(icon, size: 20, color: WarangNeutrals.of(context).inkSoft),
             const SizedBox(width: 14),
             Text(label, style: const TextStyle(fontSize: 15.5)),
           ],

@@ -9,12 +9,9 @@ InputDecoration warangInputDecoration(
   BuildContext context, {
   String? hintText,
 }) {
-  final theme = Theme.of(context);
   return InputDecoration(
     hintText: hintText,
-    hintStyle: TextStyle(
-      color: theme.colorScheme.onSurface.withValues(alpha: .42),
-    ),
+    hintStyle: TextStyle(color: WarangNeutrals.of(context).inkFaint),
     contentPadding: const EdgeInsets.symmetric(horizontal: 18),
   );
 }
@@ -95,9 +92,7 @@ class WarangQuietButton extends StatelessWidget {
       onPressed: onPressed,
       clipBehavior: Clip.antiAlias,
       style: OutlinedButton.styleFrom(
-        foregroundColor: Theme.of(
-          context,
-        ).colorScheme.onSurface.withValues(alpha: .82),
+        foregroundColor: WarangNeutrals.of(context).inkSoft,
         side: BorderSide(color: Theme.of(context).colorScheme.outline),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         textStyle: const TextStyle(
@@ -133,7 +128,7 @@ class WarangMetadata extends StatelessWidget {
       letterSpacing: 1.6,
       color: water
           ? Theme.of(context).extension<MapPalette>()!.labelWater
-          : Theme.of(context).colorScheme.onSurface.withValues(alpha: .54),
+          : WarangNeutrals.of(context).inkFaint,
       fontFeatures: const [FontFeature.tabularFigures()],
     ),
   );
@@ -153,7 +148,7 @@ class WarangSectionLabel extends StatelessWidget {
         fontSize: 10,
         fontWeight: FontWeight.w500,
         letterSpacing: 1.8,
-        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .54),
+        color: WarangNeutrals.of(context).inkFaint,
       ),
     ),
   );
@@ -523,7 +518,7 @@ class WarangSettingsCard extends StatelessWidget {
     decoration: BoxDecoration(
       color: Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(14),
-      border: Border.all(color: Theme.of(context).colorScheme.outline),
+      border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -581,9 +576,7 @@ class WarangSettingsRow extends StatelessWidget {
                 style: TextStyle(
                   fontFamily: 'DM Mono',
                   fontSize: 12.5,
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withValues(alpha: .70),
+                  color: WarangNeutrals.of(context).inkSoft,
                   fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),
@@ -604,7 +597,7 @@ class WarangDivider extends StatelessWidget {
     child: Divider(
       height: 1,
       thickness: 1,
-      color: Theme.of(context).colorScheme.outline,
+      color: Theme.of(context).colorScheme.outlineVariant,
     ),
   );
 }

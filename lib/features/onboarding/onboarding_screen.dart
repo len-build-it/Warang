@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/app.dart';
 import '../../app/theme/components.dart';
+import '../../app/theme/tokens.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -62,7 +63,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     decoration: BoxDecoration(
                       color: theme.colorScheme.surface,
                       shape: BoxShape.circle,
-                      border: Border.all(color: theme.colorScheme.outline),
+                      border: Border.all(
+                        color: theme.colorScheme.outlineVariant,
+                      ),
                     ),
                     child: ClipOval(
                       child: Image.asset(
@@ -80,7 +83,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   child: Text(
                     'A map you fill with your own photographs.',
                     style: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.onSurface.withValues(alpha: .72),
+                      color: WarangNeutrals.of(context).inkSoft,
                     ),
                   ),
                 ),
@@ -101,9 +104,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 Text(
                   'Warang asks for your camera to take photos and your location to place them on the map. Your name, photos and pins stay on this phone. Map tiles are downloaded from OpenStreetMap.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withValues(alpha: .55),
+                    color: WarangNeutrals.of(context).inkFaint,
                   ),
                 ),
               ],

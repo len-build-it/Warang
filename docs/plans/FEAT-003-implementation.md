@@ -1,9 +1,9 @@
 # Implementation Plan: FEAT-003 Clay keepsake redesign
 
 Created: 2026-11-21T20:38:00+08:00
-Updated: 2026-11-21T20:42:00+08:00
+Updated: 2026-11-21T21:21:00+08:00
 Revision: 1
-Status: Approved - not started
+Status: Approved - in progress
 Feature spec and revision: [FEAT-003 revision 1](../features/FEAT-003-clay-keepsake-redesign.md)
 Approved baseline and architecture revisions: `docs/IMPLEMENTATION_PLAN.md` at `dc407c5` for architecture; FEAT-003 revision 1 replaces `docs/DESIGN_SPEC.md` for appearance and motion
 Len's chat approval of the feature spec: 2026-11-21 20:37 (Asia/Manila), project thread decision card: "Approve as recommended" on "Approve FEAT-003 revision 1 with the recommended answers to D-1 to D-6?"
@@ -68,14 +68,14 @@ Before Phase 1, render the starting point once with `--dart-define=UX_LABEL=feat
 ## Phase 1: Contrast and neutral tokens
 
 Requirements: REQ-001, REQ-002, REQ-003 (neutrals only)
-State: Approved - not started
+State: Complete (checkpoint commit recorded in `HANDOFF.md`)
 
 ### Tasks
 
-- [ ] Replace the neutral colours in `lib/app/theme/tokens.dart` with spec V1 (`ground`, `surface`, `surfaceRaised`, `ink`, `inkSoft`, `inkFaint`, `boundary`, `hairline`, `shadowTint`) in both themes.
-- [ ] Point text fields, cards, and outlines that identify a control at `boundary`; keep purely decorative dividers on `hairline`.
-- [ ] Move any `Color(0x...)` literal outside `lib/app/theme/` into a token.
-- [ ] Add `test/contrast_test.dart`, which computes WCAG relative luminance and asserts every text pair in V1 is at least 4.5:1 and `boundary` is at least 3:1 against `ground` and `surface`, in both themes.
+- [x] Replace the neutral colours in `lib/app/theme/tokens.dart` with spec V1 (`ground`, `surface`, `surfaceRaised`, `ink`, `inkSoft`, `inkFaint`, `boundary`, `hairline`, `shadowTint`) in both themes.
+- [x] Point text fields, cards, and outlines that identify a control at `boundary`; keep purely decorative dividers on `hairline`.
+- [x] Move any `Color(0x...)` literal outside `lib/app/theme/` into a token.
+- [x] Add `test/contrast_test.dart`, which computes WCAG relative luminance and asserts every text pair in V1 is at least 4.5:1 and `boundary` is at least 3:1 against `ground` and `surface`, in both themes.
 
 ### Success metrics
 

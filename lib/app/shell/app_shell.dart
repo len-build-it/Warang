@@ -275,9 +275,7 @@ class _DesktopNavigation extends StatelessWidget {
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
                         letterSpacing: 1.8,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withValues(alpha: .54),
+                        color: WarangNeutrals.of(context).inkFaint,
                       ),
                     ),
                   ),
@@ -317,7 +315,7 @@ class _NavigationItem extends StatelessWidget {
     final dark = theme.brightness == Brightness.dark;
     final color = selected
         ? (dark ? WarangColors.darkAccentText : WarangColors.lightAccentText)
-        : theme.colorScheme.onSurface.withValues(alpha: .62);
+        : WarangNeutrals.of(context).inkSoft;
     final background = selected
         ? WarangColors.accent.withValues(alpha: dark ? .22 : .16)
         : Colors.transparent;

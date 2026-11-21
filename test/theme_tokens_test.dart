@@ -69,8 +69,10 @@ void main() {
         );
       });
 
-      test('dividers use the line token', () {
-        expect(theme.colorScheme.outlineVariant, theme.colorScheme.outline);
+      test('dividers use hairline and controls use boundary', () {
+        final neutrals = theme.extension<WarangNeutrals>()!;
+        expect(theme.colorScheme.outlineVariant, neutrals.hairline);
+        expect(theme.colorScheme.outline, neutrals.boundary);
       });
 
       test('text buttons use readable accent text', () {

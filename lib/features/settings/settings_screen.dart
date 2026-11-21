@@ -6,6 +6,7 @@ import '../../app/app.dart';
 import '../../app/app_state.dart';
 import '../../app/shell/warang_drawer.dart';
 import '../../app/theme/components.dart';
+import '../../app/theme/tokens.dart';
 
 /// Settings shows only controls that work today; share options return when
 /// sharing ships.
@@ -239,9 +240,7 @@ class _ProfileRow extends StatelessWidget {
             Icon(
               Icons.edit_outlined,
               size: 18,
-              color: Theme.of(
-                context,
-              ).colorScheme.onSurface.withValues(alpha: .62),
+              color: WarangNeutrals.of(context).inkSoft,
             ),
           ],
         ),

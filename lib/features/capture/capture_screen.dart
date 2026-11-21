@@ -309,9 +309,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodySmall?.copyWith(
                         fontSize: 12.5,
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: .55,
-                        ),
+                        color: WarangNeutrals.of(context).inkFaint,
                       ),
                     ),
                   ],

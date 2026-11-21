@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../app/theme/tokens.dart';
 
 class MomentsBarChart extends StatelessWidget {
   const MomentsBarChart({
@@ -16,10 +17,8 @@ class MomentsBarChart extends StatelessWidget {
       values: values,
       labels: labels,
       barColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: .72),
-      lineColor: Theme.of(context).colorScheme.outline,
-      labelColor: Theme.of(
-        context,
-      ).colorScheme.onSurface.withValues(alpha: .54),
+      lineColor: Theme.of(context).colorScheme.outlineVariant,
+      labelColor: WarangNeutrals.of(context).inkFaint,
     ),
     child: const SizedBox.expand(),
   );
@@ -38,9 +37,7 @@ class TripTrendChart extends StatelessWidget {
       labels: labels,
       lineColor: Theme.of(context).colorScheme.primary.withValues(alpha: .82),
       pointColor: Theme.of(context).colorScheme.onSurface,
-      labelColor: Theme.of(
-        context,
-      ).colorScheme.onSurface.withValues(alpha: .54),
+      labelColor: WarangNeutrals.of(context).inkFaint,
     ),
     child: const SizedBox.expand(),
   );

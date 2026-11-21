@@ -1,0 +1,21 @@
+# Verification: FEAT-003
+
+Created: 2026-11-21T21:21:00+08:00
+Updated: 2026-11-21T21:21:00+08:00
+
+All checks below ran on Len's Windows host with Flutter 3.44.7 (Dart 3.12.2) in the Flutter test runner or the Gradle debug build.
+Screenshots come from `tool/ux_screenshots_test.dart` at 390x844 logical, 2x DPR, in both themes.
+Map tiles do not load in the test host, so the map renders as its ground colour, and `Codec failed to produce an image` logs are expected.
+`12_capture_*` shows the host clock, so its time differs between runs.
+No emulator or physical-device check has been run for FEAT-003; REQ-023 and Len's device checks stay pending.
+
+| Requirement / phase | Check or scenario | Environment and conditions | Actual result | When run | Evidence / limitations |
+| --- | --- | --- | --- | --- | --- |
+| Baseline (`9a5b3f7`) | `flutter test tool/ux_screenshots_test.dart --update-goldens --dart-define=UX_LABEL=feat-003-baseline` | Windows host | Passed under stated conditions (`+8: All tests passed!`, 30 PNGs) | 2026-11-21T21:00:00+08:00 | Committed as `0491ab7 test(evidence): FEAT-003 visual baseline at 9a5b3f7`. |
+| Phase 1 (REQ-001, REQ-002, REQ-003) | Gate 1: `dart format lib test tool`, then `dart format --output=none --set-exit-if-changed lib test tool` | Windows host | Passed under stated conditions (`Formatted 54 files (0 changed)`, exit 0) | 2026-11-21T21:12:00+08:00 | - |
+| Phase 1 | Gate 2: `flutter analyze` | Windows host | Passed under stated conditions (`No issues found!`) | 2026-11-21T21:12:00+08:00 | - |
+| Phase 1 | Gate 3: `flutter test` | Windows host | Passed under stated conditions (`+128: All tests passed!`, up from 97) | 2026-11-21T21:13:00+08:00 | 31 new cases in `test/contrast_test.dart`; the old "dividers use the line token" case now asserts hairline for dividers and boundary for controls. |
+| Phase 1 | Gate 4: `flutter build apk --debug` | Windows host | Passed under stated conditions (`Built build\app\outputs\flutter-apk\app-debug.apk`, exit 0) | 2026-11-21T21:15:00+08:00 | - |
+| Phase 1 | Gate 5: `flutter test tool/ux_screenshots_test.dart --update-goldens --dart-define=UX_LABEL=feat-003-phase-1` | Windows host | Passed under stated conditions (`+8: All tests passed!`, 30 PNGs in `docs/evidence/FEAT-001/feat-003-phase-1/`) | 2026-11-21T21:17:00+08:00 | Compared side by side with `feat-003-baseline`. Intended: warmer `ground` and `surface` in both themes; tappable trip cards, fields, and the quiet button now have the darker `boundary` outline; decorative card borders and dividers use the lighter `hairline`; metadata and hints are darker in light theme and lighter in dark theme. Unintended differences: none found. `tool/failures/` was not created. |
+| Phase 1 | Gate 6: `grep -rn "Color(0x" lib --include=*.dart \| grep -v "lib/app/theme/"` | Windows host | Passed under stated conditions (no output) | 2026-11-21T21:21:00+08:00 | - |
+| Phase 1 | Gate 6: mutation check of `test/contrast_test.dart` | Windows host, `lightFaint` temporarily set back to `#8A8F83`, then `darkFaint` to the old `#767C6D`, each reverted after | Passed under stated conditions (both mutations made the test fail on `inkFaint` pairs) | 2026-11-21T21:10:00+08:00 | Confirms the test guards the old failing value. |

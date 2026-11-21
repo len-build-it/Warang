@@ -233,9 +233,7 @@ class _StatCard extends StatelessWidget {
     decoration: BoxDecoration(
       color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.65),
       borderRadius: BorderRadius.circular(14),
-      border: Border.all(
-        color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.65),
-      ),
+      border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -267,7 +265,7 @@ class _ChartCard extends StatelessWidget {
     decoration: BoxDecoration(
       color: Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(14),
-      border: Border.all(color: Theme.of(context).colorScheme.outline),
+      border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -302,7 +300,7 @@ class _AnalyticsEmptyState extends StatelessWidget {
     decoration: BoxDecoration(
       color: Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(14),
-      border: Border.all(color: Theme.of(context).colorScheme.outline),
+      border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
     ),
     child: Row(
       children: [
@@ -522,9 +520,7 @@ class _TripCard extends StatelessWidget {
                           Text(
                             trip.place!.trim(),
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurface.withValues(
-                                alpha: 0.72,
-                              ),
+                              color: WarangNeutrals.of(context).inkSoft,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -620,7 +616,7 @@ class _PlannedChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) => DecoratedBox(
     decoration: BoxDecoration(
-      color: Theme.of(context).colorScheme.outline,
+      color: Theme.of(context).colorScheme.outlineVariant,
       borderRadius: BorderRadius.circular(8),
     ),
     child: const Padding(

@@ -131,7 +131,7 @@ class _NewsArticleCard extends StatelessWidget {
     decoration: BoxDecoration(
       color: Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(14),
-      border: Border.all(color: Theme.of(context).colorScheme.outline),
+      border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
     ),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,9 +146,7 @@ class _NewsArticleCard extends StatelessWidget {
           child: Icon(
             article.icon,
             size: 21,
-            color: Theme.of(
-              context,
-            ).colorScheme.onSurface.withValues(alpha: .68),
+            color: WarangNeutrals.of(context).inkSoft,
           ),
         ),
         const SizedBox(width: 13),
@@ -180,9 +178,7 @@ class _NewsArticleCard extends StatelessWidget {
                   fontFamily: 'DM Mono',
                   fontSize: 9,
                   letterSpacing: 1.2,
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withValues(alpha: .54),
+                  color: WarangNeutrals.of(context).inkFaint,
                 ),
               ),
             ],

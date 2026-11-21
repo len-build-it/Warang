@@ -136,9 +136,7 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
                       fontFamily: 'DM Mono',
                       fontSize: 9,
                       letterSpacing: 1.2,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withValues(alpha: .54),
+                      color: WarangNeutrals.of(context).inkFaint,
                     ),
                   ),
                 ),
