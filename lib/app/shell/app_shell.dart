@@ -86,6 +86,11 @@ class _AppShellState extends ConsumerState<AppShell> {
   Widget build(BuildContext context) {
     final currentIndex = ref.watch(shellTabProvider);
     final hasSelection = ref.watch(selectedMomentProvider) != null;
+    final placing = ref.watch(placingMomentProvider) != null;
+    // The dock steps aside for the moment sheet and pin placement (C1).
+    final dockHidden =
+        currentIndex == ShellTab.map && (hasSelection || placing);
+    final reduced = WarangMotion.reduced(context);
     final tabs = IndexedStack(index: currentIndex, children: _tabs);
     return PopScope(
       canPop: currentIndex == ShellTab.map && !hasSelection,
@@ -111,11 +116,30 @@ class _AppShellState extends ConsumerState<AppShell> {
                   tabs,
                   Align(
                     alignment: Alignment.bottomCenter,
-                    child: WarangDock(
-                      items: _items,
-                      selectedIndex: currentIndex,
-                      onSelected: _select,
-                      onCapture: _capture,
+                    child: IgnorePointer(
+                      ignoring: dockHidden,
+                      child: ExcludeSemantics(
+                        excluding: dockHidden,
+                        child: AnimatedSlide(
+                          offset: Offset(0, dockHidden && !reduced ? 1.2 : 0),
+                          duration: reduced
+                              ? WarangMotion.fade
+                              : WarangMotion.slide.duration,
+                          curve: reduced
+                              ? Curves.linear
+                              : WarangMotion.slide.settleCurve,
+                          child: AnimatedOpacity(
+                            opacity: dockHidden ? 0 : 1,
+                            duration: WarangMotion.fade,
+                            child: WarangDock(
+                              items: _items,
+                              selectedIndex: currentIndex,
+                              onSelected: _select,
+                              onCapture: _capture,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ],

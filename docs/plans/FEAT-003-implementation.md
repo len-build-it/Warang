@@ -1,7 +1,7 @@
 # Implementation Plan: FEAT-003 Clay keepsake redesign
 
 Created: 2026-11-21T20:38:00+08:00
-Updated: 2026-11-21T22:26:00+08:00
+Updated: 2026-11-21T22:46:00+08:00
 Revision: 1
 Status: Approved - in progress
 Feature spec and revision: [FEAT-003 revision 1](../features/FEAT-003-clay-keepsake-redesign.md)
@@ -168,16 +168,16 @@ Checkpoint message: `docs(plan): FEAT-003 phase 5 - dock and You sheet`
 ## Phase 6: Map, pins, capture, moment card, edit sheet, and placement
 
 Requirements: REQ-009, REQ-015, S2 to S5
-State: Approved - not started
+State: Complete; P-1 visual review pending (checkpoint commit recorded in `HANDOFF.md`)
 
 ### Tasks
 
-- [ ] Build C10 pins as pre-painted clay images cached per size and ring colour, including the selected and new-pin variants.
-- [ ] Restyle the map home (S2), with the empty-map speech bubble and the recenter button.
-- [ ] Restyle capture (S3), including the place stamp, trip chip, and the "photo becomes pin" save sequence that starts only after the database write.
-- [ ] Restyle the moment card (S4) as a polaroid, with swipe, Edit, Delete, and the undo toast.
-- [ ] Restyle the edit sheet and placement (S5), replacing the trip dropdown with a chip row.
-- [ ] Remove the `BackdropFilter` glass surfaces.
+- [x] Build C10 pins as pre-painted clay images cached per size and ring colour, including the selected and new-pin variants.
+- [x] Restyle the map home (S2), with the empty-map speech bubble and the recenter button.
+- [x] Restyle capture (S3), including the place stamp, trip chip, and the "photo becomes pin" save sequence that starts only after the database write.
+- [x] Restyle the moment card (S4) as a polaroid, with swipe, Edit, Delete, and the undo toast.
+- [x] Restyle the edit sheet and placement (S5), replacing the trip dropdown with a chip row.
+- [x] Remove the `BackdropFilter` glass surfaces.
 
 ### Success metrics
 

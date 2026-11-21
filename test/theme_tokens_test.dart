@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:warang/app/theme/components.dart';
 import 'package:warang/app/theme/tokens.dart';
 
 double _contrast(Color a, Color b) {
@@ -105,9 +106,11 @@ void main() {
     });
   }
 
-  test('scrim darkens the map in both themes', () {
-    final dark = WarangColors.scrim(Brightness.dark);
-    final light = WarangColors.scrim(Brightness.light);
+  test('the sheet dimmer darkens the map in both themes', () {
+    final dark = warangDimmer(Brightness.dark);
+    final light = warangDimmer(Brightness.light);
+    expect(dark.a, closeTo(.55, .01));
+    expect(light.a, closeTo(.40, .01));
     expect(
       Color.alphaBlend(dark, WarangColors.darkGround).computeLuminance(),
       lessThan(WarangColors.darkGround.computeLuminance()),

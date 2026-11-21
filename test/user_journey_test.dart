@@ -96,7 +96,7 @@ void main() {
     await tester.enterText(find.byType(TextField), 'Len');
     await tester.tap(find.text('Start'));
     await settle(tester);
-    expect(find.text('Capture your first moment.'), findsOneWidget);
+    expect(find.text('Tap the camera to drop your first pin'), findsOneWidget);
 
     // Capture without GPS.
     await tester.tap(find.byType(WarangCaptureButton));
@@ -130,11 +130,17 @@ void main() {
     await tester.tap(find.text('Edit'));
     await settle(tester);
     await tester.enterText(
-      find.widgetWithText(TextField, 'Caption'),
+      find.descendant(
+        of: find.widgetWithText(WarangField, 'Caption'),
+        matching: find.byType(TextField),
+      ),
       'Sunset at White Beach',
     );
     await tester.enterText(
-      find.widgetWithText(TextField, 'Place name'),
+      find.descendant(
+        of: find.widgetWithText(WarangField, 'Place name'),
+        matching: find.byType(TextField),
+      ),
       'White Beach',
     );
     await tester.tap(find.text('Save'));
@@ -171,8 +177,6 @@ void main() {
         .select(repository.moments.single);
     await settle(tester);
     await tester.tap(find.text('Edit'));
-    await settle(tester);
-    await tester.tap(find.byType(DropdownButtonFormField<String>));
     await settle(tester);
     await tester.tap(find.text('Boracay long weekend').last);
     await settle(tester);

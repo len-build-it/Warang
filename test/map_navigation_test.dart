@@ -97,7 +97,7 @@ void main() {
       await pumpShell(tester);
       expect(find.byType(WarangDock), findsOneWidget);
       expect(find.byType(Drawer), findsNothing);
-      expect(find.byType(WarangGlassSurface), findsNothing);
+      expect(find.byType(BackdropFilter), findsNothing);
 
       double x(Finder finder) => tester.getCenter(finder).dx;
       final order = [

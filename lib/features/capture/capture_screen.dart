@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math' as math;
+import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -29,8 +30,13 @@ class CaptureScreen extends ConsumerStatefulWidget {
   ConsumerState<CaptureScreen> createState() => _CaptureScreenState();
 }
 
-class _CaptureScreenState extends ConsumerState<CaptureScreen> {
+class _CaptureScreenState extends ConsumerState<CaptureScreen>
+    with SingleTickerProviderStateMixin {
   final _captionController = TextEditingController();
+  late final _shrink = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 320),
+  );
   final _capturedAt = DateTime.now();
   XFile? _photo;
   ({double latitude, double longitude})? _position;
@@ -88,6 +94,13 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
             longitude: _position?.longitude,
             capturedAt: _capturedAt,
           );
+      if (!mounted) return;
+      // The moment is already written; only then does the photo shrink
+      // into its pin and the map take over (S3).
+      WarangHaptic.medium.play();
+      if (!WarangMotion.reduced(context)) {
+        await _shrink.animateTo(1, curve: Curves.easeInCubic);
+      }
       if (mounted) Navigator.of(context).pop(moment);
     } catch (_) {
       if (!mounted) return;
@@ -102,19 +115,26 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
     }
   }
 
-  String get _locationLine {
+  /// The place stamp: where (or the locating state), then the time.
+  List<String> get _placeLines {
     final time = formatTime(_capturedAt);
     final position = _position;
     return switch (_location) {
-      _LocationState.locating => 'Locating… · $time',
-      _LocationState.located =>
-        '${formatCoordinates(position!.latitude, position.longitude)} · $time',
-      _LocationState.unavailable => 'No location yet · $time',
+      _LocationState.locating => ['Locating…', time],
+      _LocationState.located => [
+        ...formatCoordinates(
+          position!.latitude,
+          position.longitude,
+        ).split(' · '),
+        time,
+      ],
+      _LocationState.unavailable => ['No location yet', time],
     };
   }
 
   @override
   void dispose() {
+    _shrink.dispose();
     _captionController.dispose();
     super.dispose();
   }
@@ -123,10 +143,27 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final dark = theme.brightness == Brightness.dark;
+    final neutrals = WarangNeutrals.of(context);
     final topPadding = MediaQuery.paddingOf(context).top;
     final safeTop = math.max(topPadding, 12.0) + 8.0;
     final screenHeight = MediaQuery.sizeOf(context).height;
     final photoHeight = (screenHeight * 0.45).clamp(220.0, 480.0);
+    final trip = ref.watch(repositoryProvider).tripForCapture(_capturedAt);
+    final photoArea = ColoredBox(
+      color:
+          theme.extension<MapPalette>()?.landAlt ??
+          theme.colorScheme.surfaceContainerHighest,
+      child: _photo == null
+          ? null
+          : Image.file(
+              File(_photo!.path),
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+              errorBuilder: (context, _, _) =>
+                  const Center(child: WarangIcon(WarangGlyphs.photo, size: 36)),
+            ),
+    );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
@@ -149,153 +186,111 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    _photo == null
-                        ? ColoredBox(
-                            color:
-                                theme.extension<MapPalette>()?.landAlt ??
-                                theme.colorScheme.surfaceContainerHighest,
-                          )
-                        : Image.file(
-                            File(_photo!.path),
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, _, _) => ColoredBox(
-                              color:
-                                  theme.extension<MapPalette>()?.landAlt ??
-                                  theme.colorScheme.surfaceContainerHighest,
-                              child: const Center(
-                                child: WarangIcon(WarangGlyphs.photo, size: 36),
+                    // After saving, the photo shrinks into the round pin it
+                    // becomes on the map. Nothing is drawn over the photo.
+                    AnimatedBuilder(
+                      animation: _shrink,
+                      child: photoArea,
+                      builder: (context, child) {
+                        final t = _shrink.value;
+                        if (t == 0) return child!;
+                        final side = math.min(
+                          MediaQuery.sizeOf(context).width,
+                          photoHeight,
+                        );
+                        return Center(
+                          child: Transform.scale(
+                            scale: 1 - .8 * t,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(side / 2 * t),
+                              child: SizedBox(
+                                width: lerpDouble(
+                                  MediaQuery.sizeOf(context).width,
+                                  side,
+                                  t,
+                                ),
+                                height: lerpDouble(photoHeight, side, t),
+                                child: child,
                               ),
                             ),
                           ),
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: safeTop + 48,
-                      child: IgnorePointer(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.black.withValues(alpha: 0.55),
-                                Colors.transparent,
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
+                        );
+                      },
                     ),
                     Positioned(
                       top: safeTop,
                       left: 16,
-                      child: Semantics(
-                        button: true,
-                        label: 'Retake photograph',
-                        child: InkWell(
-                          onTap: _openCamera,
-                          borderRadius: BorderRadius.circular(16),
-                          child: Container(
-                            constraints: const BoxConstraints(
-                              minWidth: 48,
-                              minHeight: 48,
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 10,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.55),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.2),
+                      child: _ClayPill(
+                        semanticLabel: 'Retake photograph',
+                        onPressed: _saving ? null : _openCamera,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const WarangIcon(WarangGlyphs.refresh, size: 20),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Retake',
+                              style: WarangType.button.copyWith(
+                                color: neutrals.ink,
                               ),
                             ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                WarangIcon(
-                                  WarangGlyphs.refresh,
-                                  size: 18,
-                                  color: Colors.white,
-                                ),
-                                SizedBox(width: 6),
-                                Text(
-                                  'Retake',
-                                  style: TextStyle(
-                                    fontSize: 13.5,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                          ],
                         ),
                       ),
                     ),
                     Positioned(
                       top: safeTop,
                       right: 16,
-                      child: Semantics(
-                        button: true,
-                        label: 'Cancel capture',
-                        child: InkWell(
-                          onTap: () => Navigator.of(context).maybePop(),
-                          borderRadius: BorderRadius.circular(24),
-                          child: Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.black.withValues(alpha: 0.55),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.2),
-                              ),
-                            ),
-                            child: const WarangIcon(
-                              WarangGlyphs.close,
-                              size: 20,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
+                      child: _ClayPill(
+                        semanticLabel: 'Cancel capture',
+                        onPressed: _saving
+                            ? null
+                            : () => Navigator.of(context).maybePop(),
+                        child: const WarangIcon(WarangGlyphs.close, size: 20),
                       ),
                     ),
                   ],
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
+                padding: const EdgeInsets.fromLTRB(24, 22, 24, 28),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Semantics(
-                      liveRegion: true,
-                      child: WarangMetadata(_locationLine),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Semantics(
+                          liveRegion: true,
+                          child: WarangStamp.place(
+                            id: 'capture-${_capturedAt.microsecondsSinceEpoch}',
+                            lines: _placeLines,
+                            tone: WarangKeepsake.dagat,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Flexible(
+                          child: WarangChip(
+                            label: 'Saving to ${trip.title}',
+                            icon: WarangGlyphs.trips,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 6),
-                    WarangMetadata(
-                      'Saving to ${ref.watch(repositoryProvider).tripForCapture(_capturedAt).title}',
-                    ),
-                    const SizedBox(height: 14),
-                    TextField(
+                    const SizedBox(height: 18),
+                    WarangField(
                       controller: _captionController,
+                      multiline: true,
                       minLines: 3,
                       maxLines: 5,
                       textCapitalization: TextCapitalization.sentences,
                       textInputAction: TextInputAction.done,
-                      decoration:
-                          warangInputDecoration(
-                            context,
-                            hintText: 'Say something (optional)',
-                          ).copyWith(
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 14,
-                            ),
-                          ),
+                      hintText: 'Say something (optional)',
+                      // The caption is written on the polaroid, by hand.
+                      style: WarangType.handL.copyWith(color: neutrals.ink),
+                      hintStyle: WarangType.handL.copyWith(
+                        color: neutrals.inkFaint,
+                      ),
                     ),
                     const SizedBox(height: 18),
                     WarangButton.primary(
@@ -306,10 +301,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
                     Text(
                       'Save now, caption later. One tap is enough.',
                       textAlign: TextAlign.center,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        fontSize: 12.5,
-                        color: WarangNeutrals.of(context).inkFaint,
-                      ),
+                      style: WarangType.meta.copyWith(color: neutrals.inkFaint),
                     ),
                   ],
                 ),
@@ -320,4 +312,35 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
       ),
     );
   }
+}
+
+/// A `surface` clay pill for controls that sit on the photo.
+class _ClayPill extends StatelessWidget {
+  const _ClayPill({
+    required this.child,
+    required this.onPressed,
+    required this.semanticLabel,
+  });
+
+  final Widget child;
+  final VoidCallback? onPressed;
+  final String semanticLabel;
+
+  @override
+  Widget build(BuildContext context) => ClayPressable(
+    onPressed: onPressed,
+    semanticLabel: semanticLabel,
+    builder: (context, press) => ClaySurface(
+      depth: ClayDepth.clay2,
+      press: press,
+      borderRadius: BorderRadius.circular(WarangRadius.pill),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          child: Center(widthFactor: 1, child: child),
+        ),
+      ),
+    ),
+  );
 }

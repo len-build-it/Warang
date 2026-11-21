@@ -61,6 +61,20 @@ class SelectedMomentNotifier extends Notifier<MomentSelection?> {
   void clear() => state = null;
 }
 
+/// The moment whose pin is being placed by hand on the map, if any.
+final placingMomentProvider = NotifierProvider<PlacingMomentNotifier, String?>(
+  PlacingMomentNotifier.new,
+);
+
+class PlacingMomentNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void start(String momentId) => state = momentId;
+
+  void stop() => state = null;
+}
+
 /// Opens [moment] over the map from anywhere in the app.
 void showMomentOnMap(BuildContext context, WidgetRef ref, Moment moment) {
   Navigator.of(context).popUntil((route) => route.isFirst);

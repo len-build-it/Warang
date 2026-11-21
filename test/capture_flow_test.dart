@@ -21,6 +21,7 @@ import 'package:warang/data/files/photo_store.dart';
 import 'package:warang/data/repository.dart';
 import 'package:warang/features/capture/capture_screen.dart';
 import 'package:warang/features/map/map_tile_store.dart';
+import 'package:warang/features/map/warang_map.dart';
 
 typedef _Fix = ({double latitude, double longitude});
 
@@ -94,13 +95,14 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(find.textContaining('Locating… · '), findsOneWidget);
+    expect(find.text('Locating…'), findsOneWidget);
 
     fix.complete((latitude: 11.96864, longitude: 121.91804));
     await tester.pump();
     await tester.pump();
 
-    expect(find.textContaining('11.969°N · 121.918°E · '), findsOneWidget);
+    expect(find.text('11.969°N'), findsOneWidget);
+    expect(find.text('121.918°E'), findsOneWidget);
     expect(find.textContaining('Locating'), findsNothing);
   });
 
@@ -113,7 +115,7 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    expect(find.textContaining('No location yet · '), findsOneWidget);
+    expect(find.text('No location yet'), findsOneWidget);
     expect(find.text('Saving to Everyday'), findsOneWidget);
   });
 
@@ -214,5 +216,8 @@ void main() {
     expect(repository.moments, hasLength(1));
     expect(repository.moments.single.latitude, 11.9686);
     expect(repository.moments.single.relPath, isNotNull);
+    // Back on the map, the new moment's pin is the one that lands.
+    final map = tester.widget<WarangMapSurface>(find.byType(WarangMapSurface));
+    expect(map.landingId, repository.moments.single.id);
   });
 }

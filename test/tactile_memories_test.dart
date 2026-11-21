@@ -75,22 +75,18 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
-      // Verify restrained printed photograph frame (12px rounded corner, 7px padding)
-      final photoFrameFinder = find.byWidgetPredicate(
-        (widget) =>
-            widget is Container &&
-            widget.padding == const EdgeInsets.all(7) &&
-            widget.decoration is BoxDecoration &&
-            (widget.decoration as BoxDecoration).borderRadius ==
-                BorderRadius.circular(12),
-      );
-      expect(photoFrameFinder, findsOneWidget);
-
-      // The metadata reads in sentence case: place, then day and time.
+      // The photo is a polaroid with the place stamp on its corner.
+      expect(find.byType(WarangPolaroid), findsOneWidget);
       expect(
-        find.textContaining('White Beach', findRichText: true),
+        find.descendant(
+          of: find.byType(WarangPolaroid),
+          matching: find.byType(WarangStamp),
+        ),
         findsOneWidget,
       );
+
+      // The metadata reads in sentence case: place, then day and time.
+      expect(find.text('White Beach'), findsOneWidget);
       expect(find.textContaining('15 Apr', findRichText: true), findsOneWidget);
       expect(
         find.textContaining('5:30 pm', findRichText: true),

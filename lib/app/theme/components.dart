@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'dart:ui' as ui;
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
@@ -362,80 +362,89 @@ class _PositionMarkerPainter extends CustomPainter {
       oldDelegate.dark != dark;
 }
 
+/// C10 photo pin: a pre-painted clay disc whose rim is the trip's colour
+/// (`surface` for Everyday), a 2 px `surfaceRaised` inner ring, the photo,
+/// and a rounded pointer in the rim colour.
 class WarangPhotoPin extends StatelessWidget {
-  const WarangPhotoPin({super.key, this.file, this.selected = false});
+  const WarangPhotoPin({
+    super.key,
+    this.file,
+    this.selected = false,
+    this.ringColor,
+  });
   final File? file;
   final bool selected;
 
+  /// The trip's fill; null is Everyday, drawn in `surface`.
+  final Color? ringColor;
+
+  static const size = 58.0;
+  static const selectedSize = 70.0;
+
+  /// Room below the disc for the pointer.
+  static const pointerRoom = 9.0;
+
   @override
   Widget build(BuildContext context) {
-    final size = selected ? 66.0 : 58.0;
-    final pointer = selected ? 12.0 : 11.0;
-    final ringFill = Theme.of(context).colorScheme.surface;
-    final dark = Theme.of(context).brightness == Brightness.dark;
+    final neutrals = WarangNeutrals.of(context);
+    final outer = selected ? selectedSize : size;
+    final photo = selected ? 60.0 : 48.0;
+    final ring = ringColor ?? neutrals.surface;
+    final placeholder = ColoredBox(
+      color: Theme.of(context).extension<MapPalette>()!.landAlt,
+    );
+    final file = this.file;
     return SizedBox(
-      width: size,
-      height: size + 9,
+      width: outer,
+      height: outer + pointerRoom,
       child: Stack(
         clipBehavior: Clip.none,
+        alignment: Alignment.topCenter,
         children: [
           Positioned(
-            left: (size - pointer) / 2,
-            top: size - (selected ? 7 : 6),
+            top: outer - 7,
             child: Transform.rotate(
-              angle: .785,
+              angle: math.pi / 4,
               child: Container(
-                width: pointer,
-                height: pointer,
+                width: 11,
+                height: 11,
                 decoration: BoxDecoration(
-                  color: ringFill,
-                  borderRadius: BorderRadius.circular(2),
+                  color: ring,
+                  borderRadius: BorderRadius.circular(2.5),
                 ),
               ),
             ),
           ),
-          Container(
-            width: size,
-            height: size,
-            padding: const EdgeInsets.all(3),
-            decoration: BoxDecoration(
-              color: ringFill,
-              shape: BoxShape.circle,
-              boxShadow: [
-                if (dark && selected)
-                  BoxShadow(
-                    color: WarangColors.darkInk.withValues(alpha: .10),
-                    blurRadius: 0,
-                    spreadRadius: 1,
-                  ),
-                BoxShadow(
-                  color:
-                      (dark
-                              ? Colors.black
-                              : Theme.of(context).colorScheme.onSurface)
-                          .withValues(
-                            alpha: dark
-                                ? .50
-                                : selected
-                                ? .35
-                                : .22,
-                          ),
-                  blurRadius: dark
-                      ? (selected ? 16 : 16)
-                      : (selected ? 20 : 12),
-                  offset: Offset(
-                    0,
-                    dark ? (selected ? 6 : 6) : (selected ? 8 : 5),
-                  ),
+          ClayDisc(
+            diameter: outer,
+            fill: ring,
+            depth: selected ? ClayDepth.clay3 : ClayDepth.clay1,
+          ),
+          SizedBox.square(
+            dimension: outer,
+            child: Center(
+              child: Container(
+                width: photo + 4,
+                height: photo + 4,
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  color: neutrals.surfaceRaised,
+                  shape: BoxShape.circle,
                 ),
-              ],
-            ),
-            child: ClipOval(
-              child: file == null
-                  ? ColoredBox(
-                      color: Theme.of(context).extension<MapPalette>()!.landAlt,
-                    )
-                  : Image.file(file!, fit: BoxFit.cover),
+                // The photo itself is drawn flat, with nothing over it.
+                child: ClipOval(
+                  child: file == null
+                      ? placeholder
+                      : Image.file(
+                          file,
+                          fit: BoxFit.cover,
+                          cacheWidth:
+                              (photo * MediaQuery.devicePixelRatioOf(context))
+                                  .round(),
+                          errorBuilder: (_, _, _) => placeholder,
+                        ),
+                ),
+              ),
             ),
           ),
         ],
@@ -444,58 +453,62 @@ class WarangPhotoPin extends StatelessWidget {
   }
 }
 
+/// C10 cluster pin: a 54 amber clay disc with its count in `stampNumber`.
+/// A cluster of one trip may pass that trip's fill as [ringColor].
 class WarangClusterPin extends StatelessWidget {
-  const WarangClusterPin({super.key, required this.count});
+  const WarangClusterPin({super.key, required this.count, this.ringColor});
   final int count;
+  final Color? ringColor;
+
+  static const size = 54.0;
 
   @override
   Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
+    final ring = ringColor ?? WarangKeepsake.amber.fill;
     return SizedBox(
-      width: 54,
-      height: 63,
+      width: size,
+      height: size + 9,
       child: Stack(
         clipBehavior: Clip.none,
+        alignment: Alignment.topCenter,
         children: [
           Positioned(
-            left: 21.5,
-            top: 48,
+            top: size - 7,
             child: Transform.rotate(
-              angle: .785,
+              angle: math.pi / 4,
               child: Container(
                 width: 11,
                 height: 11,
                 decoration: BoxDecoration(
-                  color: WarangColors.accent,
-                  borderRadius: BorderRadius.circular(2),
+                  color: ring,
+                  borderRadius: BorderRadius.circular(2.5),
                 ),
               ),
             ),
           ),
-          Container(
-            width: 54,
-            height: 54,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: WarangColors.accent,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color:
-                      (dark
-                              ? Colors.black
-                              : Theme.of(context).colorScheme.onSurface)
-                          .withValues(alpha: dark ? .50 : .24),
-                  blurRadius: dark ? 18 : 14,
-                  offset: Offset(0, dark ? 6 : 5),
+          ClayDisc(
+            diameter: size,
+            fill: ring,
+            tone: ringColor == null ? WarangKeepsake.amber : null,
+          ),
+          SizedBox.square(
+            dimension: size,
+            child: Center(
+              child: Container(
+                width: 44,
+                height: 44,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: WarangKeepsake.amber.fill,
+                  shape: BoxShape.circle,
                 ),
-              ],
-            ),
-            child: Text(
-              '$count',
-              style: WarangType.stampNumber.copyWith(
-                fontSize: 20,
-                color: WarangColors.accentInk,
+                child: Text(
+                  '$count',
+                  style: WarangType.stampNumber.copyWith(
+                    fontSize: 20,
+                    color: WarangColors.lightInk,
+                  ),
+                ),
               ),
             ),
           ),
@@ -593,158 +606,4 @@ class WarangDivider extends StatelessWidget {
       color: Theme.of(context).colorScheme.outlineVariant,
     ),
   );
-}
-
-class WarangGlassSurface extends StatelessWidget {
-  const WarangGlassSurface({
-    super.key,
-    required this.child,
-    this.borderRadius,
-    this.shape = BoxShape.rectangle,
-    this.padding,
-    this.blurSigma = WarangGlass.blurSigma,
-    this.tintAlpha,
-    this.showShadow = true,
-  });
-
-  final Widget child;
-  final BorderRadius? borderRadius;
-  final BoxShape shape;
-  final EdgeInsetsGeometry? padding;
-  final double blurSigma;
-  final double? tintAlpha;
-  final bool showShadow;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final dark = theme.brightness == Brightness.dark;
-    final mediaQuery = MediaQuery.maybeOf(context);
-    final highContrast = mediaQuery?.highContrast ?? false;
-
-    final defaultRadius = shape == BoxShape.circle
-        ? null
-        : (borderRadius ?? BorderRadius.circular(14));
-    final defaultAlpha = dark ? WarangGlass.darkAlpha : WarangGlass.lightAlpha;
-    final alpha = tintAlpha ?? defaultAlpha;
-
-    final surfaceColor = highContrast
-        ? theme.colorScheme.surface
-        : theme.colorScheme.surface.withValues(alpha: alpha);
-
-    final outlineColor = highContrast
-        ? theme.colorScheme.outline
-        : (dark ? WarangColors.darkLine : WarangColors.lightLine).withValues(
-            alpha: dark ? 0.50 : 0.65,
-          );
-
-    final innerDecoration = BoxDecoration(
-      color: surfaceColor,
-      shape: shape,
-      borderRadius: defaultRadius,
-      border: Border.all(color: outlineColor, width: 1),
-    );
-
-    final outerDecoration = showShadow
-        ? BoxDecoration(
-            shape: shape,
-            borderRadius: defaultRadius,
-            boxShadow: [
-              BoxShadow(
-                color: (dark ? Colors.black : theme.colorScheme.onSurface)
-                    .withValues(alpha: dark ? 0.30 : 0.08),
-                blurRadius: dark ? 16 : 12,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          )
-        : null;
-
-    final content = padding == null
-        ? child
-        : Padding(padding: padding!, child: child);
-
-    if (highContrast) {
-      final solid = DecoratedBox(decoration: innerDecoration, child: content);
-      return outerDecoration == null
-          ? solid
-          : DecoratedBox(decoration: outerDecoration, child: solid);
-    }
-
-    final frosted = BackdropFilter(
-      filter: ui.ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
-      child: DecoratedBox(decoration: innerDecoration, child: content),
-    );
-
-    final clipped = shape == BoxShape.circle
-        ? ClipOval(child: frosted)
-        : ClipRRect(
-            borderRadius: defaultRadius ?? BorderRadius.circular(14),
-            child: frosted,
-          );
-
-    return outerDecoration == null
-        ? clipped
-        : DecoratedBox(decoration: outerDecoration, child: clipped);
-  }
-}
-
-class WarangGlassIconButton extends StatelessWidget {
-  const WarangGlassIconButton({
-    super.key,
-    required this.icon,
-    required this.onPressed,
-    required this.semanticLabel,
-    this.size = 48,
-    this.iconSize = 20,
-    this.tooltip,
-  });
-
-  final Widget icon;
-  final VoidCallback? onPressed;
-  final String semanticLabel;
-  final double size;
-  final double iconSize;
-  final String? tooltip;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final button = Semantics(
-      button: true,
-      label: semanticLabel,
-      child: WarangGlassSurface(
-        shape: BoxShape.circle,
-        child: SizedBox(
-          width: size,
-          height: size,
-          child: Material(
-            color: Colors.transparent,
-            shape: const CircleBorder(),
-            child: InkWell(
-              onTap: onPressed,
-              customBorder: const CircleBorder(),
-              focusColor: WarangColors.accent.withValues(alpha: 0.20),
-              hoverColor: theme.colorScheme.onSurface.withValues(alpha: 0.08),
-              splashColor: WarangColors.accent.withValues(alpha: 0.24),
-              child: Center(
-                child: IconTheme(
-                  data: IconThemeData(
-                    size: iconSize,
-                    color: theme.colorScheme.onSurface,
-                  ),
-                  child: icon,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-
-    if (tooltip != null && tooltip!.isNotEmpty) {
-      return Tooltip(message: tooltip!, child: button);
-    }
-    return button;
-  }
 }

@@ -6,6 +6,8 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:warang/app/app.dart';
 import 'package:warang/app/app_state.dart';
 import 'package:warang/app/shell/app_shell.dart';
+import 'package:warang/app/shell/dock.dart';
+import 'package:warang/app/theme/components.dart';
 import 'package:warang/app/theme/tokens.dart';
 import 'package:warang/core/models.dart';
 import 'package:warang/data/db/database.dart';
@@ -45,6 +47,12 @@ void main() {
       await tester.pump(const Duration(milliseconds: 150));
     }
   }
+
+  /// The text field under the C5 label [label].
+  Finder field(String label) => find.descendant(
+    of: find.widgetWithText(WarangField, label),
+    matching: find.byType(TextField),
+  );
 
   Future<ProviderContainer> openMoment(
     WidgetTester tester,
@@ -87,23 +95,15 @@ void main() {
       () => repository.addTrip('Antique', null, null, null),
     );
     await openMoment(tester, moment);
-    expect(
-      find.textContaining('11.969°N · 121.918°E', findRichText: true),
-      findsOneWidget,
-    );
+    // The place stamp shows the coordinates, one per line.
+    expect(find.text('11.969°N'), findsOneWidget);
+    expect(find.text('121.918°E'), findsOneWidget);
 
     await tester.tap(find.text('Edit'));
     await settle(tester);
-    await tester.enterText(
-      find.widgetWithText(TextField, 'Caption'),
-      'Sunset at White Beach',
-    );
-    await tester.enterText(
-      find.widgetWithText(TextField, 'Place name'),
-      'White Beach',
-    );
-    await tester.tap(find.byType(DropdownButtonFormField<String>));
-    await settle(tester);
+    await tester.enterText(field('Caption'), 'Sunset at White Beach');
+    await tester.enterText(field('Place name'), 'White Beach');
+    // The trip is a row of chips, not a dropdown.
     await tester.tap(find.text('Antique').last);
     await settle(tester);
     await tester.tap(find.text('Save'));
@@ -114,10 +114,7 @@ void main() {
     expect(saved.placeLabel, 'White Beach');
     expect(saved.tripId, repository.trips.firstWhere((t) => !t.isEveryday).id);
     expect(find.text('Sunset at White Beach'), findsOneWidget);
-    expect(
-      find.textContaining('White Beach ·', findRichText: true),
-      findsOneWidget,
-    );
+    expect(find.text('White Beach'), findsOneWidget);
   });
 
   testWidgets('add location places the pin at the map centre', (tester) async {
@@ -139,7 +136,7 @@ void main() {
     expect(saved.longitude, isNotNull);
     expect(find.text('Move the map to the spot'), findsNothing);
     expect(container.read(selectedMomentProvider)?.momentId, moment.id);
-    expect(find.textContaining('°N ·', findRichText: true), findsOneWidget);
+    expect(find.textContaining('°N'), findsOneWidget);
   });
 
   testWidgets('back leaves placement without moving the moment', (
@@ -182,6 +179,56 @@ void main() {
     expect(repository.moments.single.id, moment.id);
     expect(container.read(selectedMomentProvider)?.momentId, moment.id);
     expect(find.byType(MomentCard), findsOneWidget);
+  });
+
+  testWidgets('swiping the polaroid moves between moments', (tester) async {
+    final first = (await tester.runAsync(
+      () => repository.addMoment(
+        caption: 'First light',
+        latitude: 11.9686,
+        longitude: 121.918,
+        capturedAt: DateTime(2026, 9, 1),
+      ),
+    ))!;
+    final second = (await tester.runAsync(
+      () => repository.addMoment(
+        caption: 'Second visit',
+        latitude: 11.97,
+        longitude: 121.92,
+        capturedAt: DateTime(2026, 9, 2),
+      ),
+    ))!;
+    final container = await openMoment(tester, first);
+
+    await tester.fling(find.byType(WarangPolaroid), const Offset(-240, 0), 900);
+    await settle(tester);
+    expect(container.read(selectedMomentProvider)?.momentId, second.id);
+    expect(container.read(selectedMomentProvider)?.focus, isTrue);
+    expect(find.text('Second visit'), findsOneWidget);
+
+    await tester.fling(find.byType(WarangPolaroid), const Offset(240, 0), 900);
+    await settle(tester);
+    expect(container.read(selectedMomentProvider)?.momentId, first.id);
+  });
+
+  testWidgets('the dock steps aside while a moment is open', (tester) async {
+    final moment = (await tester.runAsync(
+      () => repository.addMoment(latitude: 11.9686, longitude: 121.918),
+    ))!;
+    final container = await openMoment(tester, moment);
+    bool dockIgnored() => tester
+        .widgetList<IgnorePointer>(
+          find.ancestor(
+            of: find.byType(WarangDock),
+            matching: find.byType(IgnorePointer),
+          ),
+        )
+        .any((ignore) => ignore.ignoring);
+    expect(dockIgnored(), isTrue);
+
+    container.read(selectedMomentProvider.notifier).clear();
+    await settle(tester);
+    expect(dockIgnored(), isFalse);
   });
 
   testWidgets('dragging the handle down dismisses the card', (tester) async {

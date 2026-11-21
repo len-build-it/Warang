@@ -1,8 +1,8 @@
 # Current handoff
 
 Created: 2026-10-16T22:55:00+08:00
-Updated: 2026-11-21T22:26:00+08:00
-State: FEAT-003 in progress (Phases 1-5 of 10 complete); FEAT-001 and FEAT-002 physical-device checks pending
+Updated: 2026-11-21T22:46:00+08:00
+State: FEAT-003 paused for Len's visual review (P-1) after Phase 6 of 10; FEAT-001 and FEAT-002 physical-device checks pending
 Feature: FEAT-003 clay keepsake redesign (spec and plan revision 1)
 
 ## Read first
@@ -41,6 +41,7 @@ FEAT-003 Phase 2 (keepsake typography) complete in the commit `docs(plan): FEAT-
 FEAT-003 Phase 3 (clay icon set) complete in the commit `docs(plan): FEAT-003 phase 3 - clay icon set`.
 FEAT-003 Phase 4 (clay foundation and components) complete in the commit `docs(plan): FEAT-003 phase 4 - clay foundation and components`.
 FEAT-003 Phase 5 (dock and You sheet) complete in the commit `docs(plan): FEAT-003 phase 5 - dock and You sheet`.
+FEAT-003 Phase 6 (map, capture, and moment card) complete in the commit `docs(plan): FEAT-003 phase 6 - map, capture, and moment card`; the P-1 visual review stop is open.
 Preserve the existing untracked paths: `.agents/skills/*`, `.agents/templates/`, `.claude/`, `CLAUDE.md`, `releases/`, and `scripts/`.
 
 ## Checks and evidence
@@ -59,7 +60,7 @@ FEAT-001 evidence: [docs/evidence/FEAT-001-verification.md](docs/evidence/FEAT-0
 
 ## Next action
 
-0. **FEAT-003:** continue with Phase 6 (map, pins, capture, moment card, edit sheet, placement) of [docs/plans/FEAT-003-implementation.md](docs/plans/FEAT-003-implementation.md), then stop for Len's visual review (P-1) before Phase 7.
+0. **FEAT-003:** **waiting for Len's visual approval (P-1)** of the Phase 6 screenshots in `docs/evidence/FEAT-001/feat-003-phase-6/` (02, 03, 04, 12, 13, 14 in both themes). Do not start Phase 7 until Len approves; if Len asks for changes, make them within FEAT-003 and re-render `feat-003-phase-6`.
 1. **Claude UI screenshot capture (requested 2026-11-21):** capture fresh UI screenshots from the current codebase (`ba0c56a`) using [tool/ux_screenshots_test.dart](tool/ux_screenshots_test.dart).
    - Working directory: `C:\Users\User\Desktop\PersonalProjects\04-FUN-STUFF\WARANG\Warang` (inner repo root, not the outer `WARANG/` folder).
    - Command (choose a fresh label such as `claude-review` or `latest`):

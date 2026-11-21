@@ -25,6 +25,10 @@ class WarangMapSurface extends StatefulWidget {
     this.onMapTap,
     this.tileStore,
     this.photoStore,
+    this.dimmed = false,
+    this.onDimmerTap,
+    this.landingId,
+    this.moving,
   });
 
   final List<Moment> moments;
@@ -39,6 +43,17 @@ class WarangMapSurface extends StatefulWidget {
   final MapTileStore? tileStore;
   final PhotoStore? photoStore;
 
+  /// Dims the map under an open moment; the selected pin stays above the
+  /// dimmer (S4). A tap on the dimmer calls [onDimmerTap].
+  final bool dimmed;
+  final VoidCallback? onDimmerTap;
+
+  /// A just-saved moment whose pin lands with the C10 new-pin motion.
+  final String? landingId;
+
+  /// Set true while the user moves the map and false once it rests.
+  final ValueNotifier<bool>? moving;
+
   @override
   WarangMapSurfaceState createState() => WarangMapSurfaceState();
 }
@@ -50,9 +65,40 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
   Position? _position;
   DateTime? _staleSince;
   double _currentZoom = 5.8;
+  Timer? _rest;
+
+  /// Photo lookups, kept so panning never restarts them and pins never
+  /// flash empty between frames.
+  final _photos = <String, Future<File?>>{};
+
+  /// Pins that already played their landing.
+  final _landed = <String>{};
+
+  /// Pins popping away after a delete, and pins springing back after undo.
+  final _leaving = <String, Moment>{};
+  final _returning = <String>{};
+
+  @override
+  void didUpdateWidget(covariant WarangMapSurface oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final now = {for (final moment in widget.moments) moment.id};
+    final before = {for (final moment in oldWidget.moments) moment.id: moment};
+    final removedSelected = oldWidget.selectedId;
+    if (removedSelected != null &&
+        !now.contains(removedSelected) &&
+        before[removedSelected]?.latitude != null) {
+      _leaving[removedSelected] = before[removedSelected]!;
+    }
+    for (final id in now) {
+      if (!before.containsKey(id) && _leaving.remove(id) != null) {
+        _returning.add(id);
+      }
+    }
+  }
 
   @override
   void dispose() {
+    _rest?.cancel();
     if (widget.tileStore == null) _tileStore.close();
     super.dispose();
   }
@@ -68,6 +114,8 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
           options: MapOptions(
             initialCenter: _initialCenter,
             initialZoom: 5.8,
+            // Shown where no tile has loaded yet, such as offline areas.
+            backgroundColor: widget.palette.land,
             minZoom: 2,
             maxZoom: 18,
             onTap: (_, _) => widget.onMapTap?.call(),
@@ -75,6 +123,11 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
             onPositionChanged: (camera, hasGesture) {
               _currentZoom = camera.zoom;
               if (hasGesture) {
+                widget.moving?.value = true;
+                _rest?.cancel();
+                _rest = Timer(const Duration(milliseconds: 180), () {
+                  widget.moving?.value = false;
+                });
                 unawaited(_tileStore.saveCamera(camera.center, camera.zoom));
                 if (mounted) setState(() {});
               }
@@ -100,6 +153,26 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
               markers: [
                 if (_position != null) _positionMarker(_position!),
                 ..._momentMarkers(),
+              ],
+            ),
+            if (widget.dimmed)
+              SizedBox.expand(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: widget.onDimmerTap,
+                  child: ColoredBox(
+                    color: warangDimmer(Theme.of(context).brightness),
+                  ),
+                ),
+              ),
+            MarkerLayer(
+              markers: [
+                for (final moment in widget.moments)
+                  if (moment.id == widget.selectedId &&
+                      moment.latitude != null &&
+                      moment.longitude != null)
+                    _markerFor(moment),
+                for (final moment in _leaving.values) _leavingMarker(moment),
               ],
             ),
             RichAttributionWidget(
@@ -151,7 +224,10 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
   }
 
   List<Marker> _momentMarkers() {
-    final moments = momentsWithMapCoordinates(widget.moments).toList();
+    // The selected pin is drawn on its own layer, above any dimmer.
+    final moments = momentsWithMapCoordinates(
+      widget.moments,
+    ).where((moment) => moment.id != widget.selectedId).toList();
     final groups = <List<Moment>>[];
     final threshold = (70000 / math.pow(2, _currentZoom - 4))
         .clamp(2500, 70000)
@@ -193,8 +269,9 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
         group.length;
     return Marker(
       point: LatLng(latitude, longitude),
-      width: 52,
-      height: 52,
+      width: WarangClusterPin.size,
+      height: WarangClusterPin.size + 9,
+      alignment: Alignment.topCenter,
       child: GestureDetector(
         onTap: () =>
             _mapController.move(LatLng(latitude, longitude), _currentZoom + 2),
@@ -319,25 +396,228 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
 
   Marker _markerFor(Moment moment) {
     final selected = moment.id == widget.selectedId;
-    final size = selected ? 66.0 : 58.0;
+    final size = selected ? WarangPhotoPin.selectedSize : WarangPhotoPin.size;
+    Widget pin = FutureBuilder<File?>(
+      future: _photoFile(moment),
+      builder: (context, snapshot) => GestureDetector(
+        onTap: () => widget.onMomentTap(moment),
+        child: WarangPhotoPin(file: snapshot.data, selected: selected),
+      ),
+    );
+    if (selected) {
+      pin = _PinPop(
+        key: ValueKey('selected-${moment.id}'),
+        from: WarangPhotoPin.size / WarangPhotoPin.selectedSize,
+        child: pin,
+      );
+    } else if (_returning.remove(moment.id)) {
+      pin = _PinPop(key: ValueKey('return-${moment.id}'), from: 0, child: pin);
+    }
+    if (moment.id == widget.landingId &&
+        (_landed.add(moment.id) || _landing.contains(moment.id))) {
+      _landing.add(moment.id);
+      pin = LandingPin(
+        key: ValueKey('land-${moment.id}'),
+        onLanded: () => _landing.remove(moment.id),
+        child: pin,
+      );
+    }
     return Marker(
       point: LatLng(moment.latitude!, moment.longitude!),
       width: size,
-      height: size + 9,
-      child: FutureBuilder<File?>(
-        future: _photoFile(moment.relPath),
-        builder: (context, snapshot) => GestureDetector(
-          onTap: () => widget.onMomentTap(moment),
-          child: WarangPhotoPin(file: snapshot.data, selected: selected),
-        ),
-      ),
+      height: size + WarangPhotoPin.pointerRoom,
+      // The pointer's tip sits on the moment's spot.
+      alignment: Alignment.topCenter,
+      child: pin,
     );
   }
 
-  Future<File?> _photoFile(String? relativePath) async {
-    if (relativePath == null) return null;
-    final file = await _photoStore.resolve(relativePath);
-    return await file.exists() ? file : null;
+  /// Pins whose landing is still playing, so rebuilds keep the animation.
+  final _landing = <String>{};
+
+  Marker _leavingMarker(Moment moment) => Marker(
+    point: LatLng(moment.latitude!, moment.longitude!),
+    width: WarangPhotoPin.selectedSize,
+    height: WarangPhotoPin.selectedSize + WarangPhotoPin.pointerRoom,
+    alignment: Alignment.topCenter,
+    child: _PinLeave(
+      key: ValueKey('leave-${moment.id}'),
+      onDone: () {
+        if (mounted) setState(() => _leaving.remove(moment.id));
+      },
+      child: FutureBuilder<File?>(
+        future: _photoFile(moment),
+        builder: (context, snapshot) =>
+            WarangPhotoPin(file: snapshot.data, selected: true),
+      ),
+    ),
+  );
+
+  Future<File?> _photoFile(Moment moment) {
+    final relativePath = moment.thumbRelPath ?? moment.relPath;
+    if (relativePath == null) return Future<File?>.value();
+    return _photos.putIfAbsent(relativePath, () async {
+      final file = await _photoStore.resolve(relativePath);
+      return await file.exists() ? file : null;
+    });
+  }
+}
+
+/// The C10 new pin: it drops from 40 above its spot with `pop`, leaves a
+/// clay splat ring that fades over 300 ms, and taps a light haptic as it
+/// lands. Under reduced motion it fades in.
+class LandingPin extends StatefulWidget {
+  const LandingPin({super.key, required this.child, this.onLanded});
+  final Widget child;
+  final VoidCallback? onLanded;
+
+  @override
+  State<LandingPin> createState() => _LandingPinState();
+}
+
+class _LandingPinState extends State<LandingPin> with TickerProviderStateMixin {
+  late final AnimationController _drop = AnimationController.unbounded(
+    vsync: this,
+  );
+  late final AnimationController _splat = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 300),
+  );
+  Timer? _touchdown;
+  bool _started = false;
+  bool _reduced = false;
+
+  /// True while the pin is still falling or the splat is fading.
+  bool get animating => _drop.isAnimating || _splat.isAnimating;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) return;
+    _started = true;
+    _reduced = WarangMotion.reduced(context);
+    if (_reduced) {
+      _drop
+          .animateTo(1, duration: WarangMotion.fade, curve: Curves.linear)
+          .whenComplete(() => widget.onLanded?.call());
+      return;
+    }
+    _drop
+        .animateWith(WarangMotion.pop.simulate(0, 1))
+        .whenComplete(() => widget.onLanded?.call());
+    // The pin first touches its spot about a third of the way through.
+    _touchdown = Timer(WarangMotion.pop.duration * .35, () {
+      if (!mounted) return;
+      WarangHaptic.light.play();
+      _splat.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _touchdown?.cancel();
+    _drop.dispose();
+    _splat.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ring = WarangKeepsake.amber.fill;
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: Listenable.merge([_drop, _splat]),
+        builder: (context, child) {
+          if (_reduced) {
+            return Opacity(opacity: _drop.value.clamp(0.0, 1.0), child: child);
+          }
+          final splat = _splat.value;
+          return Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.bottomCenter,
+            children: [
+              if (splat > 0 && splat < 1)
+                Positioned(
+                  bottom: -8 - 10 * splat,
+                  child: IgnorePointer(
+                    child: Container(
+                      width: 20 + 40 * splat,
+                      height: (20 + 40 * splat) * .4,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(40),
+                        border: Border.all(
+                          color: ring.withValues(alpha: 1 - splat),
+                          width: 3,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              Transform.translate(
+                offset: Offset(0, -40 * (1 - _drop.value)),
+                child: child,
+              ),
+            ],
+          );
+        },
+        child: widget.child,
+      ),
+    );
+  }
+}
+
+/// A pin growing into place with the `pop` spring, from [from] of its size.
+class _PinPop extends StatelessWidget {
+  const _PinPop({super.key, required this.from, required this.child});
+  final double from;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final reduced = WarangMotion.reduced(context);
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: reduced && from > 0 ? 1 : from, end: 1),
+      duration: reduced ? WarangMotion.fade : WarangMotion.pop.duration,
+      curve: reduced ? Curves.linear : WarangMotion.pop.curve,
+      builder: (context, value, child) => reduced
+          ? Opacity(opacity: value.clamp(0.0, 1.0), child: child)
+          : Transform.scale(
+              scale: value,
+              alignment: Alignment.bottomCenter,
+              child: child,
+            ),
+      child: child,
+    );
+  }
+}
+
+/// A deleted pin popping away (or fading under reduced motion).
+class _PinLeave extends StatelessWidget {
+  const _PinLeave({super.key, required this.onDone, required this.child});
+  final VoidCallback onDone;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final reduced = WarangMotion.reduced(context);
+    return IgnorePointer(
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(begin: 1, end: 0),
+        duration: reduced
+            ? WarangMotion.fade
+            : const Duration(milliseconds: 220),
+        curve: reduced ? Curves.linear : Curves.easeInBack,
+        onEnd: onDone,
+        builder: (context, value, child) => reduced
+            ? Opacity(opacity: value.clamp(0.0, 1.0), child: child)
+            : Transform.scale(
+                scale: value.clamp(0.0, 1.2),
+                alignment: Alignment.bottomCenter,
+                child: child,
+              ),
+        child: child,
+      ),
+    );
   }
 }
 

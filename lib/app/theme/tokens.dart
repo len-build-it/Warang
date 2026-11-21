@@ -39,12 +39,6 @@ abstract final class WarangColors {
   static const lightMapLabelWater = Color(0xFF93A2A4);
   static const darkMapLabelWater = Color(0xFF5D6A6B);
 
-  /// Dimmer behind modal cards and the drawer. Dark uses black, never the
-  /// light ink, so the map underneath always darkens.
-  static Color scrim(Brightness brightness) => brightness == Brightness.dark
-      ? Colors.black.withValues(alpha: .55)
-      : lightInk.withValues(alpha: .42);
-
   static Color accentText(Brightness brightness) =>
       brightness == Brightness.dark ? darkAccentText : lightAccentText;
 }
@@ -156,12 +150,6 @@ class WarangNeutrals extends ThemeExtension<WarangNeutrals> {
       shadowTint: Color.lerp(shadowTint, other.shadowTint, t)!,
     );
   }
-}
-
-abstract final class WarangGlass {
-  static const lightAlpha = 0.88;
-  static const darkAlpha = 0.90;
-  static const blurSigma = 8.0;
 }
 
 abstract final class WarangLayout {

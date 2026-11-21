@@ -170,6 +170,7 @@ class WarangField extends StatefulWidget {
     this.hintStyle,
     this.style,
     this.errorText,
+    this.helperText,
     this.multiline = false,
     this.minLines,
     this.maxLines,
@@ -191,6 +192,9 @@ class WarangField extends StatefulWidget {
   final TextStyle? hintStyle;
   final TextStyle? style;
   final String? errorText;
+
+  /// A short note under the field, in `meta` `inkFaint`.
+  final String? helperText;
 
   /// 104 tall instead of 56.
   final bool multiline;
@@ -350,6 +354,12 @@ class _WarangFieldState extends State<WarangField> {
               color: WarangKeepsake.gumamela.text(brightness),
             ),
           ),
+        ] else if (widget.helperText != null) ...[
+          const SizedBox(height: 6),
+          Text(
+            widget.helperText!,
+            style: WarangType.meta.copyWith(color: neutrals.inkFaint),
+          ),
         ],
       ],
     );
@@ -438,19 +448,23 @@ class _WarangStampState extends State<WarangStamp>
     final ink = widget.tone.text(brightness);
     final content = widget.place
         ? Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                for (final line in widget.lines)
-                  Text(
-                    line,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: WarangType.meta.copyWith(color: ink, height: 1.2),
-                  ),
-              ],
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+            // Up to three short lines; longer ones scale down to stay
+            // inside the dashed ring.
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final line in widget.lines)
+                    Text(
+                      line,
+                      maxLines: 1,
+                      textAlign: TextAlign.center,
+                      style: WarangType.meta.copyWith(color: ink, height: 1.15),
+                    ),
+                ],
+              ),
             ),
           )
         : Column(
@@ -600,46 +614,56 @@ class WarangChip extends StatelessWidget {
     final ink = tone == null
         ? (selected ? neutrals.surface : neutrals.inkSoft)
         : (selected ? WarangColors.lightInk : tone.text(brightness));
+    Widget surface(double press) => ClaySurface(
+      depth: ClayDepth.clay1,
+      press: press,
+      color: fill,
+      tone: selected ? tone : null,
+      borderRadius: BorderRadius.circular(WarangRadius.chip),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 36),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (selected) ...[
+                WarangIcon(WarangGlyphs.check, size: 18, color: ink),
+                const SizedBox(width: 6),
+              ] else if (icon != null) ...[
+                WarangIcon(icon!, size: 18, color: ink),
+                const SizedBox(width: 6),
+              ],
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: WarangType.meta.copyWith(
+                    color: ink,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    // A chip without an action only labels; it is not announced as a button.
+    if (onSelected == null) {
+      return Semantics(
+        label: label,
+        selected: selected,
+        excludeSemantics: true,
+        child: surface(0),
+      );
+    }
     return ClayPressable(
       onPressed: onSelected,
       haptic: WarangHaptic.selection,
       selected: selected,
-      builder: (context, press) => ClaySurface(
-        depth: ClayDepth.clay1,
-        press: press,
-        color: fill,
-        tone: selected ? tone : null,
-        borderRadius: BorderRadius.circular(WarangRadius.chip),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 36),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (selected) ...[
-                  WarangIcon(WarangGlyphs.check, size: 18, color: ink),
-                  const SizedBox(width: 6),
-                ] else if (icon != null) ...[
-                  WarangIcon(icon!, size: 18, color: ink),
-                  const SizedBox(width: 6),
-                ],
-                Flexible(
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: WarangType.meta.copyWith(
-                      color: ink,
-                      fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+      builder: (context, press) => surface(press),
     );
   }
 }
@@ -768,36 +792,55 @@ Future<T?> showWarangSheet<T>(
 /// The C9 sheet body: `surface` clay with `rSheet` top corners, an upward
 /// `clay3` shadow, and the 40 by 5 handle 14 below the top edge.
 class WarangSheetFrame extends StatelessWidget {
-  const WarangSheetFrame({super.key, required this.child});
+  const WarangSheetFrame({super.key, required this.child, this.handle});
 
   final Widget child;
+
+  /// Laid over the handle strip, for a drag-to-close gesture of its own.
+  final Widget? handle;
 
   @override
   Widget build(BuildContext context) {
     final neutrals = WarangNeutrals.of(context);
-    return ClaySurface(
-      depth: ClayDepth.clay3,
-      shadowUp: true,
-      borderRadius: const BorderRadius.vertical(
-        top: Radius.circular(WarangRadius.sheet),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SizedBox(height: 14),
-          Center(
-            child: Container(
-              width: 40,
-              height: 5,
-              decoration: BoxDecoration(
-                color: neutrals.boundary,
-                borderRadius: BorderRadius.circular(3),
+    return LayoutBuilder(
+      builder: (context, constraints) => ClaySurface(
+        depth: ClayDepth.clay3,
+        shadowUp: true,
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(WarangRadius.sheet),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(
+              height: 24,
+              child: Stack(
+                children: [
+                  Positioned(
+                    top: 14,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: Container(
+                        width: 40,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: neutrals.boundary,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (handle != null) Positioned.fill(child: handle!),
+                ],
               ),
             ),
-          ),
-          Flexible(child: child),
-        ],
+            // A tall body scrolls inside a bounded sheet; in an unbounded
+            // parent it takes its natural height.
+            if (constraints.hasBoundedHeight) Flexible(child: child) else child,
+          ],
+        ),
       ),
     );
   }

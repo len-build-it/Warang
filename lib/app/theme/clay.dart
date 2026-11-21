@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
@@ -231,34 +232,12 @@ class ClaySurface extends StatelessWidget {
           );
     final dark = brightness == Brightness.dark;
     final fill = color ?? tone?.fill ?? neutrals.surface;
-    final colours = _ClayColours(
+    final colours = _ClayColours.resolve(
+      spec: spec,
       fill: fill,
-      shadow: tone != null && !dark
-          ? tone!.clayShadow.withValues(
-              alpha: tone!.clayShadow.a * spec.shadowAlpha / .18,
-            )
-          : (dark ? Colors.black : neutrals.shadowTint).withValues(
-              alpha: spec.shadowAlpha,
-            ),
-      highlight: dark
-          ? Colors.white.withValues(alpha: spec.rimAlpha)
-          : spec.inset
-          ? Colors.white.withValues(alpha: spec.highlightAlpha)
-          : tone != null
-          ? tone!.clayHighlight.withValues(
-              alpha: tone!.clayHighlight.a * spec.highlightAlpha / .80,
-            )
-          : Colors.white.withValues(alpha: spec.highlightAlpha),
-      shade: dark
-          ? Colors.transparent
-          : spec.inset
-          ? neutrals.shadowTint.withValues(alpha: spec.shadeAlpha)
-          : tone != null
-          ? tone!.clayShade.withValues(
-              alpha: tone!.clayShade.a * spec.shadeAlpha / .12,
-            )
-          : neutrals.shadowTint.withValues(alpha: spec.shadeAlpha),
-      rimIsDark: dark && spec.inset,
+      tone: tone,
+      dark: dark,
+      neutrals: neutrals,
     );
     final content = padding == null
         ? child
@@ -295,6 +274,42 @@ class _ClayColours {
     required this.shade,
     required this.rimIsDark,
   });
+
+  factory _ClayColours.resolve({
+    required ClayDepthSpec spec,
+    required Color fill,
+    required KeepsakeTone? tone,
+    required bool dark,
+    required WarangNeutrals neutrals,
+  }) => _ClayColours(
+    fill: fill,
+    shadow: tone != null && !dark
+        ? tone.clayShadow.withValues(
+            alpha: tone.clayShadow.a * spec.shadowAlpha / .18,
+          )
+        : (dark ? Colors.black : neutrals.shadowTint).withValues(
+            alpha: spec.shadowAlpha,
+          ),
+    highlight: dark
+        ? Colors.white.withValues(alpha: spec.rimAlpha)
+        : spec.inset
+        ? Colors.white.withValues(alpha: spec.highlightAlpha)
+        : tone != null
+        ? tone.clayHighlight.withValues(
+            alpha: tone.clayHighlight.a * spec.highlightAlpha / .80,
+          )
+        : Colors.white.withValues(alpha: spec.highlightAlpha),
+    shade: dark
+        ? Colors.transparent
+        : spec.inset
+        ? neutrals.shadowTint.withValues(alpha: spec.shadeAlpha)
+        : tone != null
+        ? tone.clayShade.withValues(
+            alpha: tone.clayShade.a * spec.shadeAlpha / .12,
+          )
+        : neutrals.shadowTint.withValues(alpha: spec.shadeAlpha),
+    rimIsDark: dark && spec.inset,
+  );
 
   final Color fill;
   final Color shadow;
@@ -466,6 +481,117 @@ class _ClayPainter extends CustomPainter {
       old.dark != dark ||
       old.outline != outline ||
       old.shadowUp != shadowUp;
+}
+
+/// Clay discs painted once into images, for map pins (Q-1): the map then
+/// draws plain images while it pans, never live blurs.
+abstract final class ClayDiscCache {
+  static final _images = <Object, ui.Image>{};
+
+  /// Room around the disc for its outer shadow.
+  static double margin(ClayDepth depth, Brightness brightness) {
+    final spec = ClayDepthSpec.of(depth, brightness);
+    return (spec.shadowY + spec.shadowBlur * 1.4).ceilToDouble();
+  }
+
+  static ui.Image image({
+    required double diameter,
+    required Color fill,
+    required KeepsakeTone? tone,
+    required ClayDepth depth,
+    required Brightness brightness,
+    required WarangNeutrals neutrals,
+    required double pixelRatio,
+  }) {
+    final key = Object.hash(
+      diameter,
+      fill,
+      tone?.key,
+      depth,
+      brightness,
+      neutrals.shadowTint,
+      pixelRatio,
+    );
+    final cached = _images.remove(key);
+    if (cached != null) return _images[key] = cached;
+
+    final dark = brightness == Brightness.dark;
+    final spec = ClayDepthSpec.of(depth, brightness);
+    final pad = margin(depth, brightness);
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder)
+      ..scale(pixelRatio)
+      ..translate(pad, pad);
+    _ClayPainter(
+      spec: spec,
+      colours: _ClayColours.resolve(
+        spec: spec,
+        fill: fill,
+        tone: tone,
+        dark: dark,
+        neutrals: neutrals,
+      ),
+      borderRadius: BorderRadius.zero,
+      circle: true,
+      dark: dark,
+      outline: null,
+      shadowUp: false,
+    ).paint(canvas, Size.square(diameter));
+    final picture = recorder.endRecording();
+    final side = ((diameter + 2 * pad) * pixelRatio).ceil();
+    final image = picture.toImageSync(side, side);
+    picture.dispose();
+    _images[key] = image;
+    // Old images are dropped, not disposed: a pin on screen may still draw
+    // one until it rebuilds.
+    if (_images.length > 64) _images.remove(_images.keys.first);
+    return image;
+  }
+}
+
+/// A pre-painted clay disc of [diameter]; its shadow spills outside the box.
+class ClayDisc extends StatelessWidget {
+  const ClayDisc({
+    super.key,
+    required this.diameter,
+    this.fill,
+    this.tone,
+    this.depth = ClayDepth.clay1,
+  });
+
+  final double diameter;
+  final Color? fill;
+  final KeepsakeTone? tone;
+  final ClayDepth depth;
+
+  @override
+  Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    final neutrals = WarangNeutrals.of(context);
+    final pad = ClayDiscCache.margin(depth, brightness);
+    final image = ClayDiscCache.image(
+      diameter: diameter,
+      fill: fill ?? tone?.fill ?? neutrals.surface,
+      tone: tone,
+      depth: depth,
+      brightness: brightness,
+      neutrals: neutrals,
+      pixelRatio: MediaQuery.devicePixelRatioOf(context),
+    );
+    return SizedBox.square(
+      dimension: diameter,
+      child: OverflowBox(
+        maxWidth: diameter + 2 * pad,
+        maxHeight: diameter + 2 * pad,
+        child: RawImage(
+          image: image,
+          width: diameter + 2 * pad,
+          height: diameter + 2 * pad,
+          fit: BoxFit.fill,
+        ),
+      ),
+    );
+  }
 }
 
 /// Wraps a clay control with the V6 `press` and `release` motion.
