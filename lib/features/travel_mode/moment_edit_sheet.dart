@@ -132,14 +132,14 @@ class _MomentEditSheetState extends State<MomentEditSheet> {
               },
             ),
             const SizedBox(height: 16),
-            WarangQuietButton(
+            WarangButton.quiet(
               label: hasLocation ? 'Move pin on map' : 'Place on map',
               onPressed: _saving
                   ? null
                   : () => _save(MomentEditOutcome.placeOnMap),
             ),
             const SizedBox(height: 12),
-            WarangPrimaryButton(
+            WarangButton.primary(
               label: _saving ? 'Saving...' : 'Save',
               onPressed: _saving ? null : _save,
             ),

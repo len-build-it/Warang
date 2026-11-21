@@ -3,9 +3,14 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
+import 'clay_components.dart';
 import 'tokens.dart';
 import 'warang_icons.dart';
 
+export 'clay.dart';
+export 'clay_components.dart';
+export 'motion.dart';
+export 'palette.dart';
 export 'warang_icons.dart';
 
 InputDecoration warangInputDecoration(
@@ -19,8 +24,10 @@ InputDecoration warangInputDecoration(
   );
 }
 
-/// Shows a floating snackbar that clears the bottom navigation when
-/// [aboveNavigation] is true.
+/// Shows a C12 toast above the navigation when [aboveNavigation] is true.
+///
+/// It rises above the dock, leaves after [duration], and offers [action]
+/// (for example "Undo") inside the pill.
 ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showWarangSnackBar(
   BuildContext context,
   String message, {
@@ -34,10 +41,23 @@ ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showWarangSnackBar(
   final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
   return messenger.showSnackBar(
     SnackBar(
-      content: Text(message),
-      action: action,
+      content: WarangToast(
+        message: message,
+        actionLabel: action?.label,
+        onAction: action == null
+            ? null
+            : () {
+                messenger.hideCurrentSnackBar(
+                  reason: SnackBarClosedReason.action,
+                );
+                action.onPressed();
+              },
+      ),
       duration: duration,
       behavior: SnackBarBehavior.floating,
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      padding: EdgeInsets.zero,
       margin: EdgeInsets.fromLTRB(16, 0, 16, bottom),
     ),
   );
@@ -87,64 +107,6 @@ class WarangIcon extends StatelessWidget {
       ),
     );
   }
-}
-
-class WarangPrimaryButton extends StatelessWidget {
-  const WarangPrimaryButton({
-    super.key,
-    required this.label,
-    this.onPressed,
-    this.height = 56,
-  });
-  final String label;
-  final VoidCallback? onPressed;
-  final double height;
-
-  @override
-  Widget build(BuildContext context) => SizedBox(
-    height: height,
-    width: double.infinity,
-    child: FilledButton(
-      onPressed: onPressed,
-      style: FilledButton.styleFrom(
-        backgroundColor: WarangColors.accent,
-        foregroundColor: WarangColors.accentInk,
-        disabledBackgroundColor: WarangColors.accent,
-        disabledForegroundColor: WarangColors.accentInk,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        textStyle: WarangType.button,
-      ),
-      child: Text(label),
-    ),
-  );
-}
-
-class WarangQuietButton extends StatelessWidget {
-  const WarangQuietButton({
-    super.key,
-    required this.label,
-    this.onPressed,
-    this.height = 48,
-  });
-  final String label;
-  final VoidCallback? onPressed;
-  final double height;
-
-  @override
-  Widget build(BuildContext context) => SizedBox(
-    height: height,
-    child: OutlinedButton(
-      onPressed: onPressed,
-      clipBehavior: Clip.antiAlias,
-      style: OutlinedButton.styleFrom(
-        foregroundColor: WarangNeutrals.of(context).inkSoft,
-        side: BorderSide(color: Theme.of(context).colorScheme.outline),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        textStyle: WarangType.button,
-      ),
-      child: Text(label),
-    ),
-  );
 }
 
 class WarangMetadata extends StatelessWidget {

@@ -278,7 +278,7 @@ void main() {
       expect(find.text('Trip name'), findsOneWidget);
       expect(find.text('Place (optional)'), findsOneWidget);
 
-      final createButton = find.widgetWithText(FilledButton, 'Create');
+      final createButton = find.widgetWithText(WarangButton, 'Create');
       expect(createButton, findsOneWidget);
 
       // Tap create with empty trip name -> should validate and show error

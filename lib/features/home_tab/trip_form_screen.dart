@@ -182,9 +182,8 @@ class _TripFormScreenState extends ConsumerState<TripFormScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          WarangPrimaryButton(
+          WarangButton.primary(
             label: _saving ? 'Saving...' : (_editing ? 'Save' : 'Create'),
-            height: 54,
             onPressed: _saving ? null : _save,
           ),
         ],

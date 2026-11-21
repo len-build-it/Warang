@@ -328,13 +328,12 @@ class _PlacementBar extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: WarangQuietButton(label: 'Cancel', onPressed: onCancel),
+              child: WarangButton.quiet(label: 'Cancel', onPressed: onCancel),
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: WarangPrimaryButton(
+              child: WarangButton.primary(
                 label: 'Confirm',
-                height: 48,
                 onPressed: onConfirm,
               ),
             ),
@@ -623,11 +622,14 @@ class _MomentCardState extends State<MomentCard> {
             Row(
               children: [
                 Expanded(
-                  child: WarangQuietButton(label: 'Edit', onPressed: _edit),
+                  child: WarangButton.quiet(label: 'Edit', onPressed: _edit),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: WarangQuietButton(label: 'Delete', onPressed: _delete),
+                  child: WarangButton.quiet(
+                    label: 'Delete',
+                    onPressed: _delete,
+                  ),
                 ),
               ],
             ),

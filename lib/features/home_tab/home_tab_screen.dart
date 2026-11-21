@@ -156,11 +156,7 @@ class _HomeTabContentState extends State<_HomeTabContent> {
                   ),
                 );
               }),
-            WarangPrimaryButton(
-              label: 'New trip',
-              height: 54,
-              onPressed: _createTrip,
-            ),
+            WarangButton.primary(label: 'New trip', onPressed: _createTrip),
             const SizedBox(height: 34),
             const WarangSectionLabel('On-device analytics'),
             const SizedBox(height: 12),

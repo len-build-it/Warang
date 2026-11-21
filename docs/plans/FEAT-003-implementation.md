@@ -1,7 +1,7 @@
 # Implementation Plan: FEAT-003 Clay keepsake redesign
 
 Created: 2026-11-21T20:38:00+08:00
-Updated: 2026-11-21T21:49:00+08:00
+Updated: 2026-11-21T22:07:00+08:00
 Revision: 1
 Status: Approved - in progress
 Feature spec and revision: [FEAT-003 revision 1](../features/FEAT-003-clay-keepsake-redesign.md)
@@ -127,15 +127,15 @@ Checkpoint message: `docs(plan): FEAT-003 phase 3 - clay icon set`
 ## Phase 4: Clay foundation and shared components
 
 Requirements: REQ-001, REQ-010, Q-1, Q-2
-State: Approved - not started
+State: Complete (checkpoint commit recorded in `HANDOFF.md`)
 
 ### Tasks
 
-- [ ] Add the V2 keepsake palette, V4 shape scale, V5 depth levels, and V6 motion and haptic tokens to `lib/app/theme/`.
-- [ ] Build `ClaySurface` per V5 with cached gradients and a dark-theme rim, and a `ClayPressable` wrapper that applies `press`, `release`, and the haptic for its role.
-- [ ] Build the shared components C4 buttons, C5 fields, C6 stamp, C7 chip, C8 polaroid, C9 sheet, C11 toggle, C12 toast, and C13 speech bubble.
-- [ ] Make every component fall back to `fade` and no scale or rotation when `MediaQuery.disableAnimations` is true.
-- [ ] Add widget tests for each component in both themes and with reduced motion.
+- [x] Add the V2 keepsake palette, V4 shape scale, V5 depth levels, and V6 motion and haptic tokens to `lib/app/theme/`.
+- [x] Build `ClaySurface` per V5 with cached gradients and a dark-theme rim, and a `ClayPressable` wrapper that applies `press`, `release`, and the haptic for its role.
+- [x] Build the shared components C4 buttons, C5 fields, C6 stamp, C7 chip, C8 polaroid, C9 sheet, C11 toggle, C12 toast, and C13 speech bubble.
+- [x] Make every component fall back to `fade` and no scale or rotation when `MediaQuery.disableAnimations` is true.
+- [x] Add widget tests for each component in both themes and with reduced motion.
 
 ### Success metrics
 

@@ -298,7 +298,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen> {
                           ),
                     ),
                     const SizedBox(height: 18),
-                    WarangPrimaryButton(
+                    WarangButton.primary(
                       label: _saving ? 'Saving...' : 'Save',
                       onPressed: _saving ? null : _save,
                     ),

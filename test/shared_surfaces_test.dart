@@ -99,15 +99,15 @@ void main() {
   });
 
   group('Accessibility & Button standards', () {
-    testWidgets('WarangQuietButton has at least 48px height', (tester) async {
+    testWidgets('WarangButton.quiet has at least 48px height', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: buildWarangTheme(Brightness.light),
-          home: const Scaffold(body: WarangQuietButton(label: 'Cancel')),
+          home: const Scaffold(body: WarangButton.quiet(label: 'Cancel')),
         ),
       );
 
-      final size = tester.getSize(find.byType(WarangQuietButton));
+      final size = tester.getSize(find.byType(WarangButton));
       expect(size.height, greaterThanOrEqualTo(48.0));
     });
 
