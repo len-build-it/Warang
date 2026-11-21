@@ -159,43 +159,6 @@ class WarangSectionLabel extends StatelessWidget {
   );
 }
 
-class WarangToggle extends StatelessWidget {
-  const WarangToggle({super.key, required this.value, required this.onChanged});
-  final bool value;
-  final ValueChanged<bool> onChanged;
-
-  @override
-  Widget build(BuildContext context) => Semantics(
-    toggled: value,
-    child: GestureDetector(
-      onTap: () => onChanged(!value),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        width: 46,
-        height: 27,
-        padding: const EdgeInsets.all(3),
-        alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-        decoration: BoxDecoration(
-          color: value
-              ? WarangColors.accent
-              : Theme.of(context).colorScheme.outline,
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Container(
-          width: 21,
-          height: 21,
-          decoration: BoxDecoration(
-            color: value
-                ? WarangColors.accentInk
-                : Theme.of(context).colorScheme.surface,
-            shape: BoxShape.circle,
-          ),
-        ),
-      ),
-    ),
-  );
-}
-
 class WarangTopScrim extends StatelessWidget {
   const WarangTopScrim({super.key});
 

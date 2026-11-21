@@ -111,27 +111,6 @@ void main() {
       expect(size.height, greaterThanOrEqualTo(48.0));
     });
 
-    testWidgets('WarangToggle includes toggle semantics', (tester) async {
-      var current = false;
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: buildWarangTheme(Brightness.light),
-          home: StatefulBuilder(
-            builder: (context, setState) => Scaffold(
-              body: WarangToggle(
-                value: current,
-                onChanged: (v) => setState(() => current = v),
-              ),
-            ),
-          ),
-        ),
-      );
-
-      expect(find.byType(WarangToggle), findsOneWidget);
-      await tester.tap(find.byType(WarangToggle));
-      expect(current, isTrue);
-    });
-
     testWidgets(
       'WarangPositionMarker respects reduced motion (disableAnimations)',
       (tester) async {
