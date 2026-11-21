@@ -54,7 +54,6 @@ class WarangDatabase extends _$WarangDatabase {
             updatedAt: now,
           ),
         );
-        await appMetaDao.writeValue('activeProfileId', profileId, now);
         profile = await profilesDao.getActive();
       }
 
@@ -70,7 +69,6 @@ class WarangDatabase extends _$WarangDatabase {
             updatedAt: now,
           ),
         );
-        await appMetaDao.writeValue('everydayTripId', everydayId, now);
         everyday = await tripsDao.getEveryday();
       }
 
