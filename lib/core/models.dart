@@ -18,28 +18,6 @@ class Profile {
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final DateTime? deletedAt;
-
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'avatarRelPath': avatarRelPath,
-    'bio': bio,
-    'authorId': authorId,
-    'createdAt': createdAt?.toIso8601String(),
-    'updatedAt': updatedAt?.toIso8601String(),
-    'deletedAt': deletedAt?.toIso8601String(),
-  };
-
-  factory Profile.fromJson(Map<String, dynamic> json) => Profile(
-    id: json['id'] as String,
-    name: json['name'] as String? ?? '',
-    avatarRelPath: json['avatarRelPath'] as String?,
-    bio: json['bio'] as String?,
-    authorId: json['authorId'] as String? ?? 'local',
-    createdAt: _date(json['createdAt']),
-    updatedAt: _date(json['updatedAt']),
-    deletedAt: _date(json['deletedAt']),
-  );
 }
 
 class Trip {
@@ -72,38 +50,6 @@ class Trip {
   final DateTime? updatedAt;
   final String authorId;
   final DateTime? createdAt;
-
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'title': title,
-    'place': place,
-    'description': description,
-    'startDate': startDate?.toIso8601String(),
-    'endDate': endDate?.toIso8601String(),
-    'coverMomentId': coverMomentId,
-    'isEveryday': isEveryday,
-    'tagsJson': tagsJson,
-    'deletedAt': deletedAt?.toIso8601String(),
-    'updatedAt': updatedAt?.toIso8601String(),
-    'authorId': authorId,
-    'createdAt': createdAt?.toIso8601String(),
-  };
-
-  factory Trip.fromJson(Map<String, dynamic> json) => Trip(
-    id: json['id'] as String,
-    title: json['title'] as String,
-    place: json['place'] as String?,
-    description: json['description'] as String?,
-    startDate: _date(json['startDate']),
-    endDate: _date(json['endDate']),
-    coverMomentId: json['coverMomentId'] as String?,
-    isEveryday: json['isEveryday'] as bool? ?? false,
-    tagsJson: json['tagsJson'] as String? ?? '[]',
-    deletedAt: _date(json['deletedAt']),
-    updatedAt: _date(json['updatedAt']),
-    authorId: json['authorId'] as String? ?? 'local',
-    createdAt: _date(json['createdAt']),
-  );
 }
 
 class Moment {
@@ -148,49 +94,4 @@ class Moment {
   final String authorId;
   final DateTime? createdAt;
   final DateTime? updatedAt;
-
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'tripId': tripId,
-    'capturedAt': capturedAt.toIso8601String(),
-    'caption': caption,
-    'latitude': latitude,
-    'longitude': longitude,
-    'accuracyM': accuracyM,
-    'placeLabel': placeLabel,
-    'sortIndex': sortIndex,
-    'relPath': relPath,
-    'thumbRelPath': thumbRelPath,
-    'width': width,
-    'height': height,
-    'bytes': bytes,
-    'deletedAt': deletedAt?.toIso8601String(),
-    'authorId': authorId,
-    'createdAt': createdAt?.toIso8601String(),
-    'updatedAt': updatedAt?.toIso8601String(),
-  };
-
-  factory Moment.fromJson(Map<String, dynamic> json) => Moment(
-    id: json['id'] as String,
-    tripId: json['tripId'] as String,
-    capturedAt: DateTime.parse(json['capturedAt'] as String),
-    caption: json['caption'] as String?,
-    latitude: (json['latitude'] as num?)?.toDouble(),
-    longitude: (json['longitude'] as num?)?.toDouble(),
-    accuracyM: (json['accuracyM'] as num?)?.toDouble(),
-    placeLabel: json['placeLabel'] as String?,
-    sortIndex: json['sortIndex'] as int? ?? 0,
-    relPath: json['relPath'] as String?,
-    thumbRelPath: json['thumbRelPath'] as String?,
-    width: json['width'] as int? ?? 0,
-    height: json['height'] as int? ?? 0,
-    bytes: json['bytes'] as int? ?? 0,
-    deletedAt: _date(json['deletedAt']),
-    authorId: json['authorId'] as String? ?? 'local',
-    createdAt: _date(json['createdAt']),
-    updatedAt: _date(json['updatedAt']),
-  );
 }
-
-DateTime? _date(dynamic value) =>
-    value == null ? null : DateTime.tryParse(value as String);
