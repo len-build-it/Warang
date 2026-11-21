@@ -4,8 +4,8 @@ import 'dart:typed_data';
 import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:uuid/uuid.dart';
 
+import '../../core/ids.dart';
 import '../db/database.dart';
 
 class StoredPhoto {
@@ -58,7 +58,7 @@ class PhotoStore {
       img.encodeJpg(normalized, quality: jpegQuality),
     );
     final relative = _relativePath(
-      p.posix.join('warang', 'profile', '${const Uuid().v4()}.jpg'),
+      p.posix.join('warang', 'profile', '${newId()}.jpg'),
     );
     final destination = await resolve(relative);
     await destination.parent.create(recursive: true);
@@ -188,7 +188,7 @@ class PhotoStore {
       img.encodeJpg(thumbnail, quality: jpegQuality),
     );
     final date = now ?? DateTime.now();
-    final id = const Uuid().v4();
+    final id = newId();
     final directory = p.posix.join(
       'warang',
       'photos',
