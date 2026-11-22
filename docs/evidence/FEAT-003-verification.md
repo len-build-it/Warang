@@ -1,7 +1,7 @@
 # Verification: FEAT-003
 
 Created: 2026-11-21T21:21:00+08:00
-Updated: 2026-11-22T22:20:33+08:00
+Updated: 2026-11-22T22:42:24+08:00
 
 All checks below ran on Len's Windows host with Flutter 3.44.7 (Dart 3.12.2) in the Flutter test runner or the Gradle debug build.
 Screenshots come from `tool/ux_screenshots_test.dart` at 390x844 logical, 2x DPR, in both themes.
@@ -103,3 +103,36 @@ Reported and not changed, both older than FEAT-003 and needing Len's decision:
 - The OpenStreetMap attribution button is covered by the dock. The same probe found it at y 758 to 806, inside the dock's box (688 to 844), and not tappable. T17.7 calls attribution a licence obligation.
 
 Not checked: motion (pin landing, pop-away, undo, swipe tilt, placement lift), real map tiles, screen readers on a device, and anything on an emulator or phone.
+
+## Map bug fixes
+
+Recorded: 2026-11-22T22:42:24+08:00
+Authority: Len, 2026-11-22 22:28 (Asia/Manila) in the project thread, "okay you can proceed with fixing it", answering "Should I also fix two older map bugs?".
+That answer was read as covering the two bugs only; it does not approve P-1 or Phase 7.
+
+| Bug | Change |
+| --- | --- |
+| Clusters under 2.5 km never split | Pins group only when they would overlap on screen at the current zoom, so they come apart as the map zooms in. The old rule also let pins overlap at low zoom (5.9 px apart in the test). |
+| Attribution under the dock | An info button mirrors recenter, 16 above the dock at the bottom left (T17.7). The credit shows without a tap, folds after five seconds, and reopens from the button. |
+
+The clustering fix exposed two placement faults, fixed with it: the moment being placed drew a second pin under the centre pin, and tapping another pin during placement opened it and blocked panning with the dimmer.
+On a screen under 500 tall, the empty-map hint waits until the credit folds, because there is no room for both.
+The credit follows the [OpenStreetMap attribution guideline](https://osmfoundation.org/wiki/Licence/Attribution_Guidelines), read on 2026-11-22.
+The licence address is printed, not linked, because the app has no link-opening dependency.
+
+| Check | Environment | Actual result |
+| --- | --- | --- |
+| Reproduction with `test/map_clusters_and_credit_test.dart` | Windows host | 12 of the first 14 cases failed before the fix; the placement tap case failed once clusters split |
+| Gate 1: format | Windows host | Passed (`Formatted 67 files (0 changed)`, exit 0) |
+| Gate 2: `flutter analyze` | Windows host | Passed (`No issues found!`) |
+| Gate 3: `flutter test` | Windows host | Passed (`+218: All tests passed!`, up from 203); also 218 in 5 random orders and at `-j 1` and `-j 12` |
+| Gate 4: `flutter build apk --debug` | Windows host | Passed (`Built build\app\outputs\flutter-apk\app-debug.apk`) |
+| Gate 5: `UX_LABEL=feat-003-phase-6` | Windows host | Passed (`+10: All tests passed!`, 34 PNGs); the nine screens outside Phase 6 are pixel-identical in both themes |
+| Gate 6: Phase 6 metrics | Windows host | Passed |
+
+Still open, reported to Len and not changed:
+
+- Moments closer than about 37 m still share a cluster at the top zoom (18), and tapping it does nothing. Opening them needs a change to T17.16, which says a cluster tap never opens a card.
+- The offline placeholder tile `_placeholderBytes` in `map_tile_store.dart` is a corrupt PNG (bad IDAT checksum). It causes the `Codec failed to produce an image` logs that earlier entries called expected. Replacing only the bytes would let a blank tile stay in the image cache after the phone reconnects, so the fix also needs an eviction.
+
+Not checked: a phone or emulator, real tiles, and REQ-023 panning smoothness with the new grouping.

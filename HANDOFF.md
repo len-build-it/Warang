@@ -1,7 +1,7 @@
 # Current handoff
 
 Created: 2026-10-16T22:55:00+08:00
-Updated: 2026-11-22T22:20:33+08:00
+Updated: 2026-11-22T22:42:24+08:00
 State: FEAT-003 paused for Len's visual review (P-1) after Phase 6 of 10; FEAT-001 and FEAT-002 physical-device checks pending
 Feature: FEAT-003 clay keepsake redesign (spec and plan revision 1)
 
@@ -27,6 +27,7 @@ Reread these files and inspect actual Git status before acting; prior chat memor
 | FEAT-002 plan | Revision 1 | 2026-11-21 chat: "I, Len, approve FEAT-002 revision 1 (docs/features/FEAT-002-ponytail-cleanup.md) and its plan revision 1 (docs/plans/FEAT-002-implementation.md), including decisions D-1 and D-2." |
 | FEAT-003 feature spec (includes D-1 to D-6 as recommended) | Revision 1 | 2026-11-21 20:37 project-thread decision card: "Approve as recommended" on "Approve FEAT-003 revision 1 with the recommended answers to D-1 to D-6?" |
 | FEAT-003 plan (includes P-1 to P-3 as recommended) | Revision 1 | 2026-11-21 20:40 project-thread decision card: "Approve plan as written" on "Approve FEAT-003 plan revision 1 with P-1 to P-3 as recommended?" |
+| FEAT-003 map bug fixes (clustering, attribution) only; not P-1 | - | 2026-11-22 22:28 project thread: "okay you can proceed with fixing it", answering "Should I also fix two older map bugs?" |
 
 Allowed phases (FEAT-002, complete): Phases 1-4 continuously without hard stops (Len's instruction, 2026-11-21), with every gate passing in every phase.
 Allowed phases (FEAT-003): Phases 1-10 continuously, with every gate passing, and one stop after Phase 6 for Len's visual review (plan P-1).
@@ -43,6 +44,7 @@ FEAT-003 Phase 4 (clay foundation and components) complete in the commit `docs(p
 FEAT-003 Phase 5 (dock and You sheet) complete in the commit `docs(plan): FEAT-003 phase 5 - dock and You sheet`.
 FEAT-003 Phase 6 (map, capture, and moment card) complete in the commit `docs(plan): FEAT-003 phase 6 - map, capture, and moment card`; the P-1 visual review stop is open.
 FEAT-003 Phase 6 visual review fixes (8 must-fix, 8 polish) complete in the commit `docs(plan): FEAT-003 phase 6 - visual review fixes`; the P-1 stop stays open for Len's approval of the re-render.
+The two older map bugs (clustering, attribution) are fixed in the commit `docs(plan): FEAT-003 phase 6 - map bug fixes`.
 Preserve the existing untracked paths: `.agents/skills/*`, `.agents/templates/`, `.claude/`, `CLAUDE.md`, `releases/`, and `scripts/`.
 
 ## Checks and evidence
@@ -58,8 +60,8 @@ FEAT-001 evidence: [docs/evidence/FEAT-001-verification.md](docs/evidence/FEAT-0
 | Problem | Fix-and-check attempts used (maximum 3) | Changes tried and observed result | Required decision or access |
 | --- | --- | --- | --- |
 | None blocking | - | - | - |
-| Clusters under 2.5 km never split (older than FEAT-003) | 0 | Reported in the FEAT-003 evidence log; not changed | Len's go-ahead to change the clustering threshold |
-| Map attribution is hidden under the dock | 0 | Reported in the FEAT-003 evidence log; not changed | Len's go-ahead on where it should move |
+| Moments within about 37 m cannot be opened from their cluster | 0 | Reported in the FEAT-003 evidence log; not changed | Len's go-ahead to change T17.16 |
+| Offline placeholder tile is a corrupt PNG | 0 | Reported in the FEAT-003 evidence log; not changed | Len's go-ahead to replace it and evict it from the image cache |
 
 ## Next action
 
