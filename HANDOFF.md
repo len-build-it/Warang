@@ -1,7 +1,7 @@
 # Current handoff
 
 Created: 2026-10-16T22:55:00+08:00
-Updated: 2026-11-21T22:46:00+08:00
+Updated: 2026-11-22T22:20:33+08:00
 State: FEAT-003 paused for Len's visual review (P-1) after Phase 6 of 10; FEAT-001 and FEAT-002 physical-device checks pending
 Feature: FEAT-003 clay keepsake redesign (spec and plan revision 1)
 
@@ -42,6 +42,7 @@ FEAT-003 Phase 3 (clay icon set) complete in the commit `docs(plan): FEAT-003 ph
 FEAT-003 Phase 4 (clay foundation and components) complete in the commit `docs(plan): FEAT-003 phase 4 - clay foundation and components`.
 FEAT-003 Phase 5 (dock and You sheet) complete in the commit `docs(plan): FEAT-003 phase 5 - dock and You sheet`.
 FEAT-003 Phase 6 (map, capture, and moment card) complete in the commit `docs(plan): FEAT-003 phase 6 - map, capture, and moment card`; the P-1 visual review stop is open.
+FEAT-003 Phase 6 visual review fixes (8 must-fix, 8 polish) complete in the commit `docs(plan): FEAT-003 phase 6 - visual review fixes`; the P-1 stop stays open for Len's approval of the re-render.
 Preserve the existing untracked paths: `.agents/skills/*`, `.agents/templates/`, `.claude/`, `CLAUDE.md`, `releases/`, and `scripts/`.
 
 ## Checks and evidence
@@ -56,11 +57,13 @@ FEAT-001 evidence: [docs/evidence/FEAT-001-verification.md](docs/evidence/FEAT-0
 
 | Problem | Fix-and-check attempts used (maximum 3) | Changes tried and observed result | Required decision or access |
 | --- | --- | --- | --- |
-| None | - | - | - |
+| None blocking | - | - | - |
+| Clusters under 2.5 km never split (older than FEAT-003) | 0 | Reported in the FEAT-003 evidence log; not changed | Len's go-ahead to change the clustering threshold |
+| Map attribution is hidden under the dock | 0 | Reported in the FEAT-003 evidence log; not changed | Len's go-ahead on where it should move |
 
 ## Next action
 
-0. **FEAT-003:** **waiting for Len's visual approval (P-1)** of the Phase 6 screenshots in `docs/evidence/FEAT-001/feat-003-phase-6/` (02, 03, 04, 12, 13, 14 in both themes). Do not start Phase 7 until Len approves; if Len asks for changes, make them within FEAT-003 and re-render `feat-003-phase-6`.
+0. **FEAT-003:** **waiting for Len's visual approval (P-1)** of the Phase 6 screenshots in `docs/evidence/FEAT-001/feat-003-phase-6/` (02, 03, 04, 12, 13, 14, 16, 17 in both themes), re-rendered after the review fixes, and of the spec differences listed at the end of the evidence log. Do not start Phase 7 until Len approves; if Len asks for changes, make them within FEAT-003 and re-render `feat-003-phase-6`.
 1. **Claude UI screenshot capture (requested 2026-11-21):** capture fresh UI screenshots from the current codebase (`ba0c56a`) using [tool/ux_screenshots_test.dart](tool/ux_screenshots_test.dart).
    - Working directory: `C:\Users\User\Desktop\PersonalProjects\04-FUN-STUFF\WARANG\Warang` (inner repo root, not the outer `WARANG/` folder).
    - Command (choose a fresh label such as `claude-review` or `latest`):

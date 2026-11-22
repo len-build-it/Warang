@@ -1,7 +1,7 @@
 # Verification: FEAT-003
 
 Created: 2026-11-21T21:21:00+08:00
-Updated: 2026-11-21T22:46:00+08:00
+Updated: 2026-11-22T22:20:33+08:00
 
 All checks below ran on Len's Windows host with Flutter 3.44.7 (Dart 3.12.2) in the Flutter test runner or the Gradle debug build.
 Screenshots come from `tool/ux_screenshots_test.dart` at 390x844 logical, 2x DPR, in both themes.
@@ -54,3 +54,52 @@ No emulator or physical-device check has been run for FEAT-003; REQ-023 and Len'
 | Phase 6 | Gate 6: success metrics | Windows host | Passed under stated conditions: `grep -rn "BackdropFilter" lib` no output; the landing test finds the new pin dropping only when animations are enabled; code review of photo widgets (`WarangPhotoPin`, `WarangPolaroid`, the moment polaroid, the capture photo, search and trip thumbnails) found no `ColorFilter`, tint, or overlay; the only `ColorFiltered` in `lib` is the map tile layer in `warang_map.dart`, which is the unchanged map style | 2026-11-21T22:45:50+08:00 | Removed the dark gradient that was drawn over the top of the capture photo; the clay pills now carry their own contrast. The capture place stamp has three short lines (latitude, longitude, time) scaled to fit 120 by 64. |
 | Phase 6 | Defects found and fixed | Windows host, code review and widget tests | Fixed under stated conditions | 2026-11-21T22:40:00+08:00 | Map pins restarted their photo lookup on every rebuild, including every pan frame, so pins could flash empty while panning and each pin decoded the full photo; lookups are now cached per photo, pins use the thumbnail, and decode at pin size (supports REQ-023). |
 | Phase 6 | P-1 visual review stop | - | Pending Len's approval | 2026-11-21T22:46:00+08:00 | Phase 7 does not start until Len approves the map, capture, moment card, edit sheet, and placement screenshots in both themes. |
+| Phase 6 review fixes | Reproduction | Windows host | Reproduced: `test/phase_six_layout_test.dart` failed 19 of its first 20 cases before any fix | 2026-11-22T22:20:33+08:00 | Measured before the fix: polaroid right edge 356 instead of 370, pin tip under the card at y 422, Cancel 48, pointer tip 3.75 above its point, dock highlight 6 above its icon, recenter 20 from the edge. The bubble-overlap case passed before and guards the wider bubble. Stamp edges, compass, suitcase, sheet edge shade, avatar crop, and dark amber were reproduced and checked by eye in the screenshots, not by a test. |
+| Phase 6 review fixes | Gate 1: `dart format lib test tool` and `--set-exit-if-changed` | Windows host | Passed under stated conditions (`Formatted 66 files (0 changed)`, exit 0) | 2026-11-22T22:20:33+08:00 | - |
+| Phase 6 review fixes | Gate 2: `flutter analyze` | Windows host | Passed under stated conditions (`No issues found!`) | 2026-11-22T22:20:33+08:00 | - |
+| Phase 6 review fixes | Gate 3: `flutter test` | Windows host | Passed under stated conditions (`+203: All tests passed!`, up from 180) | 2026-11-22T22:20:33+08:00 | 23 new cases in `test/phase_six_layout_test.dart`. `icon_semantics_test.dart` had a missed tap that left its News check running on another screen; it now waits for the route and treats a missed tap as a failure. `clay_components_test.dart` changed only for the `bottomSheet` rename. |
+| Phase 6 review fixes | Flake check: `flutter test --test-randomize-ordering-seed` 1, 7, 42, 1234, 98765, then `flutter test -j 1` and `-j 12` | Windows host | Passed under stated conditions (203 passed in all 7 runs) | 2026-11-22T22:20:33+08:00 | No missed-tap warnings in the 5 seeded runs. |
+| Phase 6 review fixes | Gate 4: `flutter build apk --debug` | Windows host | Passed under stated conditions (`Built build\app\outputs\flutter-apk\app-debug.apk`, exit 0) | 2026-11-22T22:20:33+08:00 | - |
+| Phase 6 review fixes | Gate 5: `UX_LABEL=feat-003-phase-6` screenshots | Windows host | Passed under stated conditions (`+10: All tests passed!`, 34 PNGs) | 2026-11-22T22:20:33+08:00 | New: `16_map_pins` (three photo pins and a cluster of two) and `17_pin_selected` (a southern pin moved clear of the card). The harness now uses an in-memory map store and waits longer, so photos decode: polaroids, pins, and the trip cover show photos, and Settings shows the storage total instead of a dash. Compared with the previous Phase 6 renders, other screens differ only by that, the two new glyphs, the avatar crop, the dock alignment, the sheet edges, the top shade, and dark amber clay. The News spinner is caught at a different frame. The top shade is monotonic at x 500 in both themes. `tool/failures/` was not created. Map tiles still never load in the test host. |
+| Phase 6 review fixes | Gate 6: Phase 6 success metrics | Windows host | Passed under stated conditions: no `BackdropFilter` in `lib`; the landing test passes; the only colour filter in `lib` is the unchanged map tile filter | 2026-11-22T22:20:33+08:00 | No colour literal outside the theme, no Material icon, and no change to `pubspec.yaml` or `pubspec.lock`. |
+
+## Phase 6 visual review fixes
+
+Recorded: 2026-11-22T22:20:33+08:00
+Source: the Phase 6 visual review of 2026-11-22 (8 must-fix items and 8 polish items).
+
+| Item | Change |
+| --- | --- |
+| 1 Polaroid off centre | The stamp overhangs into the sheet's padding, the polaroid shares the buttons' edges, and the whole top of the stamp takes taps. |
+| 2 Pin behind the card | Search and swipe centre the pin in the strip above the card. A tapped pin moves the map only if it would be hidden, so a visible pin still opens without moving the map (T17.18). |
+| 3 Everyday chip | Selected is `surfaceRaised`, `ink`, a 2 px `boundary` outline, and the check, in both themes. |
+| 4 Placement buttons | Both are 56. |
+| 5 Stamps | Round bumps with one on each corner. A three-line stamp is 80 tall. |
+| 6 Capture label | "Caption" sits above the field. |
+| 7 Compass | Upright two-tone needle with an N tick. |
+| 8 Top shade | Fades to its own colour at zero over 80, and steps aside under the moment dimmer. |
+| 9 Sheet edges | Only the top edge is lit. |
+| 10 Margins | Recenter is 16 from the edge, like the avatar, and 16 above the dock. |
+| 11 Speech bubble | One line with the spec's 12 by 8 padding. |
+| 12 Empty pin | Photo glyph placeholder, plus a `boundary` edge for Everyday pins in dark. |
+| 13 Avatar | Cropped on the face, without the camera or the W, until the D-2 art arrives. |
+| 14 Capture close | A pill with an icon and "Close" (S3). |
+| 15 Dark amber | Amber clay keeps its highlight and shade. |
+| 16 Trips glyph | An upright suitcase with wheels and a tilted sticker. |
+
+Also found and fixed: the dock highlight sat 6 above its icon; pin pointers ended 3.75 above their point; pins and clusters had no screen-reader label; pins did not regroup when the app changed the zoom, which blocked the single-pin screenshot.
+
+Differences from spec revision 1, all from the review, for Len to accept or reject at P-1:
+
+- C4: a secondary button beside a primary is 56 instead of 48.
+- C6: a place stamp with three lines is 80 tall instead of 64.
+- C7: selected Everyday uses an outline, because a neutral chip has no solid colour.
+- C10: Everyday pins have a 1 px `boundary` edge in dark.
+- V5: sheets light only their top edge, and amber in dark uses the highlight and shade instead of the rim.
+
+Reported and not changed, both older than FEAT-003 and needing Len's decision:
+
+- Clustering has a 2500 m floor (`_momentMarkers` in `warang_map.dart`). A throwaway widget probe with two moments 2 km apart showed one cluster at zoom 13, 15, and 18, so tapping such a cluster can never reveal its pins.
+- The OpenStreetMap attribution button is covered by the dock. The same probe found it at y 758 to 806, inside the dock's box (688 to 844), and not tappable. T17.7 calls attribution a licence obligation.
+
+Not checked: motion (pin landing, pop-away, undo, swipe tilt, placement lift), real map tiles, screen readers on a device, and anything on an emulator or phone.

@@ -1,7 +1,7 @@
 # Implementation Plan: FEAT-003 Clay keepsake redesign
 
 Created: 2026-11-21T20:38:00+08:00
-Updated: 2026-11-21T22:46:00+08:00
+Updated: 2026-11-22T22:20:33+08:00
 Revision: 1
 Status: Approved - in progress
 Feature spec and revision: [FEAT-003 revision 1](../features/FEAT-003-clay-keepsake-redesign.md)
@@ -187,6 +187,7 @@ State: Complete; P-1 visual review pending (checkpoint commit recorded in `HANDO
 
 ### Visual review stop (P-1)
 
+- [x] Fix the 16 items from the 2026-11-22 visual review and re-render `feat-003-phase-6`.
 - [ ] Send Len the Phase 6 screenshots of map, capture, moment card, edit sheet, and placement in both themes, and wait for his approval before Phase 7.
 
 Checkpoint message: `docs(plan): FEAT-003 phase 6 - map, capture, and moment card`
