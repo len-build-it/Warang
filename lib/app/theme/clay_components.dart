@@ -394,6 +394,7 @@ class WarangStamp extends StatefulWidget {
     required this.tone,
     this.countUp = false,
   }) : lines = const [],
+       glyph = null,
        place = false;
 
   const WarangStamp.place({
@@ -404,6 +405,20 @@ class WarangStamp extends StatefulWidget {
   }) : number = null,
        word = null,
        countUp = false,
+       glyph = null,
+       place = true;
+
+  /// A small postage stamp, 52 by 60, with [glyph] at its centre, for the
+  /// corner of a postcard.
+  const WarangStamp.postage({
+    super.key,
+    required this.id,
+    required WarangGlyph this.glyph,
+    required this.tone,
+  }) : number = null,
+       word = null,
+       lines = const [],
+       countUp = false,
        place = true;
 
   final String id;
@@ -413,12 +428,18 @@ class WarangStamp extends StatefulWidget {
   final KeepsakeTone tone;
   final bool place;
 
+  /// The postage stamp's picture.
+  final WarangGlyph? glyph;
+
   /// The number counts up from zero (`count`) the first time the stamp is
   /// shown in a session, as the Trips shelf's stamps do.
   final bool countUp;
 
-  Size get size =>
-      place ? Size(120, lines.length > 2 ? 80 : 64) : const Size.square(84);
+  Size get size => glyph != null
+      ? const Size(52, 60)
+      : place
+      ? Size(120, lines.length > 2 ? 80 : 64)
+      : const Size.square(84);
 
   /// The tilt in degrees, from -8 to +8, decided once from [id].
   double get tiltDegrees {
@@ -464,7 +485,12 @@ class _WarangStampState extends State<WarangStamp>
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
     final ink = widget.tone.text(brightness);
-    final content = widget.place
+    final glyph = widget.glyph;
+    final content = glyph != null
+        ? Center(
+            child: WarangIcon(glyph, size: 24, color: ink, fillColor: ink),
+          )
+        : widget.place
         ? Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             // Up to three short lines; longer ones scale down to stay
@@ -516,7 +542,9 @@ class _WarangStampState extends State<WarangStamp>
           );
     return Semantics(
       container: true,
-      label: widget.place
+      label: widget.glyph != null
+          ? null
+          : widget.place
           ? widget.lines.join(', ')
           : '${widget.number} ${widget.word}',
       excludeSemantics: true,

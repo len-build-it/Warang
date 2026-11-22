@@ -9,6 +9,7 @@ import 'package:warang/app/shell/app_shell.dart';
 import 'package:warang/app/shell/dock.dart';
 import 'package:warang/app/theme/components.dart';
 import 'package:warang/app/theme/tokens.dart';
+import 'package:warang/features/settings/about_screen.dart';
 import 'package:warang/core/models.dart';
 import 'package:warang/data/db/database.dart';
 import 'package:warang/data/repository.dart';
@@ -137,8 +138,7 @@ void main() {
     expect(find.text('Only on this phone'), findsOneWidget);
 
     // The dock sits under the open sheet, so it cannot be reached.
-    await tester.tapAt(tester.getCenter(find.byType(WarangDock)));
-    await settle(tester);
+    expect(find.byType(WarangDock).hitTestable(), findsNothing);
     expect(container.read(shellTabProvider), ShellTab.map);
 
     // The dimmer above the sheet closes it.
@@ -186,7 +186,8 @@ void main() {
     await settle(tester);
     await tester.tap(find.text('About Warang'));
     await settle(tester);
-    expect(find.byType(AboutDialog), findsOneWidget);
+    expect(find.byType(AboutScreen), findsOneWidget);
+    expect(find.text('Aklanon. To go out and explore.'), findsOneWidget);
   });
 
   testWidgets('the You sheet shows the counts as stamps', (tester) async {

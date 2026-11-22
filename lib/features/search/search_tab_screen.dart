@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +11,7 @@ import '../../core/formatting.dart';
 import '../../core/models.dart';
 import '../../data/files/photo_store.dart';
 import '../../data/repository.dart';
+import '../home_tab/trip_photo.dart';
 
 /// The Search dock tab: the moment search that used to open from the
 /// drawer, with the same matching and the same results.
@@ -147,7 +148,6 @@ class _MomentSearchResultsState extends State<MomentSearchResults> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final neutrals = WarangNeutrals.of(context);
     final query = widget.query.trim();
     return FutureBuilder<List<Moment>>(
@@ -159,153 +159,184 @@ class _MomentSearchResultsState extends State<MomentSearchResults> {
         final moments = snapshot.data ?? const <Moment>[];
         if (moments.isEmpty) {
           return Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32.0),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const WarangIcon(WarangGlyphs.searchEmpty, size: 48),
+                  ExcludeSemantics(
+                    child: Image.asset(
+                      'design/warang-maya.png',
+                      width: 120,
+                      height: 120,
+                    ),
+                  ),
                   const SizedBox(height: 14),
                   Text(
                     query.isEmpty
-                        ? 'No moments captured yet'
-                        : 'No matches found for "$query"',
+                        ? 'Moments you capture will appear here'
+                        : 'Nothing here yet, try another word',
                     textAlign: TextAlign.center,
-                    style: theme.textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    query.isEmpty
-                        ? 'Moments you capture will appear here.'
-                        : 'Try searching for a different caption or place name.',
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.bodyMedium,
+                    style: WarangType.hand.copyWith(color: neutrals.inkSoft),
                   ),
                 ],
               ),
             ),
           );
         }
-        return ListView.separated(
+        return ListView.builder(
           padding: EdgeInsets.only(
+            top: 8,
             bottom: WarangLayout.dockClearance(context) + 16,
           ),
           itemCount: moments.length,
-          separatorBuilder: (context, index) =>
-              Divider(height: 1, indent: 72, color: neutrals.hairline),
-          itemBuilder: (context, index) {
-            final moment = moments[index];
-            final hasCaption =
-                moment.caption != null && moment.caption!.trim().isNotEmpty;
-            final hasPlace =
-                moment.placeLabel != null &&
-                moment.placeLabel!.trim().isNotEmpty;
-            final title = hasCaption
-                ? moment.caption!
-                : (hasPlace ? moment.placeLabel! : 'Untitled moment');
-            final dateStr = formatDate(moment.capturedAt);
-            final subtitle = hasCaption && hasPlace
-                ? '${moment.placeLabel} - $dateStr'
-                : dateStr;
-            return ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 4,
-              ),
-              leading: _MomentSearchThumbnail(
-                moment: moment,
-                photoStore: widget.photoStore,
-              ),
-              title: Text(
-                title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: WarangType.body.copyWith(
-                  color: neutrals.ink,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              subtitle: Text(
-                subtitle,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: WarangType.meta.copyWith(color: neutrals.inkFaint),
-              ),
-              trailing: moment.latitude != null && moment.longitude != null
-                  ? const WarangIcon(WarangGlyphs.recenter, size: 20)
-                  : null,
-              onTap: () => widget.onSelected(moment),
-            );
-          },
+          itemBuilder: (context, index) => _Staggered(
+            // Results arrive 30 ms apart, the first ten at most.
+            key: ValueKey('${widget.query}/${moments[index].id}'),
+            delay: Duration(milliseconds: 30 * index.clamp(0, 10)),
+            child: _ResultRow(
+              moment: moments[index],
+              photoStore: widget.photoStore,
+              onTap: () => widget.onSelected(moments[index]),
+            ),
+          ),
         );
       },
     );
   }
 }
 
-class _MomentSearchThumbnail extends StatefulWidget {
-  const _MomentSearchThumbnail({
+/// A result (S9): a 56 polaroid thumbnail, the caption in `titleS`, and
+/// the place and date in `meta`.
+class _ResultRow extends StatelessWidget {
+  const _ResultRow({
     required this.moment,
     required this.photoStore,
+    required this.onTap,
   });
 
   final Moment moment;
   final PhotoStore photoStore;
-
-  @override
-  State<_MomentSearchThumbnail> createState() => _MomentSearchThumbnailState();
-}
-
-class _MomentSearchThumbnailState extends State<_MomentSearchThumbnail> {
-  Future<File?>? _fileFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadFile();
-  }
-
-  @override
-  void didUpdateWidget(covariant _MomentSearchThumbnail oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.moment.relPath != widget.moment.relPath ||
-        oldWidget.moment.thumbRelPath != widget.moment.thumbRelPath) {
-      _loadFile();
-    }
-  }
-
-  void _loadFile() {
-    final path = widget.moment.thumbRelPath ?? widget.moment.relPath;
-    _fileFuture = path == null
-        ? null
-        : widget.photoStore.resolve(path).then((f) async {
-            return await f.exists() ? f : null;
-          });
-  }
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final neutrals = WarangNeutrals.of(context);
-    const placeholder = WarangIcon(WarangGlyphs.photo, size: 20);
-    return Container(
-      width: 44,
-      height: 44,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: neutrals.hairline,
-        borderRadius: BorderRadius.circular(8),
+    final caption = moment.caption?.trim() ?? '';
+    final place = moment.placeLabel?.trim() ?? '';
+    final title = caption.isNotEmpty
+        ? caption
+        : (place.isNotEmpty ? place : 'Untitled moment');
+    final date = formatDate(moment.capturedAt);
+    final detail = caption.isNotEmpty && place.isNotEmpty
+        ? '$place · $date'
+        : date;
+    return InkWell(
+      onTap: onTap,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 72),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 56,
+                child: WarangPolaroid(
+                  depth: ClayDepth.clay1,
+                  frame: const EdgeInsets.fromLTRB(4, 4, 4, 12),
+                  photo: MomentPhoto(
+                    moment: moment,
+                    photoStore: photoStore,
+                    glyphSize: 18,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: WarangType.titleS.copyWith(color: neutrals.ink),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      detail,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: WarangType.meta.copyWith(color: neutrals.inkFaint),
+                    ),
+                  ],
+                ),
+              ),
+              if (moment.latitude != null && moment.longitude != null)
+                const Padding(
+                  padding: EdgeInsets.only(left: 8),
+                  child: WarangIcon(WarangGlyphs.pin, size: 20),
+                ),
+            ],
+          ),
+        ),
       ),
-      clipBehavior: Clip.antiAlias,
-      child: _fileFuture == null
-          ? placeholder
-          : FutureBuilder<File?>(
-              future: _fileFuture,
-              builder: (context, snapshot) {
-                final file = snapshot.data;
-                if (file != null) return Image.file(file, fit: BoxFit.cover);
-                return placeholder;
-              },
-            ),
     );
   }
+}
+
+/// Slides a result up into place after [delay]; under reduced motion it
+/// simply appears.
+class _Staggered extends StatefulWidget {
+  const _Staggered({super.key, required this.delay, required this.child});
+  final Duration delay;
+  final Widget child;
+
+  @override
+  State<_Staggered> createState() => _StaggeredState();
+}
+
+class _StaggeredState extends State<_Staggered>
+    with SingleTickerProviderStateMixin {
+  late final _controller = AnimationController(
+    vsync: this,
+    duration: WarangMotion.slide.duration,
+  );
+  Timer? _start;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_start != null || _controller.value > 0) return;
+    if (WarangMotion.reduced(context)) {
+      _controller.value = 1;
+      return;
+    }
+    _start = Timer(widget.delay, () {
+      if (mounted) _controller.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _start?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: _controller,
+    builder: (context, child) {
+      final t = WarangMotion.slide.curve.transform(_controller.value);
+      return Opacity(
+        opacity: _controller.value,
+        child: Transform.translate(
+          offset: Offset(0, 12 * (1 - t)),
+          child: child,
+        ),
+      );
+    },
+    child: widget.child,
+  );
 }

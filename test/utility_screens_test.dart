@@ -83,21 +83,13 @@ void main() {
       });
       await tester.pump();
 
-      expect(find.byIcon(WarangGlyphs.searchEmpty.stroke), findsOneWidget);
-      expect(
-        find.text('No matches found for "nonexistentquery123"'),
-        findsOneWidget,
-      );
-      expect(
-        find.text('Try searching for a different caption or place name.'),
-        findsOneWidget,
-      );
+      expect(find.text('Nothing here yet, try another word'), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
     },
   );
 
   testWidgets(
-    'MomentSearchResults renders readable caption, place, and plain dash',
+    'MomentSearchResults renders a polaroid, caption, place, and date',
     (tester) async {
       await tester.runAsync(() async {
         await repository.addMoment(
@@ -125,10 +117,59 @@ void main() {
       await tester.pump();
 
       expect(find.text('Sunset over Boracay'), findsOneWidget);
-      expect(find.text('Station 1 - 15 Apr 2026'), findsOneWidget);
+      expect(find.text('Station 1 · 15 Apr 2026'), findsOneWidget);
+      expect(find.byType(WarangPolaroid), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
     },
   );
+
+  for (final reduced in [false, true]) {
+    testWidgets('search results arrive one after another (reduced: $reduced)', (
+      tester,
+    ) async {
+      await tester.runAsync(() async {
+        for (var index = 0; index < 3; index++) {
+          await repository.addMoment(caption: 'Beach $index');
+        }
+      });
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildWarangTheme(Brightness.light),
+          home: MediaQuery(
+            data: MediaQueryData(disableAnimations: reduced),
+            child: Scaffold(
+              body: MomentSearchResults(
+                repository: repository,
+                photoStore: photoStore,
+                query: 'Beach',
+                onSelected: (_) {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 100)),
+      );
+      for (var frame = 0; frame < 6; frame++) {
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      final opacities = tester
+          .widgetList<Opacity>(find.byType(Opacity))
+          .map((opacity) => opacity.opacity)
+          .toList();
+      expect(opacities, hasLength(3));
+      if (reduced) {
+        expect(opacities, everyElement(1));
+      } else {
+        // Each row starts 30 ms after the one above it.
+        expect(opacities[0], greaterThan(opacities[1]));
+        expect(opacities[1], greaterThan(opacities[2]));
+      }
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpWidget(const SizedBox());
+    });
+  }
 
   testWidgets('SettingsScreen reports the real photo storage size', (
     tester,
@@ -186,24 +227,24 @@ void main() {
       expect(find.text('Corner mark on images'), findsNothing);
       expect(find.textContaining('Nothing leaves it'), findsNothing);
 
-      final clearButton = find.widgetWithText(TextButton, 'Clear');
+      final clearButton = find.widgetWithText(WarangButton, 'Clear');
       expect(clearButton, findsOneWidget);
 
       // Clear asks first; Cancel keeps the cache.
       await tester.tap(clearButton);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
-      expect(find.text('Clear offline map cache?'), findsOneWidget);
+      expect(find.text('Clear saved map areas?'), findsOneWidget);
       await tester.tap(find.text('Cancel'));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
-      expect(find.text('Clear offline map cache?'), findsNothing);
-      expect(find.text('Offline map cache cleared.'), findsNothing);
+      expect(find.text('Clear saved map areas?'), findsNothing);
+      expect(find.text('Saved map areas cleared.'), findsNothing);
 
       await tester.tap(clearButton);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 300));
-      await tester.tap(find.text('Clear cache'));
+      await tester.tap(find.text('Clear map areas'));
       await tester.pump();
       await tester.runAsync(() async {
         await Future.delayed(const Duration(milliseconds: 150));
@@ -211,9 +252,9 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 200));
 
-      expect(find.text('Offline map cache cleared.'), findsOneWidget);
+      expect(find.text('Saved map areas cleared.'), findsOneWidget);
 
-      final footer = find.text('Your photos and pins stay on this phone.');
+      final footer = find.text('Everything stays on this phone');
       await tester.scrollUntilVisible(footer, 200);
       expect(footer, findsOneWidget);
       await tester.pumpWidget(const SizedBox());

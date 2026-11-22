@@ -6,6 +6,7 @@ import '../../features/capture/capture_screen.dart';
 import '../../features/home_tab/home_tab_screen.dart';
 import '../../features/news_tab/news_tab_screen.dart';
 import '../../features/search/search_tab_screen.dart';
+import '../../features/settings/about_screen.dart';
 import '../../features/settings/settings_screen.dart';
 import '../../features/travel_mode/travel_mode_screen.dart';
 import '../app.dart';
@@ -65,12 +66,9 @@ class _AppShellState extends ConsumerState<AppShell> {
     context,
   ).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
 
-  void _openAbout() => showAboutDialog(
-    context: context,
-    applicationName: 'Warang',
-    applicationVersion: '1.0.0',
-    applicationLegalese: 'Aklanon. To go out and explore.',
-  );
+  void _openAbout() => Navigator.of(
+    context,
+  ).push(MaterialPageRoute(builder: (_) => const AboutScreen()));
 
   /// Back closes the innermost thing first: an open moment, then a tab
   /// other than Map. Only an idle Map lets the route pop.

@@ -12,9 +12,6 @@ String formatCoordinates(double latitude, double longitude) {
   return '$lat · $lng';
 }
 
-/// Short month name in sentence case, e.g. `Mar`.
-String monthLabel(DateTime date) => DateFormat('MMM').format(date);
-
 /// A clock time with a lowercase marker, e.g. `4:42 pm`.
 String formatTime(DateTime date) =>
     DateFormat('h:mm a').format(date).toLowerCase();

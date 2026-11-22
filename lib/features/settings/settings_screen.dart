@@ -7,9 +7,10 @@ import '../../app/app_state.dart';
 import '../../app/shell/you_sheet.dart';
 import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
+import 'about_screen.dart';
 
-/// Settings shows only controls that work today; share options return when
-/// sharing ships.
+/// Settings (S11), opened from the You sheet. It shows only controls that
+/// work today.
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
@@ -30,114 +31,100 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final dark = theme.brightness == Brightness.dark;
+    final neutrals = WarangNeutrals.of(context);
+    final dark = Theme.of(context).brightness == Brightness.dark;
     final repository = ref.watch(repositoryProvider);
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: dark ? Brightness.light : Brightness.dark,
-        statusBarBrightness: dark ? Brightness.dark : Brightness.light,
-        systemNavigationBarColor: Colors.transparent,
-        systemNavigationBarIconBrightness: dark
-            ? Brightness.light
-            : Brightness.dark,
-      ),
+      value: dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Settings'),
-          scrolledUnderElevation: 0,
-          backgroundColor: theme.colorScheme.surface,
-        ),
-        body: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 14, 20, 34),
-          children: [
-            const WarangSectionLabel('You'),
-            const SizedBox(height: 9),
-            WarangSettingsCard(
-              children: [
-                AnimatedBuilder(
-                  animation: repository,
-                  builder: (context, _) => _ProfileRow(
-                    avatar: ProfileAvatar(
-                      profile: repository.profile,
-                      photoStore: repository.photoStore,
-                      size: 48,
-                    ),
-                    name: repository.profile.name,
-                    onTap: () => editProfileName(context, repository),
+        body: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(8, 4, 20, 34),
+            children: [
+              const Align(alignment: Alignment.centerLeft, child: BackButton()),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 4, 0, 22),
+                child: Semantics(
+                  header: true,
+                  child: Text(
+                    'Settings',
+                    style: WarangType.displayL.copyWith(color: neutrals.ink),
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            const WarangSectionLabel('Storage'),
-            const SizedBox(height: 9),
-            WarangSettingsCard(
-              children: [
-                _BytesRow(label: 'Photos on this phone', bytes: _photoBytes),
-              ],
-            ),
-            const SizedBox(height: 20),
-            const WarangSectionLabel('Map'),
-            const SizedBox(height: 9),
-            WarangSettingsCard(
-              children: [
-                const WarangSettingsRow(
-                  label: 'Theme',
-                  value: 'Follows your phone',
-                ),
-                const WarangDivider(),
-                _BytesRow(
-                  label: 'Offline map cache',
-                  bytes: _cacheBytes,
-                  trailing: TextButton(
-                    style: TextButton.styleFrom(
-                      visualDensity: VisualDensity.compact,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
+              ),
+              _Group(
+                label: 'You',
+                children: [
+                  AnimatedBuilder(
+                    animation: repository,
+                    builder: (context, _) => _ProfileRow(
+                      avatar: ProfileAvatar(
+                        profile: repository.profile,
+                        photoStore: repository.photoStore,
+                        colour: WarangKeepsake.forUser(repository.trips).fill,
+                        size: 48,
                       ),
-                      minimumSize: const Size(48, 36),
+                      name: repository.profile.name,
+                      onTap: () => editProfileName(context, repository),
                     ),
-                    onPressed: _clearMapCache,
-                    child: const Text('Clear'),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            const WarangSectionLabel('About'),
-            const SizedBox(height: 9),
-            WarangSettingsCard(
-              children: [
-                const WarangSettingsRow(label: 'Version', value: '1.0.0'),
-                const WarangDivider(),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(15, 14, 15, 14),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('warang', style: TextStyle(fontSize: 15.5)),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Aklanon. To go out and explore.',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
+                ],
+              ),
+              _Group(
+                label: 'Storage',
+                children: [
+                  _BytesRow(label: 'Photos on this phone', bytes: _photoBytes),
+                ],
+              ),
+              _Group(
+                label: 'Map',
+                children: [
+                  const WarangSettingsRow(
+                    label: 'Theme',
+                    value: 'Follows your phone',
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 28),
-            Text(
-              'Your photos and pins stay on this phone.',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodySmall?.copyWith(fontSize: 12.5),
-            ),
-          ],
+                  _BytesRow(
+                    label: 'Saved map areas',
+                    bytes: _cacheBytes,
+                    trailing: WarangButton.quiet(
+                      label: 'Clear',
+                      expand: false,
+                      onPressed: _clearMapCache,
+                    ),
+                  ),
+                ],
+              ),
+              const _Group(
+                label: 'About',
+                children: [
+                  WarangSettingsRow(
+                    label: 'Version',
+                    value: AboutScreen.version,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ExcludeSemantics(
+                    child: Image.asset(
+                      'design/warang-maya.png',
+                      width: 40,
+                      height: 40,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Flexible(
+                    child: Text(
+                      'Everything stays on this phone',
+                      style: WarangType.meta.copyWith(color: neutrals.inkFaint),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -147,7 +134,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Clear offline map cache?'),
+        title: const Text('Clear saved map areas?'),
         content: const Text(
           'Areas you have visited will need a connection again.',
         ),
@@ -158,7 +145,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Clear cache'),
+            child: const Text('Clear map areas'),
           ),
         ],
       ),
@@ -172,9 +159,45 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     });
     showWarangSnackBar(
       context,
-      'Offline map cache cleared.',
+      'Saved map areas cleared.',
       aboveNavigation: false,
       duration: const Duration(seconds: 2),
+    );
+  }
+}
+
+/// A settings group: its label in `meta` `inkSoft`, then a `surface` clay
+/// card of rows.
+class _Group extends StatelessWidget {
+  const _Group({required this.label, required this.children});
+  final String label;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final neutrals = WarangNeutrals.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 0, 0, 22),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 8),
+            child: Text(
+              label,
+              style: WarangType.meta.copyWith(color: neutrals.inkSoft),
+            ),
+          ),
+          WarangSettingsCard(
+            children: [
+              for (final (index, child) in children.indexed) ...[
+                if (index > 0) const WarangDivider(),
+                child,
+              ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -208,48 +231,42 @@ class _ProfileRow extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => Semantics(
-    button: true,
-    label: 'Edit name',
-    child: InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Row(
-          children: [
-            avatar,
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
+  Widget build(BuildContext context) {
+    final neutrals = WarangNeutrals.of(context);
+    return Semantics(
+      button: true,
+      label: 'Edit name',
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              avatar,
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: WarangType.titleS.copyWith(color: neutrals.ink),
                     ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    'Stored on this phone only',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodySmall?.copyWith(fontSize: 12.5),
-                  ),
-                ],
+                    const SizedBox(height: 2),
+                    Text(
+                      'Only on this phone',
+                      style: WarangType.meta.copyWith(color: neutrals.inkFaint),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            WarangIcon(
-              WarangGlyphs.edit,
-              size: 18,
-              color: WarangNeutrals.of(context).inkSoft,
-            ),
-          ],
+              const WarangIcon(WarangGlyphs.edit, size: 20),
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 String _formatBytes(int bytes) {

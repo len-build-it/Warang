@@ -136,11 +136,13 @@ class _TripDetailView extends StatelessWidget {
     final band = tone?.tint(brightness) ?? neutrals.surface;
     final detail = tone?.text(brightness) ?? neutrals.inkFaint;
     final start = trip.startDate;
-    final dates = trip.isEveryday
-        ? 'Casual captures'
+    final count = countLabel(moments.length, 'moment');
+    // Everyday has no dates, so it shows only its count (V8).
+    final summary = trip.isEveryday
+        ? count
         : start == null
-        ? 'No dates'
-        : '${formatDate(start)}${trip.endDate == null ? '' : ' - ${formatDate(trip.endDate!)}'}';
+        ? 'No dates · $count'
+        : '${formatDate(start)}${trip.endDate == null ? '' : ' - ${formatDate(trip.endDate!)}'} · $count';
     final place = trip.place?.trim();
     final dark = brightness == Brightness.dark;
 
@@ -210,7 +212,7 @@ class _TripDetailView extends StatelessWidget {
                                     ],
                                     const SizedBox(height: 4),
                                     Text(
-                                      '$dates · ${countLabel(moments.length, 'moment')}',
+                                      summary,
                                       style: WarangType.meta.copyWith(
                                         color: detail,
                                       ),

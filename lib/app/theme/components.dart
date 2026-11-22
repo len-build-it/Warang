@@ -112,45 +112,6 @@ class WarangIcon extends StatelessWidget {
   }
 }
 
-class WarangMetadata extends StatelessWidget {
-  const WarangMetadata(
-    this.text, {
-    super.key,
-    this.align = TextAlign.left,
-    this.water = false,
-  });
-  final String text;
-  final TextAlign align;
-  final bool water;
-
-  @override
-  Widget build(BuildContext context) => Text(
-    text,
-    textAlign: align,
-    style: WarangType.meta.copyWith(
-      color: water
-          ? Theme.of(context).extension<MapPalette>()!.labelWater
-          : WarangNeutrals.of(context).inkFaint,
-    ),
-  );
-}
-
-class WarangSectionLabel extends StatelessWidget {
-  const WarangSectionLabel(this.label, {super.key});
-  final String label;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(left: 2),
-    child: Text(
-      label,
-      style: WarangType.meta.copyWith(
-        color: WarangNeutrals.of(context).inkSoft,
-      ),
-    ),
-  );
-}
-
 class WarangTopScrim extends StatelessWidget {
   const WarangTopScrim({super.key});
 
@@ -539,25 +500,28 @@ class WarangClusterPin extends StatelessWidget {
   }
 }
 
+/// An S11 settings group's card: `surface` clay at `clay1` with `rCard`
+/// corners.
 class WarangSettingsCard extends StatelessWidget {
   const WarangSettingsCard({super.key, required this.children});
   final List<Widget> children;
 
   @override
-  Widget build(BuildContext context) => Container(
+  Widget build(BuildContext context) => ClaySurface(
+    depth: ClayDepth.clay1,
+    borderRadius: BorderRadius.circular(WarangRadius.card),
     clipBehavior: Clip.antiAlias,
-    decoration: BoxDecoration(
-      color: Theme.of(context).colorScheme.surface,
-      borderRadius: BorderRadius.circular(14),
-      border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: children,
+    child: Material(
+      type: MaterialType.transparency,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: children,
+      ),
     ),
   );
 }
 
+/// An S11 row: 56 tall, its label in `body` and its value in `meta`.
 class WarangSettingsRow extends StatelessWidget {
   const WarangSettingsRow({
     super.key,
@@ -565,66 +529,53 @@ class WarangSettingsRow extends StatelessWidget {
     this.value,
     this.trailing,
     this.onTap,
-    this.emphasized = false,
-    this.toggle = false,
   });
   final String label;
   final String? value;
   final Widget? trailing;
   final VoidCallback? onTap;
-  final bool emphasized;
-  final bool toggle;
 
   @override
-  Widget build(BuildContext context) => InkWell(
-    onTap: onTap,
-    child: ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: 48),
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: 15,
-          vertical: toggle ? 12 : 14,
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                label,
-                style: WarangType.body.copyWith(
-                  fontWeight: emphasized ? FontWeight.w600 : FontWeight.w400,
-                  color: emphasized
-                      ? (Theme.of(context).brightness == Brightness.dark
-                            ? WarangColors.darkAccentText
-                            : WarangColors.lightAccentText)
-                      : Theme.of(context).colorScheme.onSurface,
+  Widget build(BuildContext context) {
+    final neutrals = WarangNeutrals.of(context);
+    return InkWell(
+      onTap: onTap,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 56),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  style: WarangType.body.copyWith(color: neutrals.ink),
                 ),
               ),
-            ),
-            if (value != null)
-              Text(
-                value!,
-                style: WarangType.meta.copyWith(
-                  color: WarangNeutrals.of(context).inkSoft,
+              if (value != null)
+                Text(
+                  value!,
+                  style: WarangType.meta.copyWith(color: neutrals.inkSoft),
                 ),
-              ),
-            if (trailing != null) ...[const SizedBox(width: 10), trailing!],
-          ],
+              if (trailing != null) ...[const SizedBox(width: 10), trailing!],
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
+/// A `hairline` divider inside a settings card.
 class WarangDivider extends StatelessWidget {
   const WarangDivider({super.key});
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(left: 15),
-    child: Divider(
-      height: 1,
-      thickness: 1,
-      color: Theme.of(context).colorScheme.outlineVariant,
-    ),
+  Widget build(BuildContext context) => Divider(
+    height: 1,
+    thickness: 1,
+    indent: 16,
+    endIndent: 16,
+    color: WarangNeutrals.of(context).hairline,
   );
 }
