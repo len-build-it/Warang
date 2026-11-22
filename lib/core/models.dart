@@ -31,6 +31,7 @@ class Trip {
     this.coverMomentId,
     this.isEveryday = false,
     this.tagsJson = '[]',
+    this.colorKey,
     this.deletedAt,
     this.updatedAt,
     this.authorId = 'local',
@@ -46,6 +47,9 @@ class Trip {
   final String? coverMomentId;
   final bool isEveryday;
   final String tagsJson;
+
+  /// One of `tripColorKeys`, or null for Everyday.
+  final String? colorKey;
   final DateTime? deletedAt;
   final DateTime? updatedAt;
   final String authorId;

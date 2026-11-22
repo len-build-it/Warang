@@ -93,6 +93,28 @@ class TripsDao extends DatabaseAccessor<WarangDatabase> with _$TripsDaoMixin {
 
   Future<int> insertTrip(TripsCompanion entry) => into(trips).insert(entry);
 
+  /// The colour of the trip created last, deleted or not.
+  Future<String?> latestColorKey() async {
+    final row =
+        await (select(trips)
+              ..where((trip) => trip.isEveryday.equals(false))
+              ..orderBy([
+                (trip) => OrderingTerm(
+                  expression: trip.createdAt,
+                  mode: OrderingMode.desc,
+                ),
+                // Times are stored to the second, so insertion order breaks
+                // ties between trips made in the same second.
+                (_) => OrderingTerm(
+                  expression: const CustomExpression<int>('rowid'),
+                  mode: OrderingMode.desc,
+                ),
+              ])
+              ..limit(1))
+            .getSingleOrNull();
+    return row?.colorKey;
+  }
+
   Future<int> updateTrip(String id, TripsCompanion entry) =>
       (update(trips)..where((trip) => trip.id.equals(id))).write(entry);
 

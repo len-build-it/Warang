@@ -1,5 +1,34 @@
 import 'models.dart';
 
+/// The six trip colours of FEAT-003 V2, in the order trips receive them.
+/// Amber is the action colour and never a trip's.
+const tripColorKeys = [
+  'gumamela',
+  'dagat',
+  'kalamansi',
+  'ube',
+  'langit',
+  'santan',
+];
+
+/// The colour after [previous] in [tripColorKeys], starting over at the end.
+String nextTripColorKey(String? previous) =>
+    tripColorKeys[(tripColorKeys.indexOf(previous ?? '') + 1) %
+        tripColorKeys.length];
+
+/// A trip's colour key: its own, or for a trip without one, a key picked
+/// from its id so it stays the same. Null for Everyday.
+String? tripColorKey(Trip trip) {
+  if (trip.isEveryday) return null;
+  final own = trip.colorKey;
+  if (own != null && tripColorKeys.contains(own)) return own;
+  var hash = 0;
+  for (final unit in trip.id.codeUnits) {
+    hash = (hash * 31 + unit) & 0x7fffffff;
+  }
+  return tripColorKeys[hash % tripColorKeys.length];
+}
+
 DateTime _day(DateTime value) => DateTime(value.year, value.month, value.day);
 
 /// True when [at] falls on any calendar day from [start] through [end].

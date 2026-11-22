@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 
 import '../../core/ids.dart';
+import '../../core/trip_rules.dart';
 import 'daos.dart';
 import 'tables.dart';
 
@@ -22,7 +23,7 @@ class WarangDatabase extends _$WarangDatabase {
       WarangDatabase(NativeDatabase.createInBackground(file));
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -32,6 +33,10 @@ class WarangDatabase extends _$WarangDatabase {
     },
     onUpgrade: (m, from, to) async {
       if (from < 1) await m.createAll();
+      if (from == 1) {
+        await m.addColumn(trips, trips.colorKey);
+        await _colourExistingTrips();
+      }
       await _createSearchIndex();
     },
     beforeOpen: (details) async {
@@ -80,6 +85,21 @@ class WarangDatabase extends _$WarangDatabase {
       }
       await appMetaDao.writeValue('schemaVersion', '$schemaVersion', now);
     });
+  }
+
+  /// Gives every trip made before colours existed one, in creation order.
+  Future<void> _colourExistingTrips() async {
+    final rows = await customSelect(
+      'SELECT id FROM trips WHERE is_everyday = 0 ORDER BY created_at, rowid',
+    ).get();
+    String? previous;
+    for (final row in rows) {
+      previous = nextTripColorKey(previous);
+      await customStatement('UPDATE trips SET color_key = ? WHERE id = ?', [
+        previous,
+        row.read<String>('id'),
+      ]);
+    }
   }
 
   Future<void> _createSearchIndex() async {

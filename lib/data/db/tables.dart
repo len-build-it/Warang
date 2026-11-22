@@ -26,6 +26,9 @@ class Trips extends Table {
   TextColumn get coverMomentId => text().nullable()();
   BoolColumn get isEveryday => boolean().withDefault(const Constant(false))();
   TextColumn get tagsJson => text().withDefault(const Constant('[]'))();
+
+  /// The trip's keepsake colour (FEAT-003 D-1); null for Everyday.
+  TextColumn get colorKey => text().nullable()();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
   DateTimeColumn get deletedAt => dateTime().nullable()();

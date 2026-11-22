@@ -620,6 +620,17 @@ class $TripsTable extends Trips with TableInfo<$TripsTable, TripRow> {
     requiredDuringInsert: false,
     defaultValue: const Constant('[]'),
   );
+  static const VerificationMeta _colorKeyMeta = const VerificationMeta(
+    'colorKey',
+  );
+  @override
+  late final GeneratedColumn<String> colorKey = GeneratedColumn<String>(
+    'color_key',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -676,6 +687,7 @@ class $TripsTable extends Trips with TableInfo<$TripsTable, TripRow> {
     coverMomentId,
     isEveryday,
     tagsJson,
+    colorKey,
     createdAt,
     updatedAt,
     deletedAt,
@@ -754,6 +766,12 @@ class $TripsTable extends Trips with TableInfo<$TripsTable, TripRow> {
         tagsJson.isAcceptableOrUnknown(data['tags_json']!, _tagsJsonMeta),
       );
     }
+    if (data.containsKey('color_key')) {
+      context.handle(
+        _colorKeyMeta,
+        colorKey.isAcceptableOrUnknown(data['color_key']!, _colorKeyMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -827,6 +845,10 @@ class $TripsTable extends Trips with TableInfo<$TripsTable, TripRow> {
         DriftSqlType.string,
         data['${effectivePrefix}tags_json'],
       )!,
+      colorKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}color_key'],
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -862,6 +884,9 @@ class TripRow extends DataClass implements Insertable<TripRow> {
   final String? coverMomentId;
   final bool isEveryday;
   final String tagsJson;
+
+  /// The trip's keepsake colour (FEAT-003 D-1); null for Everyday.
+  final String? colorKey;
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? deletedAt;
@@ -876,6 +901,7 @@ class TripRow extends DataClass implements Insertable<TripRow> {
     this.coverMomentId,
     required this.isEveryday,
     required this.tagsJson,
+    this.colorKey,
     required this.createdAt,
     required this.updatedAt,
     this.deletedAt,
@@ -903,6 +929,9 @@ class TripRow extends DataClass implements Insertable<TripRow> {
     }
     map['is_everyday'] = Variable<bool>(isEveryday);
     map['tags_json'] = Variable<String>(tagsJson);
+    if (!nullToAbsent || colorKey != null) {
+      map['color_key'] = Variable<String>(colorKey);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     if (!nullToAbsent || deletedAt != null) {
@@ -933,6 +962,9 @@ class TripRow extends DataClass implements Insertable<TripRow> {
           : Value(coverMomentId),
       isEveryday: Value(isEveryday),
       tagsJson: Value(tagsJson),
+      colorKey: colorKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(colorKey),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       deletedAt: deletedAt == null && nullToAbsent
@@ -957,6 +989,7 @@ class TripRow extends DataClass implements Insertable<TripRow> {
       coverMomentId: serializer.fromJson<String?>(json['coverMomentId']),
       isEveryday: serializer.fromJson<bool>(json['isEveryday']),
       tagsJson: serializer.fromJson<String>(json['tagsJson']),
+      colorKey: serializer.fromJson<String?>(json['colorKey']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
@@ -976,6 +1009,7 @@ class TripRow extends DataClass implements Insertable<TripRow> {
       'coverMomentId': serializer.toJson<String?>(coverMomentId),
       'isEveryday': serializer.toJson<bool>(isEveryday),
       'tagsJson': serializer.toJson<String>(tagsJson),
+      'colorKey': serializer.toJson<String?>(colorKey),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
@@ -993,6 +1027,7 @@ class TripRow extends DataClass implements Insertable<TripRow> {
     Value<String?> coverMomentId = const Value.absent(),
     bool? isEveryday,
     String? tagsJson,
+    Value<String?> colorKey = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
     Value<DateTime?> deletedAt = const Value.absent(),
@@ -1009,6 +1044,7 @@ class TripRow extends DataClass implements Insertable<TripRow> {
         : this.coverMomentId,
     isEveryday: isEveryday ?? this.isEveryday,
     tagsJson: tagsJson ?? this.tagsJson,
+    colorKey: colorKey.present ? colorKey.value : this.colorKey,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
@@ -1031,6 +1067,7 @@ class TripRow extends DataClass implements Insertable<TripRow> {
           ? data.isEveryday.value
           : this.isEveryday,
       tagsJson: data.tagsJson.present ? data.tagsJson.value : this.tagsJson,
+      colorKey: data.colorKey.present ? data.colorKey.value : this.colorKey,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
@@ -1050,6 +1087,7 @@ class TripRow extends DataClass implements Insertable<TripRow> {
           ..write('coverMomentId: $coverMomentId, ')
           ..write('isEveryday: $isEveryday, ')
           ..write('tagsJson: $tagsJson, ')
+          ..write('colorKey: $colorKey, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
@@ -1069,6 +1107,7 @@ class TripRow extends DataClass implements Insertable<TripRow> {
     coverMomentId,
     isEveryday,
     tagsJson,
+    colorKey,
     createdAt,
     updatedAt,
     deletedAt,
@@ -1087,6 +1126,7 @@ class TripRow extends DataClass implements Insertable<TripRow> {
           other.coverMomentId == this.coverMomentId &&
           other.isEveryday == this.isEveryday &&
           other.tagsJson == this.tagsJson &&
+          other.colorKey == this.colorKey &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.deletedAt == this.deletedAt &&
@@ -1103,6 +1143,7 @@ class TripsCompanion extends UpdateCompanion<TripRow> {
   final Value<String?> coverMomentId;
   final Value<bool> isEveryday;
   final Value<String> tagsJson;
+  final Value<String?> colorKey;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<DateTime?> deletedAt;
@@ -1118,6 +1159,7 @@ class TripsCompanion extends UpdateCompanion<TripRow> {
     this.coverMomentId = const Value.absent(),
     this.isEveryday = const Value.absent(),
     this.tagsJson = const Value.absent(),
+    this.colorKey = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
@@ -1134,6 +1176,7 @@ class TripsCompanion extends UpdateCompanion<TripRow> {
     this.coverMomentId = const Value.absent(),
     this.isEveryday = const Value.absent(),
     this.tagsJson = const Value.absent(),
+    this.colorKey = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.deletedAt = const Value.absent(),
@@ -1153,6 +1196,7 @@ class TripsCompanion extends UpdateCompanion<TripRow> {
     Expression<String>? coverMomentId,
     Expression<bool>? isEveryday,
     Expression<String>? tagsJson,
+    Expression<String>? colorKey,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<DateTime>? deletedAt,
@@ -1169,6 +1213,7 @@ class TripsCompanion extends UpdateCompanion<TripRow> {
       if (coverMomentId != null) 'cover_moment_id': coverMomentId,
       if (isEveryday != null) 'is_everyday': isEveryday,
       if (tagsJson != null) 'tags_json': tagsJson,
+      if (colorKey != null) 'color_key': colorKey,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deletedAt != null) 'deleted_at': deletedAt,
@@ -1187,6 +1232,7 @@ class TripsCompanion extends UpdateCompanion<TripRow> {
     Value<String?>? coverMomentId,
     Value<bool>? isEveryday,
     Value<String>? tagsJson,
+    Value<String?>? colorKey,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<DateTime?>? deletedAt,
@@ -1203,6 +1249,7 @@ class TripsCompanion extends UpdateCompanion<TripRow> {
       coverMomentId: coverMomentId ?? this.coverMomentId,
       isEveryday: isEveryday ?? this.isEveryday,
       tagsJson: tagsJson ?? this.tagsJson,
+      colorKey: colorKey ?? this.colorKey,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
@@ -1241,6 +1288,9 @@ class TripsCompanion extends UpdateCompanion<TripRow> {
     if (tagsJson.present) {
       map['tags_json'] = Variable<String>(tagsJson.value);
     }
+    if (colorKey.present) {
+      map['color_key'] = Variable<String>(colorKey.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -1271,6 +1321,7 @@ class TripsCompanion extends UpdateCompanion<TripRow> {
           ..write('coverMomentId: $coverMomentId, ')
           ..write('isEveryday: $isEveryday, ')
           ..write('tagsJson: $tagsJson, ')
+          ..write('colorKey: $colorKey, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
@@ -3447,6 +3498,7 @@ typedef $$TripsTableCreateCompanionBuilder =
       Value<String?> coverMomentId,
       Value<bool> isEveryday,
       Value<String> tagsJson,
+      Value<String?> colorKey,
       required DateTime createdAt,
       required DateTime updatedAt,
       Value<DateTime?> deletedAt,
@@ -3464,6 +3516,7 @@ typedef $$TripsTableUpdateCompanionBuilder =
       Value<String?> coverMomentId,
       Value<bool> isEveryday,
       Value<String> tagsJson,
+      Value<String?> colorKey,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<DateTime?> deletedAt,
@@ -3546,6 +3599,11 @@ class $$TripsTableFilterComposer
 
   ColumnFilters<String> get tagsJson => $composableBuilder(
     column: $table.tagsJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get colorKey => $composableBuilder(
+    column: $table.colorKey,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3649,6 +3707,11 @@ class $$TripsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get colorKey => $composableBuilder(
+    column: $table.colorKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -3711,6 +3774,9 @@ class $$TripsTableAnnotationComposer
 
   GeneratedColumn<String> get tagsJson =>
       $composableBuilder(column: $table.tagsJson, builder: (column) => column);
+
+  GeneratedColumn<String> get colorKey =>
+      $composableBuilder(column: $table.colorKey, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -3787,6 +3853,7 @@ class $$TripsTableTableManager
                 Value<String?> coverMomentId = const Value.absent(),
                 Value<bool> isEveryday = const Value.absent(),
                 Value<String> tagsJson = const Value.absent(),
+                Value<String?> colorKey = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
@@ -3802,6 +3869,7 @@ class $$TripsTableTableManager
                 coverMomentId: coverMomentId,
                 isEveryday: isEveryday,
                 tagsJson: tagsJson,
+                colorKey: colorKey,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
@@ -3819,6 +3887,7 @@ class $$TripsTableTableManager
                 Value<String?> coverMomentId = const Value.absent(),
                 Value<bool> isEveryday = const Value.absent(),
                 Value<String> tagsJson = const Value.absent(),
+                Value<String?> colorKey = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
                 Value<DateTime?> deletedAt = const Value.absent(),
@@ -3834,6 +3903,7 @@ class $$TripsTableTableManager
                 coverMomentId: coverMomentId,
                 isEveryday: isEveryday,
                 tagsJson: tagsJson,
+                colorKey: colorKey,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
