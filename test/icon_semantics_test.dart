@@ -34,7 +34,11 @@ void main() {
   setUpAll(() {
     sqfliteFfiInit();
     sqflite.databaseFactory = databaseFactoryFfi;
+    // A missed tap would check the previous screen under the next one's name.
+    WidgetController.hitTestWarningShouldBeFatal = true;
   });
+
+  tearDownAll(() => WidgetController.hitTestWarningShouldBeFatal = false);
 
   setUp(() async {
     documents = Directory.systemTemp.createTempSync('warang_icons_');
@@ -145,6 +149,9 @@ void main() {
     await settle(tester);
     expectLabelledIcons(tester, 'trip detail');
     await tester.binding.handlePopRoute();
+    await settle(tester);
+    // The page transition outlasts one settle; the dock takes no taps
+    // until the route is gone.
     await settle(tester);
 
     await tester.tap(find.bySemanticsLabel('News').first);
