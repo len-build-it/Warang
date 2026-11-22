@@ -402,10 +402,14 @@ class _CachedTileImage extends ImageProvider<_CachedTileImage> {
     ImageDecoderCallback decode,
   ) {
     return MultiFrameImageStreamCompleter(
-      codec: provider
-          .loadBytes(z: z, x: x, y: y, url: url)
-          .then((bytes) => ImmutableBuffer.fromUint8List(bytes))
-          .then(decode),
+      codec: provider.loadBytes(z: z, x: x, y: y, url: url).then((bytes) {
+        // A blank stand-in for a tile that could not be fetched is not
+        // cached, so the real tile loads once the phone is online again.
+        if (identical(bytes, _placeholderBytes)) {
+          PaintingBinding.instance.imageCache.evict(key);
+        }
+        return ImmutableBuffer.fromUint8List(bytes).then(decode);
+      }),
       scale: 1,
       debugLabel: url,
     );
@@ -423,8 +427,9 @@ class _CachedTileImage extends ImageProvider<_CachedTileImage> {
   int get hashCode => Object.hash(provider.layerId, z, x, y);
 }
 
+/// A transparent 1 by 1 PNG.
 final _placeholderBytes = Uint8List.fromList(
   base64Decode(
-    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/9B1sVwAAAABJRU5ErkJggg==',
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNgYGBgAAAABQABeqhXUAAAAABJRU5ErkJggg==',
   ),
 );

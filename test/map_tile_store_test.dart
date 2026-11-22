@@ -1,6 +1,9 @@
 import 'dart:io';
+import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:flutter/painting.dart';
+import 'package:flutter_map/flutter_map.dart' show TileCoordinates, TileLayer;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:path/path.dart' as p;
@@ -11,6 +14,7 @@ import 'package:warang/features/map/map_tile_store.dart';
 import 'package:warang/features/map/warang_map.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   late Directory directory;
 
   setUpAll(() {
@@ -61,6 +65,39 @@ void main() {
     await Future<void>.delayed(const Duration(milliseconds: 250));
     await store.close();
   });
+
+  test(
+    'an unreachable tile shows blank and is fetched again next time',
+    () async {
+      final store = MapTileStore(
+        databasePath: p.join(directory.path, 'tiles.db'),
+      );
+      final provider = CachedTileProvider(store: store, layerId: 'osm');
+      final image = provider.getImage(
+        const TileCoordinates(1, 2, 3),
+        TileLayer(urlTemplate: 'http://127.0.0.1:1/{z}/{x}/{y}.png'),
+      );
+      final cache = PaintingBinding.instance.imageCache;
+      final done = Completer<ImageInfo>();
+      image
+          .resolve(ImageConfiguration.empty)
+          .addListener(
+            ImageStreamListener(
+              (info, _) => done.complete(info),
+              onError: (error, _) => done.completeError(error),
+            ),
+          );
+      final info = await done.future.timeout(const Duration(seconds: 20));
+      // The placeholder is a real image, not a decode error.
+      expect(info.image.width, 1);
+      // It is not kept, so the real tile loads once the phone is online.
+      expect(
+        cache.containsKey(await image.obtainKey(ImageConfiguration.empty)),
+        isFalse,
+      );
+      await store.close();
+    },
+  );
 
   test('LRU eviction removes the oldest tile first', () async {
     final store = MapTileStore(
