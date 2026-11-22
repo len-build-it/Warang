@@ -122,7 +122,7 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
             // Shown where no tile has loaded yet, such as offline areas.
             backgroundColor: widget.palette.land,
             minZoom: 2,
-            maxZoom: 18,
+            maxZoom: _maxZoom,
             onTap: (_, _) => widget.onMapTap?.call(),
             onMapReady: _restoreCamera,
             onPositionChanged: (camera, hasGesture) {
@@ -237,6 +237,23 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
     ];
   }
 
+  static const _maxZoom = 18.0;
+
+  /// Zooms toward a cluster's pins. At full zoom they can never come apart,
+  /// so it opens the newest of them, and swiping reaches the rest.
+  void _openCluster(_PinGroup group, LatLng point) {
+    if (_currentZoom < _maxZoom) {
+      _mapController.move(point, math.min(_currentZoom + 2, _maxZoom));
+      return;
+    }
+    if (widget.placingId != null) return;
+    widget.onMomentTap(
+      group.moments.reduce(
+        (a, b) => a.capturedAt.isAfter(b.capturedAt) ? a : b,
+      ),
+    );
+  }
+
   Marker _clusterMarker(_PinGroup group) {
     final point = _projection.offsetToLatLng(group.centre, _currentZoom);
     return Marker(
@@ -249,7 +266,7 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
           button: true,
           label: '${countLabel(group.moments.length, 'moment')}, zoom in',
           child: GestureDetector(
-            onTap: () => _mapController.move(point, _currentZoom + 2),
+            onTap: () => _openCluster(group, point),
             child: ExcludeSemantics(
               child: WarangClusterPin(count: group.moments.length),
             ),

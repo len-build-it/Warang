@@ -204,12 +204,28 @@ void main() {
       await settle(tester);
     });
 
-    testWidgets('moments on the same spot stay one cluster', (tester) async {
-      await addNorth(tester, [0, 0]);
+    testWidgets('at full zoom a cluster opens its newest moment', (
+      tester,
+    ) async {
+      await addNorth(tester, [0, 10]);
       final map = await open(tester);
-      map.moveToCoordinate(_latitude, _longitude, 18);
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(AppShell)),
+      );
+      map.moveToCoordinate(_latitude, _longitude, 17);
       await settle(tester);
+      // Below full zoom a tap still zooms in.
+      await tester.tap(find.byType(WarangClusterPin));
+      await settle(tester);
+      expect(container.read(selectedMomentProvider), isNull);
       expect(find.byType(WarangClusterPin), findsOneWidget);
+      // At full zoom the pins can never come apart, so the tap opens one.
+      await tester.tap(find.byType(WarangClusterPin));
+      await settle(tester);
+      final newest = repository.moments.reduce(
+        (a, b) => a.capturedAt.isAfter(b.capturedAt) ? a : b,
+      );
+      expect(container.read(selectedMomentProvider)?.momentId, newest.id);
     });
   });
 
