@@ -163,6 +163,13 @@ void main() {
   Future<void> seedPins(WidgetTester tester) async {
     await tester.runAsync(() async {
       await repository.setName('Len');
+      // Three of the pins fall in a dated trip and wear its colour.
+      await repository.addTrip(
+        'Boracay long weekend',
+        'Malay, Aklan',
+        DateTime(2026, 9, 2),
+        DateTime(2026, 9, 4),
+      );
       final moments = <(double, double, String)>[
         (11.9950, 121.9000, 'Puka Beach'),
         (11.9840, 121.9380, 'Bulabog'),
@@ -282,6 +289,12 @@ void main() {
       await shot(tester, '07_home_$theme');
       await tester.tap(find.text('New trip'));
       await shot(tester, '15_trip_form_$theme');
+      await tester.enterText(find.byType(TextField), 'Antique');
+      for (var step = 0; step < 3; step++) {
+        await tester.tap(find.text('Next'));
+        await settle(tester);
+      }
+      await shot(tester, '18_trip_colour_$theme');
       await tester.tap(find.byType(CloseButton));
       await settle(tester);
       await tester.drag(find.byType(ListView).last, const Offset(0, -600));
