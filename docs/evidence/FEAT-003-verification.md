@@ -1,7 +1,7 @@
 # Verification: FEAT-003
 
 Created: 2026-11-21T21:21:00+08:00
-Updated: 2026-11-23T06:51:52+08:00
+Updated: 2026-11-23T07:09:36+08:00
 
 All checks below ran on Len's Windows host with Flutter 3.44.7 (Dart 3.12.2) in the Flutter test runner or the Gradle debug build.
 Screenshots come from `tool/ux_screenshots_test.dart` at 390x844 logical, 2x DPR, in both themes.
@@ -193,3 +193,21 @@ Notes for Len:
 - About keeps a Licences button, because the system dialog it replaced was the only way to see the open-source licences, and it now names OpenStreetMap and its licence too.
 - News categories in `assets/data/news_items.json` are now in sentence case.
 - The maya pictures on Search, News, Settings, and About are the current image until Phase 9.
+
+## Phase 9 (REQ-017 to REQ-021)
+
+Recorded: 2026-11-23T07:09:36+08:00
+
+| Check | Environment | Actual result | Notes |
+| --- | --- | --- | --- |
+| Gate 1: format | Windows host | Passed (exit 0) | - |
+| Gate 2: `flutter analyze` | Windows host | Passed (`No issues found!`) | - |
+| Gate 3: `flutter test` | Windows host | Passed (`+257: All tests passed!`, up from 238) | New `test/maya_test.dart` (19): tap hops with a line that never repeats twice in a row and is not announced, three taps make it dizzy, long press puffs until release, drag stops at 24 and springs back, a calmer reaction after five in a minute, reduced motion as a pose change only, its one semantic label, no sad or waiting pose, the M4 context poses, where it appears and where it never does, milestones (first moment, first in a trip, more than 25 km) firing once even after a restart, the milestone toast, and no streak code. Updated for new text only: the first capture's toast now cheers the first moment. |
+| Found and fixed | Windows host, widget test | Fixed | A fading speech bubble's clean-up could erase the next line said within its fade; each bubble now clears only its own line. |
+| Gate 4: `flutter build apk --debug` | Windows host | Passed | - |
+| Gate 5: `UX_LABEL=feat-003-phase-9` | Windows host | Passed (`+10: All tests passed!`, 38 PNGs) | Compared with phase 8: the maya on an amber clay disc on first run with C5 name field, perched on the first trip card, in the Search, News, trip and shelf empty states, beside the Settings footer, and on About. Map, capture, and the moment card have none. |
+| Gate 6: metrics | Windows host | Passed: gesture tests find the expected pose; no maya on map, capture, or the moment card; the pose enum has no sad, lonely, or waiting value; each milestone fires once; `grep -rni "streak\|consecutive" lib` returns nothing | - |
+
+Placeholder art (D-2): until the layered maya arrives, `assets/maya/body.png` is the existing transparent maya (from `design/warang-maya-foreground.png`, cropped and scaled to 360 wide), and props (bag, postcard, binoculars, nightcap, cheer) are small clay badges with glyphs at sizes of 56 and up.
+Poses are motion and props only; the eyes cannot close and wings cannot move until the layers exist.
+Not done, for Len to decide: the first-run "flies into the map" hand-off (it would delay Start, which V6 rule 1 forbids, so Start stays instant), and the foot-tapping pose while typing a caption, because M2 does not place the maya on the edit sheet.

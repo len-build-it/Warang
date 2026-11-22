@@ -1,8 +1,8 @@
 # Current handoff
 
 Created: 2026-10-16T22:55:00+08:00
-Updated: 2026-11-23T06:51:52+08:00
-State: FEAT-003 Phases 1-8 complete; Phases 9-10 running; FEAT-001 and FEAT-002 physical-device checks pending
+Updated: 2026-11-23T07:09:36+08:00
+State: FEAT-003 Phases 1-9 complete; Phases 10-10 running; FEAT-001 and FEAT-002 physical-device checks pending
 Feature: FEAT-003 clay keepsake redesign (spec and plan revision 1)
 
 ## Read first
@@ -49,6 +49,7 @@ The two older map bugs (clustering, attribution) are fixed in the commit `docs(p
 P-1 approved; the full-zoom cluster tap and the offline tile fix are in the commit `docs(plan): FEAT-003 phase 6 - approval and last fixes`.
 FEAT-003 Phase 7 complete in the commit `docs(plan): FEAT-003 phase 7 - trip colours and shelf`.
 FEAT-003 Phase 8 complete in the commit `docs(plan): FEAT-003 phase 8 - search, news, and settings`.
+FEAT-003 Phase 9 complete in the commit `docs(plan): FEAT-003 phase 9 - interactive maya`.
 Preserve the existing untracked paths: `.agents/skills/*`, `.agents/templates/`, `.claude/`, `CLAUDE.md`, `releases/`, and `scripts/`.
 
 ## Checks and evidence

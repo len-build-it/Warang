@@ -1,7 +1,7 @@
 # Implementation Plan: FEAT-003 Clay keepsake redesign
 
 Created: 2026-11-21T20:38:00+08:00
-Updated: 2026-11-23T06:51:52+08:00
+Updated: 2026-11-23T07:09:36+08:00
 Revision: 1
 Status: Approved - in progress
 Feature spec and revision: [FEAT-003 revision 1](../features/FEAT-003-clay-keepsake-redesign.md)
@@ -240,16 +240,16 @@ Checkpoint message: `docs(plan): FEAT-003 phase 8 - search, news, and settings`
 ## Phase 9: The interactive maya
 
 Requirements: REQ-017 to REQ-021
-State: Approved - not started
+State: Complete (checkpoint commit recorded in `HANDOFF.md`)
 
 ### Tasks
 
-- [ ] Add the layered maya artwork under `assets/maya/` (placeholder layers until Len's art arrives, per D-2).
-- [ ] Build `MayaCompanion` with the poses in M1 to M4 and the gestures in M3, using Flutter transforms and springs.
-- [ ] Add the bundled lines file next to `assets/data/news_items.json`.
-- [ ] Place the maya only where M2 allows.
-- [ ] Add milestone detection (first moment, first in a trip, more than 25 km from every earlier moment), storing the last shown milestone in the existing app metadata.
-- [ ] Show the milestone toast with the cheering maya.
+- [x] Add the layered maya artwork under `assets/maya/` (placeholder layers until Len's art arrives, per D-2).
+- [x] Build `MayaCompanion` with the poses in M1 to M4 and the gestures in M3, using Flutter transforms and springs.
+- [x] Add the bundled lines file next to `assets/data/news_items.json`.
+- [x] Place the maya only where M2 allows.
+- [x] Add milestone detection (first moment, first in a trip, more than 25 km from every earlier moment), storing the last shown milestone in the existing app metadata.
+- [x] Show the milestone toast with the cheering maya.
 
 ### Success metrics
 
