@@ -179,14 +179,22 @@ class WarangRepository extends ChangeNotifier {
     return _moments.firstWhere((moment) => moment.id == id);
   }
 
+  /// The colour a new trip gets unless the user picks another: the one
+  /// after the most recently created trip's.
+  Future<String> nextTripColor() async =>
+      nextTripColorKey(await database.tripsDao.latestColorKey());
+
   Future<void> addTrip(
     String title,
     String? place,
     DateTime? start,
-    DateTime? end,
-  ) async {
+    DateTime? end, {
+    String? colorKey,
+  }) async {
     _checkTripFields(title, start, end);
+    _checkColorKey(colorKey);
     final now = DateTime.now();
+    final colour = colorKey ?? await nextTripColor();
     await database.tripsDao.insertTrip(
       TripsCompanion.insert(
         id: newId(),
@@ -194,6 +202,7 @@ class WarangRepository extends ChangeNotifier {
         place: Value(place?.trim().isEmpty == true ? null : place?.trim()),
         startDate: Value(start),
         endDate: Value(end),
+        colorKey: Value(colour),
         createdAt: now,
         updatedAt: now,
       ),
@@ -208,9 +217,11 @@ class WarangRepository extends ChangeNotifier {
     String? place,
     DateTime? start,
     DateTime? end,
+    String? colorKey,
   }) async {
     _userTrip(id);
     _checkTripFields(title, start, end);
+    _checkColorKey(colorKey);
     final cleanPlace = place?.trim();
     await database.tripsDao.updateTrip(
       id,
@@ -221,10 +232,17 @@ class WarangRepository extends ChangeNotifier {
         ),
         startDate: Value(start),
         endDate: Value(end),
+        colorKey: colorKey == null ? const Value.absent() : Value(colorKey),
         updatedAt: Value(DateTime.now()),
       ),
     );
     await _refreshAll();
+  }
+
+  void _checkColorKey(String? colorKey) {
+    if (colorKey != null && !tripColorKeys.contains(colorKey)) {
+      throw ArgumentError.value(colorKey, 'colorKey', 'Unknown trip colour');
+    }
   }
 
   /// Soft-deletes a user trip and moves its moments to Everyday, so no
@@ -340,6 +358,7 @@ class WarangRepository extends ChangeNotifier {
         coverMomentId: Value(trip.coverMomentId),
         isEveryday: Value(trip.isEveryday),
         tagsJson: Value(trip.tagsJson),
+        colorKey: Value(trip.colorKey),
         createdAt: Value(trip.createdAt ?? now),
         updatedAt: Value(now),
       );
@@ -487,6 +506,7 @@ class WarangRepository extends ChangeNotifier {
     coverMomentId: row.coverMomentId,
     isEveryday: row.isEveryday,
     tagsJson: row.tagsJson,
+    colorKey: row.colorKey,
     deletedAt: row.deletedAt,
     updatedAt: row.updatedAt,
     authorId: row.authorId,

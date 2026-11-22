@@ -4,8 +4,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as p;
 import 'package:drift/drift.dart' show Value, driftRuntimeOptions;
+import 'package:drift/native.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:warang/core/ids.dart';
 import 'package:warang/core/models.dart';
+import 'package:warang/core/trip_rules.dart';
 import 'package:warang/data/db/database.dart';
 import 'package:warang/data/files/photo_store.dart';
 import 'package:warang/data/repository.dart';
@@ -284,6 +287,127 @@ void main() {
     expect(repository.trips.where((item) => item.id == trip.id), isEmpty);
     expect(repository.moments.single.tripId, repository.everyday.id);
     expect(repository.moments.single.caption, 'Mango farm');
+  });
+
+  group('trip colours (FEAT-003 D-1)', () {
+    test(
+      'a fresh database is at schema 2 and Everyday has no colour',
+      () async {
+        expect(database.schemaVersion, 2);
+        final version = await database
+            .customSelect('PRAGMA user_version')
+            .getSingle();
+        expect(version.read<int>('user_version'), 2);
+        expect(repository.everyday.colorKey, isNull);
+        expect(tripColorKey(repository.everyday), isNull);
+      },
+    );
+
+    test('new trips get the next colour after the last one made', () async {
+      for (final title in ['A', 'B', 'C', 'D', 'E', 'F', 'G']) {
+        await repository.addTrip(title, null, null, null);
+      }
+      final byTitle = {
+        for (final trip in repository.trips) trip.title: trip.colorKey,
+      };
+      expect(
+        [
+          for (final title in ['A', 'B', 'C', 'D', 'E', 'F', 'G'])
+            byTitle[title],
+        ],
+        [...tripColorKeys, tripColorKeys.first],
+      );
+      // A deleted trip still counts as the last one made.
+      final g = repository.trips.firstWhere((trip) => trip.title == 'G');
+      await repository.deleteTrip(g.id);
+      await repository.addTrip('H', null, null, null);
+      expect(
+        repository.trips.firstWhere((trip) => trip.title == 'H').colorKey,
+        tripColorKeys[1],
+      );
+    });
+
+    test('a chosen colour is kept and can be changed', () async {
+      await repository.addTrip('Siargao', null, null, null, colorKey: 'langit');
+      final trip = repository.trips.firstWhere((t) => t.title == 'Siargao');
+      expect(trip.colorKey, 'langit');
+      await repository.updateTrip(trip.id, title: 'Siargao', colorKey: 'ube');
+      expect(
+        repository.trips.firstWhere((t) => t.id == trip.id).colorKey,
+        'ube',
+      );
+      // Editing other details keeps the colour.
+      await repository.updateTrip(trip.id, title: 'Siargao surf');
+      expect(
+        repository.trips.firstWhere((t) => t.id == trip.id).colorKey,
+        'ube',
+      );
+      expect(
+        () => repository.addTrip('Bad', null, null, null, colorKey: 'amber'),
+        throwsArgumentError,
+      );
+    });
+
+    test('a trip without a colour gets a steady one from its id', () {
+      const trip = Trip(id: 'trip-123', title: 'Old');
+      expect(tripColorKey(trip), isIn(tripColorKeys));
+      expect(tripColorKey(trip), tripColorKey(trip));
+    });
+
+    test(
+      'a schema 1 database upgrades and colours trips in creation order',
+      () async {
+        final directory = Directory.systemTemp.createTempSync('warang_schema_');
+        addTearDown(() => directory.deleteSync(recursive: true));
+        final file = File(p.join(directory.path, 'warang.sqlite'));
+
+        // Build a schema 1 database: today's tables without the new column.
+        final old = WarangDatabase(NativeDatabase(file));
+        final oldRepository = WarangRepository(old);
+        await oldRepository.initialize();
+        final created = DateTime(2026, 1, 1);
+        for (final (index, title) in ['Third', 'First', 'Second'].indexed) {
+          final order = {'First': 0, 'Second': 1, 'Third': 2}[title]!;
+          await old.tripsDao.insertTrip(
+            TripsCompanion.insert(
+              id: 'trip-$index',
+              title: title,
+              createdAt: created.add(Duration(days: order)),
+              updatedAt: created,
+            ),
+          );
+        }
+        oldRepository.dispose();
+        await old.close();
+        sqfliteFfiInit();
+        final raw = await databaseFactoryFfi.openDatabase(file.path);
+        await raw.execute('ALTER TABLE trips DROP COLUMN color_key');
+        await raw.execute('PRAGMA user_version = 1');
+        await raw.close();
+
+        final upgraded = WarangDatabase(NativeDatabase(file));
+        final upgradedRepository = WarangRepository(upgraded);
+        await upgradedRepository.initialize();
+        final colours = {
+          for (final trip in upgradedRepository.trips)
+            trip.title: trip.colorKey,
+        };
+        expect(colours['First'], tripColorKeys[0]);
+        expect(colours['Second'], tripColorKeys[1]);
+        expect(colours['Third'], tripColorKeys[2]);
+        expect(colours['Everyday'], isNull);
+        // The next trip continues the sequence.
+        await upgradedRepository.addTrip('Fourth', null, null, null);
+        expect(
+          upgradedRepository.trips
+              .firstWhere((trip) => trip.title == 'Fourth')
+              .colorKey,
+          tripColorKeys[3],
+        );
+        upgradedRepository.dispose();
+        await upgraded.close();
+      },
+    );
   });
 
   test('UUID v4 identifiers are unique across ten thousand values', () {
