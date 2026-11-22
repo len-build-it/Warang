@@ -80,6 +80,11 @@ def solid(*points):
     return ("solid", list(points))
 
 
+def area(outer, *holes):
+    """A filled shape exactly as drawn, with no stroke around it."""
+    return ("area", list(outer), [list(hole) for hole in holes])
+
+
 def half_disc(cx, cy, r, side):
     return ("half", (cx, cy), r, side)
 
@@ -119,12 +124,15 @@ ICONS = {
     ),
     "trips": (
         [
-            rrect(3, 7.5, 18, 12.5, 3),
-            poly((9, 7.5), (9, 4.5), (15, 4.5), (15, 7.5)),
-            line(7.5, 7.5, 7.5, 20),
-            circle(15, 13.75, 2.1),
+            # An upright case: tall handle, wheels, and a tilted sticker.
+            # A wide body with a round sticker read as a camera.
+            rrect(5.5, 7.5, 13, 12.5, 2.5),
+            poly((9.25, 7.5), (9.25, 2.75), (14.75, 2.75), (14.75, 7.5)),
+            dot(8.5, 22, 1.5),
+            dot(15.5, 22, 1.5),
+            area([(10.4, 10.2), (15.9, 11.7), (14.4, 17.2), (8.9, 15.7)]),
         ],
-        [rrect(3, 7.5, 18, 12.5, 3)],
+        [rrect(5.5, 7.5, 13, 12.5, 2.5)],
     ),
     "news": (
         [
@@ -154,10 +162,15 @@ ICONS = {
     ),
     "recenter": (
         [
-            circle(12, 12, 8.5),
-            solid((16.3, 7.7), (13.4, 13.4), (7.7, 16.3), (10.6, 10.6)),
+            # An upright needle, solid to the north and open to the south,
+            # under an N tick. A diagonal needle read as "no entry".
+            circle(12, 13, 8.5),
+            line(12, 1.75, 12, 4.5),
+            area([(12, 7), (15.6, 13), (8.4, 13)]),
+            area([(15.6, 13), (12, 19), (8.4, 13)],
+                 [(13.8, 13.8), (12, 16.8), (10.2, 13.8)]),
         ],
-        [circle(12, 12, 8.5)],
+        [circle(12, 13, 8.5)],
     ),
     "back": (
         [line(19, 12, 5.5, 12), poly((11, 6.5), (5.5, 12), (11, 17.5))],
@@ -404,6 +417,9 @@ def stroke_outline(shape):
         return [_orient(_circle_points(cx, cy, r, 32))]
     if kind == "solid":
         return [_orient(shape[1])] + _polyline_capsules(shape[1], True)
+    if kind == "area":
+        return [_orient(shape[1])] + [
+            _orient(hole, positive=False) for hole in shape[2]]
     if kind == "teardrop":
         (cx, cy), r, tip_y = shape[1:]
         return _polyline_capsules(_teardrop_points(cx, cy, r, tip_y), True)
@@ -499,7 +515,7 @@ def _source_element(shape, layer):
                           for x, y in _teardrop_points(cx, cy, r, tip_y, 24))
         return f'<polygon points="{points}"/>'
     # Dots, solid shapes, and fill-layer areas are drawn as filled paths.
-    if kind == "dot":
+    if kind in ("dot", "area"):
         contours = stroke_outline(shape)
     elif kind == "solid":
         contours = [_orient(shape[1])]
