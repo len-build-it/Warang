@@ -12,6 +12,7 @@ import '../../core/models.dart';
 import '../../data/files/photo_store.dart';
 import '../../data/repository.dart';
 import '../home_tab/trip_photo.dart';
+import '../maya/maya_companion.dart';
 
 /// The Search dock tab: the moment search that used to open from the
 /// drawer, with the same matching and the same results.
@@ -164,12 +165,10 @@ class _MomentSearchResultsState extends State<MomentSearchResults> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  ExcludeSemantics(
-                    child: Image.asset(
-                      'design/warang-maya.png',
-                      width: 120,
-                      height: 120,
-                    ),
+                  const MayaCompanion(
+                    size: 120,
+                    place: MayaPlace.search,
+                    pose: MayaPose.binoculars,
                   ),
                   const SizedBox(height: 14),
                   Text(

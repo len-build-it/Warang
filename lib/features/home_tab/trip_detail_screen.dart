@@ -11,6 +11,7 @@ import '../../core/models.dart';
 import '../../data/files/photo_store.dart';
 import '../../data/repository.dart';
 import 'home_tab_screen.dart' show TripName;
+import '../maya/maya_companion.dart';
 import 'trip_form_screen.dart';
 import 'trip_photo.dart';
 
@@ -233,11 +234,24 @@ class _TripDetailView extends StatelessWidget {
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
                 sliver: SliverToBoxAdapter(
-                  child: Text(
-                    start == null && !trip.isEveryday
-                        ? 'Your moments from this trip will appear here. Add dates to collect photos automatically, or move a moment here from its Edit sheet.'
-                        : 'Your moments from this trip will appear here.',
-                    style: WarangType.body.copyWith(color: neutrals.inkSoft),
+                  child: Column(
+                    children: [
+                      const MayaCompanion(
+                        size: 120,
+                        place: MayaPlace.trip,
+                        pose: MayaPose.packedBag,
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        start == null && !trip.isEveryday
+                            ? 'Your moments from this trip will appear here. Add dates to collect photos automatically, or move a moment here from its Edit sheet.'
+                            : 'Your moments from this trip will appear here.',
+                        textAlign: TextAlign.center,
+                        style: WarangType.body.copyWith(
+                          color: neutrals.inkSoft,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               )

@@ -1079,8 +1079,11 @@ class WarangToast extends StatelessWidget {
     required this.message,
     this.actionLabel,
     this.onAction,
+    this.leading,
   });
 
+  /// Drawn before the message, as the cheering maya on a milestone.
+  final Widget? leading;
   final String message;
   final String? actionLabel;
   final VoidCallback? onAction;
@@ -1103,6 +1106,7 @@ class WarangToast extends StatelessWidget {
           ),
           child: Row(
             children: [
+              if (leading != null) ...[leading!, const SizedBox(width: 12)],
               Expanded(
                 child: Text(
                   message,

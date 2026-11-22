@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
+import '../maya/maya_companion.dart';
 
 /// About Warang (S12), opened from the You sheet.
 class AboutScreen extends StatelessWidget {
@@ -23,13 +24,11 @@ class AboutScreen extends StatelessWidget {
             children: [
               const Align(alignment: Alignment.centerLeft, child: BackButton()),
               const SizedBox(height: 16),
-              Center(
-                child: ExcludeSemantics(
-                  child: Image.asset(
-                    'design/warang-maya.png',
-                    width: 120,
-                    height: 120,
-                  ),
+              const Center(
+                child: MayaCompanion(
+                  size: 120,
+                  place: MayaPlace.about,
+                  pose: MayaPose.sitting,
                 ),
               ),
               const SizedBox(height: 18),

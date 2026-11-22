@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
 import '../../core/formatting.dart';
+import '../maya/maya_companion.dart';
 
 sealed class NewsListEntry {
   const NewsListEntry();
@@ -216,12 +217,10 @@ class _NewsMessage extends StatelessWidget {
       padding: const EdgeInsets.only(top: 24),
       child: Column(
         children: [
-          ExcludeSemantics(
-            child: Image.asset(
-              'design/warang-maya.png',
-              width: 120,
-              height: 120,
-            ),
+          const MayaCompanion(
+            size: 120,
+            place: MayaPlace.news,
+            pose: MayaPose.postcard,
           ),
           const SizedBox(height: 16),
           Text(

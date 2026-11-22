@@ -16,17 +16,6 @@ export 'motion.dart';
 export 'palette.dart';
 export 'warang_icons.dart';
 
-InputDecoration warangInputDecoration(
-  BuildContext context, {
-  String? hintText,
-}) {
-  return InputDecoration(
-    hintText: hintText,
-    hintStyle: TextStyle(color: WarangNeutrals.of(context).inkFaint),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 18),
-  );
-}
-
 /// Shows a C12 toast above the navigation when [aboveNavigation] is true.
 ///
 /// It rises above the dock, leaves after [duration], and offers [action]
@@ -37,6 +26,7 @@ ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showWarangSnackBar(
   SnackBarAction? action,
   Duration duration = const Duration(seconds: 4),
   bool aboveNavigation = true,
+  Widget? leading,
 }) {
   final bottom = aboveNavigation
       ? WarangLayout.navigationHeight(context) + 8
@@ -45,6 +35,7 @@ ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showWarangSnackBar(
   return messenger.showSnackBar(
     SnackBar(
       content: WarangToast(
+        leading: leading,
         message: message,
         actionLabel: action?.label,
         onAction: action == null

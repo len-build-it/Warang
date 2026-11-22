@@ -1,10 +1,12 @@
-import 'dart:io';
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:drift/drift.dart';
 
 import '../core/ids.dart';
+import '../core/milestones.dart';
 import '../core/models.dart';
 import '../core/trip_rules.dart';
 import 'db/database.dart';
@@ -177,6 +179,27 @@ class WarangRepository extends ChangeNotifier {
     });
     await _refreshAll();
     return _moments.firstWhere((moment) => moment.id == id);
+  }
+
+  static const _milestonesKey = 'milestonesShown';
+
+  /// The milestone [moment] reaches, if it has not been shown before. It is
+  /// recorded as shown, so each one fires once (REQ-020).
+  Future<Milestone?> claimMilestone(Moment moment) async {
+    final trip = _trips.where((trip) => trip.id == moment.tripId).firstOrNull;
+    final milestone = milestoneFor(moment, _moments, trip);
+    if (milestone == null) return null;
+    final raw = await database.appMetaDao.readValue(_milestonesKey);
+    final shown = raw == null
+        ? <String>[]
+        : (jsonDecode(raw) as List<dynamic>).cast<String>();
+    if (shown.contains(milestone.key)) return null;
+    await database.appMetaDao.writeValue(
+      _milestonesKey,
+      jsonEncode([...shown, milestone.key]),
+      DateTime.now(),
+    );
+    return milestone;
   }
 
   /// The colour a new trip gets unless the user picks another: the one

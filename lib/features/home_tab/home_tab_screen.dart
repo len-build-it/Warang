@@ -11,6 +11,7 @@ import '../../core/formatting.dart';
 import '../../core/memory_stats.dart';
 import '../../core/models.dart';
 import '../../data/files/photo_store.dart';
+import '../maya/maya_companion.dart';
 import 'trip_detail_screen.dart';
 import 'trip_form_screen.dart';
 import 'trip_photo.dart';
@@ -98,17 +99,40 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen> {
                   for (final (index, trip) in trips.indexed)
                     Padding(
                       key: ValueKey(trip.id),
-                      padding: const EdgeInsets.only(bottom: 18),
-                      child: _ArrivesOnShelf(
-                        arriving: arrived.contains(trip.id),
-                        child: TripShelfCard(
-                          trip: trip,
-                          moments: momentsOf(trip),
-                          photoStore: photoStore,
-                          // Cards lean alternately, as on a real shelf.
-                          tiltDegrees: index.isEven ? -1.5 : 1.5,
-                          onTap: () => _openTrip(trip),
-                        ),
+                      // The maya perches on the first card's top edge.
+                      padding: EdgeInsets.only(
+                        top: index == 0 ? 36 : 0,
+                        bottom: 18,
+                      ),
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          _ArrivesOnShelf(
+                            arriving: arrived.contains(trip.id),
+                            child: TripShelfCard(
+                              trip: trip,
+                              moments: momentsOf(trip),
+                              photoStore: photoStore,
+                              // Cards lean alternately, as on a real shelf.
+                              tiltDegrees: index.isEven ? -1.5 : 1.5,
+                              onTap: () => _openTrip(trip),
+                            ),
+                          ),
+                          if (index == 0)
+                            Positioned(
+                              top: -44,
+                              right: 22,
+                              child: MayaCompanion(
+                                size: 56,
+                                place: MayaPlace.shelf,
+                                pose: contextPose(
+                                  now: DateTime.now(),
+                                  trips: trips,
+                                  moments: moments,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                 const SizedBox(height: 4),
@@ -419,8 +443,10 @@ class _EmptyShelf extends StatelessWidget {
     padding: const EdgeInsets.only(bottom: 18),
     child: Column(
       children: [
-        ExcludeSemantics(
-          child: Image.asset('design/warang-maya.png', width: 120, height: 120),
+        const MayaCompanion(
+          size: 120,
+          place: MayaPlace.emptyShelf,
+          pose: MayaPose.packedBag,
         ),
         const SizedBox(height: 10),
         Text(

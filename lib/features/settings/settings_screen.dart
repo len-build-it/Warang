@@ -7,6 +7,7 @@ import '../../app/app_state.dart';
 import '../../app/shell/you_sheet.dart';
 import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
+import '../maya/maya_companion.dart';
 import 'about_screen.dart';
 
 /// Settings (S11), opened from the You sheet. It shows only controls that
@@ -107,11 +108,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ExcludeSemantics(
-                    child: Image.asset(
-                      'design/warang-maya.png',
-                      width: 40,
-                      height: 40,
+                  MayaCompanion(
+                    size: 40,
+                    place: MayaPlace.settings,
+                    pose: contextPose(
+                      now: DateTime.now(),
+                      trips: repository.trips,
+                      moments: repository.moments,
+                      fallback: MayaPose.sitting,
                     ),
                   ),
                   const SizedBox(width: 10),

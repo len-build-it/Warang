@@ -18,6 +18,7 @@ import '../../core/models.dart';
 import '../../data/files/photo_store.dart';
 import '../../data/repository.dart';
 import '../map/warang_map.dart';
+import '../maya/maya_companion.dart';
 import 'moment_edit_sheet.dart';
 
 /// The map home (S2): the map, the avatar bubble, the recenter button, the
@@ -68,15 +69,26 @@ class TravelModeScreenState extends ConsumerState<TravelModeScreen> {
     super.dispose();
   }
 
-  /// Shows a just-saved [moment] landing on the map and confirms its trip.
-  void showCaptured(Moment moment) {
+  /// Shows a just-saved [moment] landing on the map and confirms its trip,
+  /// or cheers a milestone with the maya (M4) the first time one is reached.
+  Future<void> showCaptured(Moment moment) async {
     setState(() => _landingId = moment.id);
     _focus(moment);
     final repository = ref.read(repositoryProvider);
     final trip = repository.trips.where((trip) => trip.id == moment.tripId);
+    final saved = 'Saved to ${trip.isEmpty ? 'Everyday' : trip.first.title}';
+    final milestone = await repository.claimMilestone(moment);
+    if (!mounted) return;
     showWarangSnackBar(
       context,
-      'Saved to ${trip.isEmpty ? 'Everyday' : trip.first.title}',
+      milestone == null ? saved : '${milestone.message} $saved.',
+      leading: milestone == null
+          ? null
+          : const MayaCompanion(
+              size: 48,
+              place: MayaPlace.milestone,
+              pose: MayaPose.cheer,
+            ),
     );
   }
 

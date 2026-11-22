@@ -212,7 +212,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
 
     expect(find.byType(CaptureScreen), findsNothing);
-    expect(find.text('Saved to Everyday'), findsOneWidget);
+    expect(find.text('Your first moment! Saved to Everyday.'), findsOneWidget);
     expect(repository.moments, hasLength(1));
     expect(repository.moments.single.latitude, 11.9686);
     expect(repository.moments.single.relPath, isNotNull);

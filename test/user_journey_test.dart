@@ -114,7 +114,8 @@ void main() {
       if (find.byType(CaptureScreen).evaluate().isEmpty) break;
       await settle(tester);
     }
-    expect(find.text('Saved to Everyday'), findsOneWidget);
+    // The first save is also the first moment, so the maya cheers it.
+    expect(find.text('Your first moment! Saved to Everyday.'), findsOneWidget);
     final momentId = repository.moments.single.id;
 
     // Find it again from Home, since an unpinned moment has no map pin.

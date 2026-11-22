@@ -238,6 +238,14 @@ class AppMetaDao extends DatabaseAccessor<WarangDatabase>
     with _$AppMetaDaoMixin {
   AppMetaDao(super.attachedDatabase);
 
+  Future<String?> readValue(String key) async {
+    final row =
+        await (select(appMeta)
+              ..where((meta) => meta.key.equals(key) & meta.deletedAt.isNull()))
+            .getSingleOrNull();
+    return row?.value;
+  }
+
   Future<void> writeValue(String key, String value, DateTime now) async {
     await into(appMeta).insertOnConflictUpdate(
       AppMetaCompanion.insert(

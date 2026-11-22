@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/app.dart';
 import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
+import '../maya/maya_companion.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -15,10 +16,19 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _nameController = TextEditingController();
+  final _nameFocus = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    // The maya turns its head toward the name field while it has focus.
+    _nameFocus.addListener(() => setState(() {}));
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
+    _nameFocus.dispose();
     super.dispose();
   }
 
@@ -55,23 +65,26 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // S1: the maya on a 180 amber clay disc, floating 2 px.
                 Center(
-                  child: Container(
-                    width: 192,
-                    height: 192,
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surface,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: theme.colorScheme.outlineVariant,
-                      ),
-                    ),
-                    child: ClipOval(
-                      child: Image.asset(
-                        'design/warang-maya.png',
-                        fit: BoxFit.cover,
-                      ),
+                  child: SizedBox.square(
+                    dimension: 180,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      alignment: Alignment.center,
+                      children: [
+                        const ClayDisc(
+                          diameter: 180,
+                          tone: WarangKeepsake.amber,
+                          depth: ClayDepth.clay2,
+                        ),
+                        MayaCompanion(
+                          size: 160,
+                          place: MayaPlace.firstRun,
+                          float: true,
+                          lookToward: _nameFocus.hasFocus,
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -88,15 +101,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ),
                 ),
                 const SizedBox(height: 38),
-                TextField(
+                WarangField(
                   controller: _nameController,
+                  focusNode: _nameFocus,
+                  hintText: 'What should we call you?',
                   textCapitalization: TextCapitalization.words,
                   textInputAction: TextInputAction.done,
                   onSubmitted: (_) => start(),
-                  decoration: warangInputDecoration(
-                    context,
-                    hintText: 'What should we call you?',
-                  ),
                 ),
                 const SizedBox(height: 12),
                 WarangButton.primary(label: 'Start', onPressed: start),

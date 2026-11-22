@@ -1,0 +1,11 @@
+{
+  "firstRun": ["Hello! I'm the maya.", "Ready when you are.", "Let's go out and explore."],
+  "shelf": ["Look at all these trips!", "Nice shelf.", "Where to next?", "Warang! Let's go!"],
+  "emptyShelf": ["My bag is packed.", "Plan a trip and I'll come along.", "Anywhere is fine with me."],
+  "search": ["I'm looking too.", "Maybe a different word?", "Binoculars ready."],
+  "trip": ["This trip is waiting for photos.", "I'll keep it safe.", "Ready to fill it up."],
+  "news": ["A postcard for you.", "Small notes, big trips.", "I read these too."],
+  "settings": ["Everything stays here.", "Just resting.", "All safe on this phone."],
+  "about": ["Warang means to go out.", "Hello again!", "Thanks for exploring."],
+  "milestone": ["Yay!", "Well done!", "Look at you go!"]
+}
