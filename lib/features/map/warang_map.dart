@@ -19,6 +19,7 @@ class WarangMapSurface extends StatefulWidget {
     super.key,
     required this.moments,
     required this.selectedId,
+    this.placingId,
     required this.palette,
     required this.dark,
     required this.onMomentTap,
@@ -33,6 +34,10 @@ class WarangMapSurface extends StatefulWidget {
 
   final List<Moment> moments;
   final String? selectedId;
+
+  /// The moment whose pin is being placed. The centre pin stands for it, and
+  /// no other pin opens until placement ends.
+  final String? placingId;
   final MapPalette palette;
   final bool dark;
   final ValueChanged<Moment> onMomentTap;
@@ -178,15 +183,6 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
                 for (final moment in _leaving.values) _leavingMarker(moment),
               ],
             ),
-            RichAttributionWidget(
-              alignment: AttributionAlignment.bottomLeft,
-              attributions: [
-                TextSourceAttribution(
-                  'OpenStreetMap contributors',
-                  onTap: () {},
-                ),
-              ],
-            ),
           ],
         ),
         if (_staleSince != null)
@@ -228,64 +224,34 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
 
   List<Marker> _momentMarkers() {
     // The selected pin is drawn on its own layer, above any dimmer.
-    final moments = momentsWithMapCoordinates(
-      widget.moments,
-    ).where((moment) => moment.id != widget.selectedId).toList();
-    final groups = <List<Moment>>[];
-    final threshold = (70000 / math.pow(2, _currentZoom - 4))
-        .clamp(2500, 70000)
-        .toDouble();
-    const distance = Distance();
-    for (final moment in moments) {
-      final point = LatLng(moment.latitude!, moment.longitude!);
-      final group = groups.cast<List<Moment>?>().firstWhere((candidate) {
-        if (candidate == null || candidate.isEmpty) return false;
-        final origin = candidate.first;
-        return distance.as(
-              LengthUnit.Meter,
-              LatLng(origin.latitude!, origin.longitude!),
-              point,
-            ) <=
-            threshold;
-      }, orElse: () => null);
-      if (group == null) {
-        groups.add([moment]);
-      } else {
-        group.add(moment);
-      }
-    }
+    final moments = momentsWithMapCoordinates(widget.moments).where(
+      (moment) =>
+          moment.id != widget.selectedId && moment.id != widget.placingId,
+    );
     return [
-      for (final group in groups)
-        if (group.length == 1)
-          _markerFor(group.single)
+      for (final group in _groupByOverlap(moments, _currentZoom))
+        if (group.moments.length == 1)
+          _markerFor(group.moments.single)
         else
           _clusterMarker(group),
     ];
   }
 
-  Marker _clusterMarker(List<Moment> group) {
-    final latitude =
-        group.map((moment) => moment.latitude!).reduce((a, b) => a + b) /
-        group.length;
-    final longitude =
-        group.map((moment) => moment.longitude!).reduce((a, b) => a + b) /
-        group.length;
+  Marker _clusterMarker(_PinGroup group) {
+    final point = _projection.offsetToLatLng(group.centre, _currentZoom);
     return Marker(
-      point: LatLng(latitude, longitude),
+      point: point,
       width: WarangClusterPin.size,
       height: WarangClusterPin.size + WarangPhotoPin.pointerRoom,
       alignment: Alignment.topCenter,
       child: MergeSemantics(
         child: Semantics(
           button: true,
-          label: '${countLabel(group.length, 'moment')}, zoom in',
+          label: '${countLabel(group.moments.length, 'moment')}, zoom in',
           child: GestureDetector(
-            onTap: () => _mapController.move(
-              LatLng(latitude, longitude),
-              _currentZoom + 2,
-            ),
+            onTap: () => _mapController.move(point, _currentZoom + 2),
             child: ExcludeSemantics(
-              child: WarangClusterPin(count: group.length),
+              child: WarangClusterPin(count: group.moments.length),
             ),
           ),
         ),
@@ -442,6 +408,7 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
 
   Marker _markerFor(Moment moment) {
     final selected = moment.id == widget.selectedId;
+    final opens = widget.placingId == null;
     final size = selected ? WarangPhotoPin.selectedSize : WarangPhotoPin.size;
     final caption = moment.caption?.trim() ?? '';
     final name = caption.isEmpty
@@ -449,13 +416,13 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
         : caption;
     Widget pin = MergeSemantics(
       child: Semantics(
-        button: true,
+        button: opens,
         selected: selected,
         label: 'Pin, $name',
         child: FutureBuilder<File?>(
           future: _photoFile(moment),
           builder: (context, snapshot) => GestureDetector(
-            onTap: () => widget.onMomentTap(moment),
+            onTap: opens ? () => widget.onMomentTap(moment) : null,
             child: ExcludeSemantics(
               child: WarangPhotoPin(file: snapshot.data, selected: selected),
             ),
@@ -677,6 +644,55 @@ class _PinLeave extends StatelessWidget {
         child: child,
       ),
     );
+  }
+}
+
+const _projection = Epsg3857();
+
+/// Moments drawn as one marker, with their centre in screen pixels at the
+/// zoom they were grouped for.
+class _PinGroup {
+  _PinGroup(this.moments, this.centre);
+
+  final List<Moment> moments;
+  Offset centre;
+
+  void absorb(_PinGroup other) {
+    final total = moments.length + other.moments.length;
+    centre += (other.centre - centre) * (other.moments.length / total);
+    moments.addAll(other.moments);
+  }
+}
+
+/// Groups only the pins that would overlap at [zoom], so clusters come
+/// apart as the map zooms in. A merge moves a group's centre, so it repeats
+/// until no two markers overlap. Panning never changes the groups.
+List<_PinGroup> _groupByOverlap(Iterable<Moment> moments, double zoom) {
+  const apart = WarangPhotoPin.size + WarangPhotoPin.pointerRoom;
+  var groups = [
+    for (final moment in moments)
+      _PinGroup(
+        [moment],
+        _projection.latLngToOffset(
+          LatLng(moment.latitude!, moment.longitude!),
+          zoom,
+        ),
+      ),
+  ];
+  while (true) {
+    final kept = <_PinGroup>[];
+    for (final group in groups) {
+      final near = kept.indexWhere(
+        (other) => (other.centre - group.centre).distance < apart,
+      );
+      if (near < 0) {
+        kept.add(group);
+      } else {
+        kept[near].absorb(group);
+      }
+    }
+    if (kept.length == groups.length) return kept;
+    groups = kept;
   }
 }
 

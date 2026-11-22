@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
 
@@ -42,8 +43,27 @@ class TravelModeScreenState extends ConsumerState<TravelModeScreen> {
   /// A just-saved moment whose pin lands on the map.
   String? _landingId;
 
+  /// OpenStreetMap's credit must be seen without a tap. It may fold into
+  /// its button after five seconds.
+  bool _creditOpen = true;
+  Timer? _creditTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _creditTimer = Timer(const Duration(seconds: 5), () {
+      if (mounted) setState(() => _creditOpen = false);
+    });
+  }
+
+  void _toggleCredit() {
+    _creditTimer?.cancel();
+    setState(() => _creditOpen = !_creditOpen);
+  }
+
   @override
   void dispose() {
+    _creditTimer?.cancel();
     _moving.dispose();
     super.dispose();
   }
@@ -182,7 +202,6 @@ class TravelModeScreenState extends ConsumerState<TravelModeScreen> {
     final selectionNotifier = ref.read(selectedMomentProvider.notifier);
     final photoStore = ref.watch(photoStoreProvider);
     final navHeight = WarangLayout.navigationHeight(context);
-    final clearance = WarangLayout.dockClearance(context);
     final topInset = MediaQuery.paddingOf(context).top;
     final topOffset = math.max(topInset, 12.0) + 8.0;
     // The tallest card still leaves the selected pin room above it.
@@ -215,6 +234,7 @@ class TravelModeScreenState extends ConsumerState<TravelModeScreen> {
                 key: _mapKey,
                 moments: moments,
                 selectedId: selected?.id,
+                placingId: placingId,
                 palette: theme.extension<MapPalette>()!,
                 dark: dark,
                 tileStore: ref.watch(mapTileStoreProvider),
@@ -264,25 +284,55 @@ class TravelModeScreenState extends ConsumerState<TravelModeScreen> {
                 ),
               ),
             ] else if (selected == null) ...[
-              if (moments.isEmpty)
-                Positioned(
-                  left: 24,
-                  right: 24,
-                  // High enough to clear the recenter button at any width.
-                  bottom: clearance + 12,
-                  child: const Center(
-                    child: WarangSpeechBubble(
-                      text: 'Tap the camera to drop your first pin',
-                      persistent: true,
-                    ),
-                  ),
-                ),
               Positioned(
-                // The 48 touch target is 4 wider all round than the 40 disc,
-                // which sits 16 from the edge and 16 above the dock.
+                left: 16,
+                right: 16,
+                // High enough to clear the map buttons and the capture
+                // button at any width.
+                bottom: navHeight + 54,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AnimatedSwitcher(
+                      duration: WarangMotion.fade,
+                      child: _creditOpen
+                          ? const _MapCredit()
+                          : const SizedBox.shrink(),
+                    ),
+                    const SizedBox(height: 12),
+                    // A short screen, such as landscape, has room for one
+                    // of them, so the hint waits for the credit to fold.
+                    if (moments.isEmpty && (!_creditOpen || size.height >= 500))
+                      const Center(
+                        child: WarangSpeechBubble(
+                          text: 'Tap the camera to drop your first pin',
+                          persistent: true,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              // Each 48 touch target is 4 wider all round than its 40 disc,
+              // which sits 16 from the edge and 16 above the dock.
+              Positioned(
+                left: 12,
+                bottom: navHeight + 12,
+                child: _MapButton(
+                  glyph: WarangGlyphs.info,
+                  glyphSize: 22,
+                  tooltip: 'Map credits',
+                  semanticLabel: 'OpenStreetMap credits and licence',
+                  onPressed: _toggleCredit,
+                ),
+              ),
+              Positioned(
                 right: 12,
                 bottom: navHeight + 12,
-                child: _RecenterButton(
+                child: _MapButton(
+                  glyph: WarangGlyphs.recenter,
+                  tooltip: 'Recenter',
+                  semanticLabel: 'Recenter map on current location',
                   onPressed: () => _mapKey.currentState?.recenter(),
                 ),
               ),
@@ -448,17 +498,27 @@ class _PlacementBar extends StatelessWidget {
   );
 }
 
-/// The S2 recenter button: a 40 `surface` clay circle with the compass, in
-/// a 48 touch target.
-class _RecenterButton extends StatelessWidget {
-  const _RecenterButton({required this.onPressed});
+/// A control on the map, as S2 draws recenter: a 40 `surface` clay circle
+/// in a 48 touch target.
+class _MapButton extends StatelessWidget {
+  const _MapButton({
+    required this.glyph,
+    required this.tooltip,
+    required this.semanticLabel,
+    required this.onPressed,
+    this.glyphSize = 24,
+  });
+  final WarangGlyph glyph;
+  final double glyphSize;
+  final String tooltip;
+  final String semanticLabel;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) => ClayPressable(
     onPressed: onPressed,
-    semanticLabel: 'Recenter map on current location',
-    tooltip: 'Recenter',
+    semanticLabel: semanticLabel,
+    tooltip: tooltip,
     builder: (context, press) => SizedBox.square(
       dimension: 48,
       child: Center(
@@ -466,10 +526,33 @@ class _RecenterButton extends StatelessWidget {
           depth: ClayDepth.clay2,
           press: press,
           circle: true,
-          child: const SizedBox.square(
+          child: SizedBox.square(
             dimension: 40,
-            child: Center(child: WarangIcon(WarangGlyphs.recenter, size: 24)),
+            child: Center(child: WarangIcon(glyph, size: glyphSize)),
           ),
+        ),
+      ),
+    ),
+  );
+}
+
+/// The map's credit (T17.7), worded as the OpenStreetMap attribution
+/// guideline asks: the source, the licence, and where to read it. It is
+/// printed rather than linked, because the app has no way to open links.
+class _MapCredit extends StatelessWidget {
+  const _MapCredit();
+
+  @override
+  Widget build(BuildContext context) => IgnorePointer(
+    child: ClaySurface(
+      borderRadius: BorderRadius.circular(WarangRadius.chip),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Text(
+        '© OpenStreetMap contributors\n'
+        'Open Database License\n'
+        'openstreetmap.org/copyright',
+        style: WarangType.caption.copyWith(
+          color: WarangNeutrals.of(context).inkSoft,
         ),
       ),
     ),
