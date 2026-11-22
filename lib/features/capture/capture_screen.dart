@@ -220,33 +220,28 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
                     Positioned(
                       top: safeTop,
                       left: 16,
-                      child: _ClayPill(
-                        semanticLabel: 'Retake photograph',
-                        onPressed: _saving ? null : _openCamera,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const WarangIcon(WarangGlyphs.refresh, size: 20),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Retake',
-                              style: WarangType.button.copyWith(
-                                color: neutrals.ink,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: safeTop,
                       right: 16,
-                      child: _ClayPill(
-                        semanticLabel: 'Cancel capture',
-                        onPressed: _saving
-                            ? null
-                            : () => Navigator.of(context).maybePop(),
-                        child: const WarangIcon(WarangGlyphs.close, size: 20),
+                      // Wraps rather than overlaps at large text sizes.
+                      child: Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _ClayPill(
+                            semanticLabel: 'Retake photograph',
+                            icon: WarangGlyphs.refresh,
+                            label: 'Retake',
+                            onPressed: _saving ? null : _openCamera,
+                          ),
+                          _ClayPill(
+                            semanticLabel: 'Cancel capture',
+                            icon: WarangGlyphs.close,
+                            label: 'Close',
+                            onPressed: _saving
+                                ? null
+                                : () => Navigator.of(context).maybePop(),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -260,12 +255,20 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Semantics(
-                          liveRegion: true,
-                          child: WarangStamp.place(
-                            id: 'capture-${_capturedAt.microsecondsSinceEpoch}',
-                            lines: _placeLines,
-                            tone: WarangKeepsake.dagat,
+                        // Room for three lines from the start, so nothing
+                        // below moves when the location arrives.
+                        SizedBox(
+                          width: 120,
+                          height: 80,
+                          child: Center(
+                            child: Semantics(
+                              liveRegion: true,
+                              child: WarangStamp.place(
+                                id: 'capture-${_capturedAt.microsecondsSinceEpoch}',
+                                lines: _placeLines,
+                                tone: WarangKeepsake.dagat,
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -279,6 +282,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
                     ),
                     const SizedBox(height: 18),
                     WarangField(
+                      label: 'Caption',
                       controller: _captionController,
                       multiline: true,
                       minLines: 3,
@@ -314,15 +318,18 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
   }
 }
 
-/// A `surface` clay pill for controls that sit on the photo.
+/// A `surface` clay pill, with an icon and a label (S3), for controls that
+/// sit on the photo.
 class _ClayPill extends StatelessWidget {
   const _ClayPill({
-    required this.child,
+    required this.icon,
+    required this.label,
     required this.onPressed,
     required this.semanticLabel,
   });
 
-  final Widget child;
+  final WarangGlyph icon;
+  final String label;
   final VoidCallback? onPressed;
   final String semanticLabel;
 
@@ -338,7 +345,24 @@ class _ClayPill extends StatelessWidget {
         constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14),
-          child: Center(widthFactor: 1, child: child),
+          child: Center(
+            widthFactor: 1,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                WarangIcon(icon, size: 20),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    label,
+                    style: WarangType.button.copyWith(
+                      color: WarangNeutrals.of(context).ink,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     ),

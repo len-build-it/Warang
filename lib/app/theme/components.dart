@@ -157,18 +157,20 @@ class WarangTopScrim extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
+    final ground = WarangNeutrals.of(context).ground;
     return IgnorePointer(
       child: SizedBox(
-        height: 78,
+        height: 80,
         child: DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                (dark ? WarangColors.darkGround : WarangColors.lightGround)
-                    .withValues(alpha: dark ? .78 : .82),
-                Colors.transparent,
+                ground.withValues(alpha: dark ? .78 : .82),
+                // The same colour at zero: `Colors.transparent` is black,
+                // which greys the middle of the fade.
+                ground.withValues(alpha: 0),
               ],
             ),
           ),
@@ -381,8 +383,9 @@ class WarangPhotoPin extends StatelessWidget {
   static const size = 58.0;
   static const selectedSize = 70.0;
 
-  /// Room below the disc for the pointer.
-  static const pointerRoom = 9.0;
+  /// Room below the disc for the pointer, ending exactly at its rounded
+  /// tip, which is the point on the map.
+  static const pointerRoom = 5.25;
 
   @override
   Widget build(BuildContext context) {
@@ -390,8 +393,16 @@ class WarangPhotoPin extends StatelessWidget {
     final outer = selected ? selectedSize : size;
     final photo = selected ? 60.0 : 48.0;
     final ring = ringColor ?? neutrals.surface;
+    // Everyday's dark `surface` ring would vanish into the dark map.
+    final edge =
+        ringColor == null && Theme.of(context).brightness == Brightness.dark
+        ? Border.all(color: neutrals.boundary)
+        : null;
     final placeholder = ColoredBox(
       color: Theme.of(context).extension<MapPalette>()!.landAlt,
+      child: Center(
+        child: WarangIcon(WarangGlyphs.photo, size: selected ? 28 : 24),
+      ),
     );
     final file = this.file;
     return SizedBox(
@@ -410,6 +421,7 @@ class WarangPhotoPin extends StatelessWidget {
                 height: 11,
                 decoration: BoxDecoration(
                   color: ring,
+                  border: edge,
                   borderRadius: BorderRadius.circular(2.5),
                 ),
               ),
@@ -420,6 +432,13 @@ class WarangPhotoPin extends StatelessWidget {
             fill: ring,
             depth: selected ? ClayDepth.clay3 : ClayDepth.clay1,
           ),
+          if (edge != null)
+            SizedBox.square(
+              dimension: outer,
+              child: DecoratedBox(
+                decoration: BoxDecoration(shape: BoxShape.circle, border: edge),
+              ),
+            ),
           SizedBox.square(
             dimension: outer,
             child: Center(
@@ -441,6 +460,8 @@ class WarangPhotoPin extends StatelessWidget {
                           cacheWidth:
                               (photo * MediaQuery.devicePixelRatioOf(context))
                                   .round(),
+                          frameBuilder: (_, child, frame, sync) =>
+                              sync || frame != null ? child : placeholder,
                           errorBuilder: (_, _, _) => placeholder,
                         ),
                 ),
@@ -467,7 +488,7 @@ class WarangClusterPin extends StatelessWidget {
     final ring = ringColor ?? WarangKeepsake.amber.fill;
     return SizedBox(
       width: size,
-      height: size + 9,
+      height: size + WarangPhotoPin.pointerRoom,
       child: Stack(
         clipBehavior: Clip.none,
         alignment: Alignment.topCenter,

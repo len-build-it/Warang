@@ -121,7 +121,10 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
             onTap: (_, _) => widget.onMapTap?.call(),
             onMapReady: _restoreCamera,
             onPositionChanged: (camera, hasGesture) {
+              final zoomed = camera.zoom != _currentZoom;
               _currentZoom = camera.zoom;
+              // Pins regroup when the app zooms, as well as the user.
+              if (zoomed && !hasGesture && mounted) setState(() {});
               if (hasGesture) {
                 widget.moving?.value = true;
                 _rest?.cancel();
@@ -270,12 +273,22 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
     return Marker(
       point: LatLng(latitude, longitude),
       width: WarangClusterPin.size,
-      height: WarangClusterPin.size + 9,
+      height: WarangClusterPin.size + WarangPhotoPin.pointerRoom,
       alignment: Alignment.topCenter,
-      child: GestureDetector(
-        onTap: () =>
-            _mapController.move(LatLng(latitude, longitude), _currentZoom + 2),
-        child: WarangClusterPin(count: group.length),
+      child: MergeSemantics(
+        child: Semantics(
+          button: true,
+          label: '${countLabel(group.length, 'moment')}, zoom in',
+          child: GestureDetector(
+            onTap: () => _mapController.move(
+              LatLng(latitude, longitude),
+              _currentZoom + 2,
+            ),
+            child: ExcludeSemantics(
+              child: WarangClusterPin(count: group.length),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -322,6 +335,39 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
     double longitude, [
     double zoom = 15.0,
   ]) => _mapController.move(LatLng(latitude, longitude), zoom);
+
+  /// Keeps a selected pin in the visible strip from [top] to [bottom], as
+  /// above the moment card (S4).
+  ///
+  /// With a [zoom], the pin moves to the middle of the strip at that zoom.
+  /// Without one the map moves only if the pin would be hidden, keeping the
+  /// zoom: opening a pin that is already in view never moves the map.
+  void showPinBetween(
+    LatLng point, {
+    required double top,
+    required double bottom,
+    double? zoom,
+  }) {
+    final camera = _mapController.camera;
+    final view = camera.nonRotatedSize;
+    const width = WarangPhotoPin.selectedSize;
+    const height = width + WarangPhotoPin.pointerRoom;
+    var x = view.width / 2;
+    if (zoom == null) {
+      final tip = camera.latLngToScreenOffset(point);
+      final acrossInView =
+          tip.dx >= width / 2 && tip.dx <= view.width - width / 2;
+      if (acrossInView && tip.dy - height >= top && tip.dy <= bottom) return;
+      if (acrossInView) x = tip.dx;
+    }
+    // The tip is the point, so it sits half a pin below the strip's middle.
+    final y = (top + bottom + height) / 2;
+    _mapController.move(
+      point,
+      zoom ?? camera.zoom,
+      offset: Offset(x - view.width / 2, y - view.height / 2),
+    );
+  }
 
   Future<void> _refreshLocation({required bool moveToUser}) async {
     try {
@@ -397,11 +443,24 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
   Marker _markerFor(Moment moment) {
     final selected = moment.id == widget.selectedId;
     final size = selected ? WarangPhotoPin.selectedSize : WarangPhotoPin.size;
-    Widget pin = FutureBuilder<File?>(
-      future: _photoFile(moment),
-      builder: (context, snapshot) => GestureDetector(
-        onTap: () => widget.onMomentTap(moment),
-        child: WarangPhotoPin(file: snapshot.data, selected: selected),
+    final caption = moment.caption?.trim() ?? '';
+    final name = caption.isEmpty
+        ? formatMomentTime(moment.capturedAt)
+        : caption;
+    Widget pin = MergeSemantics(
+      child: Semantics(
+        button: true,
+        selected: selected,
+        label: 'Pin, $name',
+        child: FutureBuilder<File?>(
+          future: _photoFile(moment),
+          builder: (context, snapshot) => GestureDetector(
+            onTap: () => widget.onMomentTap(moment),
+            child: ExcludeSemantics(
+              child: WarangPhotoPin(file: snapshot.data, selected: selected),
+            ),
+          ),
+        ),
       ),
     );
     if (selected) {

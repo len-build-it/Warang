@@ -28,7 +28,7 @@ class WarangButton extends StatelessWidget {
     this.variant = WarangButtonVariant.primary,
     this.icon,
     this.expand = true,
-  });
+  }) : besidePrimary = false;
 
   const WarangButton.primary({
     super.key,
@@ -36,7 +36,8 @@ class WarangButton extends StatelessWidget {
     this.onPressed,
     this.icon,
     this.expand = true,
-  }) : variant = WarangButtonVariant.primary;
+  }) : variant = WarangButtonVariant.primary,
+       besidePrimary = false;
 
   const WarangButton.secondary({
     super.key,
@@ -44,6 +45,7 @@ class WarangButton extends StatelessWidget {
     this.onPressed,
     this.icon,
     this.expand = true,
+    this.besidePrimary = false,
   }) : variant = WarangButtonVariant.secondary;
 
   const WarangButton.quiet({
@@ -52,7 +54,8 @@ class WarangButton extends StatelessWidget {
     this.onPressed,
     this.icon,
     this.expand = true,
-  }) : variant = WarangButtonVariant.quiet;
+  }) : variant = WarangButtonVariant.quiet,
+       besidePrimary = false;
 
   const WarangButton.danger({
     super.key,
@@ -60,7 +63,8 @@ class WarangButton extends StatelessWidget {
     this.onPressed,
     this.icon,
     this.expand = true,
-  }) : variant = WarangButtonVariant.danger;
+  }) : variant = WarangButtonVariant.danger,
+       besidePrimary = false;
 
   final String label;
   final VoidCallback? onPressed;
@@ -70,9 +74,13 @@ class WarangButton extends StatelessWidget {
   /// Fills the available width when true.
   final bool expand;
 
+  /// A secondary button sharing a row with a primary takes its height, so
+  /// the two edges and labels line up.
+  final bool besidePrimary;
+
   double get height => switch (variant) {
     WarangButtonVariant.primary => 56,
-    WarangButtonVariant.secondary => 48,
+    WarangButtonVariant.secondary => besidePrimary ? 56 : 48,
     WarangButtonVariant.quiet => 48,
     WarangButtonVariant.danger => 48,
   };
@@ -371,8 +379,9 @@ class _WarangFieldState extends State<WarangField> {
 /// Stamp ids shown this session, so each pops in only the first time.
 final Set<String> _stampsShown = {};
 
-/// C6 stamp: a scalloped circle (84) or rounded rectangle (120 by 64) in a
-/// keepsake tint, with a dashed inner ring in the matching text colour.
+/// C6 stamp: a scalloped circle (84) or rounded rectangle (120 by 64, or 80
+/// tall for three lines) in a keepsake tint, with a dashed inner ring in the
+/// matching text colour.
 ///
 /// It tilts between -8 and +8 degrees, fixed by [id] so it never changes
 /// between visits, and pops in the first time it is shown in a session.
@@ -402,7 +411,8 @@ class WarangStamp extends StatefulWidget {
   final KeepsakeTone tone;
   final bool place;
 
-  Size get size => place ? const Size(120, 64) : const Size.square(84);
+  Size get size =>
+      place ? Size(120, lines.length > 2 ? 80 : 64) : const Size.square(84);
 
   /// The tilt in degrees, from -8 to +8, decided once from [id].
   double get tiltDegrees {
@@ -448,7 +458,7 @@ class _WarangStampState extends State<WarangStamp>
     final ink = widget.tone.text(brightness);
     final content = widget.place
         ? Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             // Up to three short lines; longer ones scale down to stay
             // inside the dashed ring.
             child: FittedBox(
@@ -527,50 +537,100 @@ class _StampPainter extends CustomPainter {
   final Color ring;
   final bool place;
 
-  static const _bump = 2.6;
+  /// How far each bump stands out from the base outline.
+  static const _bump = 2.8;
 
-  Path _base(Rect rect) => place
-      ? (Path()..addRRect(
-          RRect.fromRectAndRadius(
-            rect,
-            const Radius.circular(WarangRadius.chip),
-          ),
-        ))
-      : (Path()..addOval(rect));
+  /// From the base outline in to the dashed ring.
+  static const _ringGap = 5.0;
 
-  /// The base shape with [bumps] rounded scallops pushed outward.
-  Path _scalloped(Rect rect, int bumps) {
-    final metric = _base(rect.deflate(_bump)).computeMetrics().first;
-    final path = Path();
-    const samples = 240;
-    for (var index = 0; index <= samples; index++) {
-      final distance = metric.length * index / samples;
-      final tangent = metric.getTangentForOffset(distance)!;
-      final phase = distance / metric.length * bumps * math.pi;
-      final out = _bump * math.sqrt(math.sin(phase).abs());
-      final normal = Offset(tangent.vector.dy, -tangent.vector.dx);
-      final point = tangent.position - normal * out;
-      index == 0
-          ? path.moveTo(point.dx, point.dy)
-          : path.lineTo(point.dx, point.dy);
+  /// A stamp's inner panel is `rChip`; the outline runs concentric with it.
+  static const _radius = WarangRadius.chip + _ringGap;
+
+  /// The base outline, clockwise. A rectangle starts at the middle of its
+  /// top-left corner, so bumps can be centred on each corner.
+  Path _base(Rect rect, double radius) {
+    if (!place) return Path()..addOval(rect);
+    final r = Radius.circular(radius);
+    final inset = radius * (1 - math.sqrt1_2);
+    final start = rect.topLeft + Offset(inset, inset);
+    return Path()
+      ..moveTo(start.dx, start.dy)
+      ..arcToPoint(Offset(rect.left + radius, rect.top), radius: r)
+      ..lineTo(rect.right - radius, rect.top)
+      ..arcToPoint(Offset(rect.right, rect.top + radius), radius: r)
+      ..lineTo(rect.right, rect.bottom - radius)
+      ..arcToPoint(Offset(rect.right - radius, rect.bottom), radius: r)
+      ..lineTo(rect.left + radius, rect.bottom)
+      ..arcToPoint(Offset(rect.left, rect.bottom - radius), radius: r)
+      ..lineTo(rect.left, rect.top + radius)
+      ..arcToPoint(start, radius: r)
+      ..close();
+  }
+
+  /// Where bumps are centred, as fractions of the outline: evenly along
+  /// each run between corners, with one on every corner, 18 to 24 in all
+  /// (V4).
+  List<double> _bumpCentres(Rect rect) {
+    if (!place) return [for (var i = 0; i < 20; i++) i / 20];
+    const corner = math.pi * _radius / 2;
+    final across = rect.width - 2 * _radius + corner;
+    final down = rect.height - 2 * _radius + corner;
+    final spacing = 2 * (across + down) / 23;
+    final centres = <double>[];
+    var from = 0.0;
+    for (final run in [across, down, across, down]) {
+      final count = math.max(1, (run / spacing).round());
+      for (var i = 0; i < count; i++) {
+        centres.add((from + run * i / count) / (2 * (across + down)));
+      }
+      from += run;
+    }
+    return centres;
+  }
+
+  /// Round bumps, each an arc between two valleys on the base outline.
+  Path _scalloped(Rect rect) {
+    final metric = _base(rect, _radius).computeMetrics().first;
+    final centres = _bumpCentres(rect);
+    Offset at(double fraction) =>
+        metric.getTangentForOffset(metric.length * (fraction % 1))!.position;
+
+    var valley = (centres.last + 1) / 2;
+    final path = Path()..moveTo(at(valley).dx, at(valley).dy);
+    var from = at(valley);
+    for (var index = 0; index < centres.length; index++) {
+      final following = index + 1 < centres.length ? centres[index + 1] : 1.0;
+      valley = (centres[index] + following) / 2;
+      final to = at(valley);
+      final half = (to - from).distance / 2;
+      // Measured from the chord, so corner bumps stand out as far as the rest.
+      final rise = _bump + (at(centres[index]) - (from + to) / 2).distance;
+      path.arcToPoint(
+        to,
+        radius: Radius.circular((half * half + rise * rise) / (2 * rise)),
+      );
+      from = to;
     }
     return path..close();
   }
 
   @override
   void paint(Canvas canvas, Size size) {
-    final rect = Offset.zero & size;
-    canvas.drawPath(_scalloped(rect, place ? 22 : 20), Paint()..color = fill);
-    final inner = _base(rect.deflate(_bump + 6));
+    final edge = (Offset.zero & size).deflate(_bump);
+    canvas.drawPath(_scalloped(edge), Paint()..color = fill);
+    final inner = _base(edge.deflate(_ringGap), WarangRadius.chip);
     final dash = Paint()
       ..color = ring
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2
       ..strokeCap = StrokeCap.round;
     for (final PathMetric metric in inner.computeMetrics()) {
-      for (var start = 0.0; start < metric.length; start += 7) {
+      // A whole number of dashes, so none doubles up where the ring closes.
+      final count = (metric.length / 7).round();
+      final step = metric.length / count;
+      for (var index = 0; index < count; index++) {
         canvas.drawPath(
-          metric.extractPath(start, math.min(start + 3.5, metric.length)),
+          metric.extractPath(index * step, (index + .5) * step),
           dash,
         );
       }
@@ -586,7 +646,8 @@ class _StampPainter extends CustomPainter {
 
 /// C7 chip: a keepsake tint at `clay1`; selected turns the solid colour
 /// with an `ink` label and a check mark. A null [tone] is the neutral chip
-/// used for Everyday.
+/// used for Everyday: it has no solid colour, so selected adds a 2 px
+/// `boundary` outline instead.
 class WarangChip extends StatelessWidget {
   const WarangChip({
     super.key,
@@ -609,16 +670,19 @@ class WarangChip extends StatelessWidget {
     final neutrals = WarangNeutrals.of(context);
     final tone = this.tone;
     final fill = tone == null
-        ? (selected ? neutrals.ink : neutrals.surfaceRaised)
+        ? neutrals.surfaceRaised
         : (selected ? tone.fill : tone.tint(brightness));
     final ink = tone == null
-        ? (selected ? neutrals.surface : neutrals.inkSoft)
+        ? (selected ? neutrals.ink : neutrals.inkSoft)
         : (selected ? WarangColors.lightInk : tone.text(brightness));
     Widget surface(double press) => ClaySurface(
       depth: ClayDepth.clay1,
       press: press,
       color: fill,
       tone: selected ? tone : null,
+      outline: selected && tone == null
+          ? BorderSide(color: neutrals.boundary, width: 2)
+          : null,
       borderRadius: BorderRadius.circular(WarangRadius.chip),
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: 36),
@@ -689,7 +753,8 @@ class WarangPolaroid extends StatelessWidget {
   final Widget photo;
   final String? caption;
 
-  /// Overlaps the top-right corner, as a place stamp does.
+  /// Overlaps the top-right corner, as a place stamp does. The room it
+  /// rises into is part of this widget, so all of it takes taps.
   final Widget? stamp;
   final EdgeInsets frame;
   final double photoAspectRatio;
@@ -698,6 +763,9 @@ class WarangPolaroid extends StatelessWidget {
 
   /// Cards may tilt between -2 and +2 degrees (V4).
   final double rotationDegrees;
+
+  static const _stampRise = 18.0;
+  static const _stampOverhang = 14.0;
 
   @override
   Widget build(BuildContext context) {
@@ -744,8 +812,11 @@ class WarangPolaroid extends StatelessWidget {
       result = Stack(
         clipBehavior: Clip.none,
         children: [
-          result,
-          Positioned(top: -18, right: -14, child: stamp!),
+          Padding(
+            padding: const EdgeInsets.only(top: _stampRise),
+            child: result,
+          ),
+          Positioned(top: 0, right: -_stampOverhang, child: stamp!),
         ],
       );
     }
@@ -805,7 +876,7 @@ class WarangSheetFrame extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) => ClaySurface(
         depth: ClayDepth.clay3,
-        shadowUp: true,
+        bottomSheet: true,
         borderRadius: const BorderRadius.vertical(
           top: Radius.circular(WarangRadius.sheet),
         ),

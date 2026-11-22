@@ -435,7 +435,7 @@ void main() {
           frame.borderRadius.topLeft,
           const Radius.circular(WarangRadius.sheet),
         );
-        expect(frame.shadowUp, isTrue);
+        expect(frame.bottomSheet, isTrue);
         final barrier = tester.widget<ModalBarrier>(
           find.byType(ModalBarrier).last,
         );

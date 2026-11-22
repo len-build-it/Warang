@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:latlong2/latlong.dart';
 
 import '../../app/app.dart';
 import '../../app/app_state.dart';
@@ -32,7 +33,11 @@ class TravelModeScreen extends ConsumerStatefulWidget {
 
 class TravelModeScreenState extends ConsumerState<TravelModeScreen> {
   final _mapKey = GlobalKey<WarangMapSurfaceState>();
+  final _cardKey = GlobalKey();
   final _moving = ValueNotifier<bool>(false);
+
+  /// The selection and screen size the open card last made room for.
+  ({MomentSelection selection, Size size})? _revealed;
 
   /// A just-saved moment whose pin lands on the map.
   String? _landingId;
@@ -121,14 +126,40 @@ class TravelModeScreenState extends ConsumerState<TravelModeScreen> {
     _mapKey.currentState?.moveToCoordinate(moment.latitude!, moment.longitude!);
   }
 
+  /// Once the card has a height, keeps the selected pin clear above it.
+  void _revealPin(MomentSelection? selection, Moment? moment, Size size) {
+    if (selection == null || moment == null) {
+      _revealed = null;
+      return;
+    }
+    final last = _revealed;
+    if (last != null && last.selection == selection && last.size == size) {
+      return;
+    }
+    _revealed = (selection: selection, size: size);
+    final latitude = moment.latitude;
+    final longitude = moment.longitude;
+    if (latitude == null || longitude == null) return;
+    // Only a new selection zooms; a resize keeps the zoom the user has.
+    final zoom = selection.focus && last?.selection != selection;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final map = _mapKey.currentState;
+      final mapBox = _mapKey.currentContext?.findRenderObject() as RenderBox?;
+      final card = _cardKey.currentContext?.findRenderObject() as RenderBox?;
+      if (map == null || mapBox == null || card == null) return;
+      map.showPinBetween(
+        LatLng(latitude, longitude),
+        top: MediaQuery.paddingOf(context).top,
+        bottom: mapBox.globalToLocal(card.localToGlobal(Offset.zero)).dy,
+        zoom: zoom ? 15 : null,
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final repository = ref.watch(repositoryProvider);
-    ref.listen<MomentSelection?>(selectedMomentProvider, (previous, next) {
-      if (next == null || !next.focus) return;
-      final moment = momentById(repository, next.momentId);
-      if (moment != null) _focus(moment);
-    });
     return AnimatedBuilder(
       animation: repository,
       builder: (context, _) => _content(context, repository),
@@ -152,7 +183,14 @@ class TravelModeScreenState extends ConsumerState<TravelModeScreen> {
     final photoStore = ref.watch(photoStoreProvider);
     final navHeight = WarangLayout.navigationHeight(context);
     final clearance = WarangLayout.dockClearance(context);
-    final topOffset = math.max(MediaQuery.paddingOf(context).top, 12.0) + 8.0;
+    final topInset = MediaQuery.paddingOf(context).top;
+    final topOffset = math.max(topInset, 12.0) + 8.0;
+    // The tallest card still leaves the selected pin room above it.
+    final aboveCard = math.max(
+      topOffset + 64,
+      topInset + WarangPhotoPin.selectedSize + WarangPhotoPin.pointerRoom + 8,
+    );
+    _revealPin(selection, selected, size);
     final region = AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -189,12 +227,14 @@ class TravelModeScreenState extends ConsumerState<TravelModeScreen> {
                 moving: _moving,
               ),
             ),
-            const Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: WarangTopScrim(),
-            ),
+            // The dimmer already darkens the top under an open moment.
+            if (selected == null)
+              const Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: WarangTopScrim(),
+              ),
             if (widget.onOpenYou != null && selected == null)
               Positioned(
                 top: topOffset,
@@ -228,21 +268,20 @@ class TravelModeScreenState extends ConsumerState<TravelModeScreen> {
                 Positioned(
                   left: 24,
                   right: 24,
-                  bottom: clearance + 6,
-                  child: Center(
-                    child: ConstrainedBox(
-                      // Narrow enough to clear the recenter button.
-                      constraints: const BoxConstraints(maxWidth: 220),
-                      child: const WarangSpeechBubble(
-                        text: 'Tap the camera to drop your first pin',
-                        persistent: true,
-                      ),
+                  // High enough to clear the recenter button at any width.
+                  bottom: clearance + 12,
+                  child: const Center(
+                    child: WarangSpeechBubble(
+                      text: 'Tap the camera to drop your first pin',
+                      persistent: true,
                     ),
                   ),
                 ),
               Positioned(
-                right: 16,
-                bottom: navHeight + 16,
+                // The 48 touch target is 4 wider all round than the 40 disc,
+                // which sits 16 from the edge and 16 above the dock.
+                right: 12,
+                bottom: navHeight + 12,
                 child: _RecenterButton(
                   onPressed: () => _mapKey.currentState?.recenter(),
                 ),
@@ -256,9 +295,10 @@ class TravelModeScreenState extends ConsumerState<TravelModeScreen> {
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
                       maxWidth: 560,
-                      maxHeight: size.height - topOffset - 64,
+                      maxHeight: size.height - aboveCard,
                     ),
                     child: MomentCard(
+                      key: _cardKey,
                       moment: selected,
                       repository: repository,
                       photoStore: photoStore,
@@ -384,10 +424,10 @@ class _PlacementBar extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Expanded(
                   child: WarangButton.secondary(
+                    besidePrimary: true,
                     label: 'Cancel',
                     onPressed: onCancel,
                   ),
@@ -428,7 +468,7 @@ class _RecenterButton extends StatelessWidget {
           circle: true,
           child: const SizedBox.square(
             dimension: 40,
-            child: Center(child: WarangIcon(WarangGlyphs.recenter, size: 22)),
+            child: Center(child: WarangIcon(WarangGlyphs.recenter, size: 24)),
           ),
         ),
       ),
@@ -673,27 +713,23 @@ class _MomentPolaroidState extends State<_MomentPolaroid> {
         ),
       );
     }
-    return Padding(
-      // Room for the stamp that overlaps the top-right corner.
-      padding: const EdgeInsets.only(top: 18, right: 14),
-      child: WarangPolaroid(
-        caption: moment.caption,
-        photoAspectRatio: 4 / 3,
-        stamp: stamp,
-        photo: FutureBuilder<File?>(
-          future: _file,
-          builder: (context, snapshot) {
-            final file = snapshot.data;
-            if (file == null || !file.existsSync()) return placeholder;
-            return Image.file(
-              file,
-              fit: BoxFit.cover,
-              frameBuilder: (context, child, frame, sync) =>
-                  sync || frame != null ? child : placeholder,
-              errorBuilder: (_, _, _) => placeholder,
-            );
-          },
-        ),
+    return WarangPolaroid(
+      caption: moment.caption,
+      photoAspectRatio: 4 / 3,
+      stamp: stamp,
+      photo: FutureBuilder<File?>(
+        future: _file,
+        builder: (context, snapshot) {
+          final file = snapshot.data;
+          if (file == null || !file.existsSync()) return placeholder;
+          return Image.file(
+            file,
+            fit: BoxFit.cover,
+            frameBuilder: (context, child, frame, sync) =>
+                sync || frame != null ? child : placeholder,
+            errorBuilder: (_, _, _) => placeholder,
+          );
+        },
       ),
     );
   }

@@ -50,8 +50,31 @@ class ClayDepthSpec {
   /// from the top, the reverse of raised clay.
   final bool inset;
 
-  static ClayDepthSpec of(ClayDepth depth, Brightness brightness) =>
-      brightness == Brightness.dark ? _dark[depth]! : _light[depth]!;
+  /// The spec for [depth]. Amber clay keeps its highlight and shade in
+  /// dark theme, where a 1 px white rim cannot show on it; its shadow stays
+  /// the dark theme's.
+  static ClayDepthSpec of(
+    ClayDepth depth,
+    Brightness brightness, {
+    KeepsakeTone? tone,
+  }) {
+    final light = _light[depth]!;
+    if (brightness == Brightness.light) return light;
+    final dark = _dark[depth]!;
+    if (dark.inset || tone?.key != WarangKeepsake.amber.key) return dark;
+    return ClayDepthSpec(
+      shadowY: dark.shadowY,
+      shadowBlur: dark.shadowBlur,
+      shadowAlpha: dark.shadowAlpha,
+      highlightAlpha: light.highlightAlpha,
+      highlightDepth: light.highlightDepth,
+      shadeAlpha: light.shadeAlpha,
+      shadeDepth: light.shadeDepth,
+    );
+  }
+
+  /// Lit by a 1 px rim instead of a highlight and shade.
+  bool get rimmed => rimAlpha > 0;
 
   static const _light = {
     ClayDepth.clay1: ClayDepthSpec(
@@ -173,7 +196,7 @@ class ClayDepthSpec {
 
 /// The one widget that draws clay (FEAT-003 V5): an outer shadow, the fill,
 /// a top-left highlight and a bottom-right shade in light theme, or a 1 px
-/// top rim in dark theme.
+/// top rim in dark theme (amber keeps its highlight and shade).
 ///
 /// Photos and the map are never clay; they may sit inside a clay frame.
 class ClaySurface extends StatelessWidget {
@@ -192,7 +215,7 @@ class ClaySurface extends StatelessWidget {
     this.outline,
     this.padding,
     this.clipBehavior = Clip.none,
-    this.shadowUp = false,
+    this.bottomSheet = false,
   });
 
   final Widget? child;
@@ -215,19 +238,20 @@ class ClaySurface extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
   final Clip clipBehavior;
 
-  /// Casts the outer shadow upward, as bottom sheets do.
-  final bool shadowUp;
+  /// A sheet resting on the screen's bottom edge: its shadow falls upward
+  /// and only its top edge is lit, so no shade lines the screen edges.
+  final bool bottomSheet;
 
   @override
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
     final neutrals = WarangNeutrals.of(context);
-    final resting = ClayDepthSpec.of(depth, brightness);
+    final resting = ClayDepthSpec.of(depth, brightness, tone: tone);
     final spec = press <= 0
         ? resting
         : ClayDepthSpec.lerp(
             resting,
-            ClayDepthSpec.of(pressedDepth, brightness),
+            ClayDepthSpec.of(pressedDepth, brightness, tone: tone),
             press.clamp(0.0, 1.0),
           );
     final dark = brightness == Brightness.dark;
@@ -248,9 +272,8 @@ class ClaySurface extends StatelessWidget {
         colours: colours,
         borderRadius: borderRadius,
         circle: circle,
-        dark: dark,
         outline: outline,
-        shadowUp: shadowUp,
+        bottomSheet: bottomSheet,
       ),
       child: clipBehavior == Clip.none || content == null
           ? content
@@ -290,7 +313,7 @@ class _ClayColours {
         : (dark ? Colors.black : neutrals.shadowTint).withValues(
             alpha: spec.shadowAlpha,
           ),
-    highlight: dark
+    highlight: spec.rimmed
         ? Colors.white.withValues(alpha: spec.rimAlpha)
         : spec.inset
         ? Colors.white.withValues(alpha: spec.highlightAlpha)
@@ -299,7 +322,7 @@ class _ClayColours {
             alpha: tone.clayHighlight.a * spec.highlightAlpha / .80,
           )
         : Colors.white.withValues(alpha: spec.highlightAlpha),
-    shade: dark
+    shade: spec.rimmed
         ? Colors.transparent
         : spec.inset
         ? neutrals.shadowTint.withValues(alpha: spec.shadeAlpha)
@@ -308,7 +331,7 @@ class _ClayColours {
             alpha: tone.clayShade.a * spec.shadeAlpha / .12,
           )
         : neutrals.shadowTint.withValues(alpha: spec.shadeAlpha),
-    rimIsDark: dark && spec.inset,
+    rimIsDark: spec.rimmed && spec.inset,
   );
 
   final Color fill;
@@ -332,16 +355,31 @@ class _ClayColours {
 
 /// The paths a clay surface needs for one size, shape, and depth.
 class _ClayGeometry {
-  _ClayGeometry(RRect rrect, ClayDepthSpec spec, bool dark) {
+  _ClayGeometry(RRect rrect, ClayDepthSpec spec, bool bottomSheet) {
     this.rrect = rrect;
     final bounds = rrect.outerRect.inflate(64);
     Path ring(Offset offset) => Path()
       ..fillType = PathFillType.evenOdd
       ..addRect(bounds)
       ..addRRect(rrect.shift(offset));
-    if (dark) {
+    if (spec.rimmed) {
       // A 1 px rim along the top edge (dark inset: a dark inner top edge).
       highlight = ring(const Offset(0, 1));
+      shade = null;
+    } else if (bottomSheet) {
+      // Only the top band: the other sides run into the screen's edges.
+      highlight = Path.combine(
+        PathOperation.difference,
+        Path()..addRect(
+          Rect.fromLTRB(
+            bounds.left,
+            bounds.top,
+            bounds.right,
+            rrect.top + rrect.tlRadiusY,
+          ),
+        ),
+        Path()..addRRect(rrect.shift(Offset(0, spec.highlightDepth / 2))),
+      );
       shade = null;
     } else if (spec.inset) {
       // Inset: shade falls from the top, light rises from the bottom.
@@ -364,11 +402,11 @@ class _ClayGeometry {
 
   /// Geometry is cached per size, shape, and depth, so repeated frames and
   /// repeated surfaces reuse the same paths.
-  static _ClayGeometry of(RRect rrect, ClayDepthSpec spec, bool dark) {
-    final key = Object.hash(rrect, spec, dark);
+  static _ClayGeometry of(RRect rrect, ClayDepthSpec spec, bool bottomSheet) {
+    final key = (rrect, spec, bottomSheet);
     final cached = _cache.remove(key);
     if (cached != null) return _cache[key] = cached;
-    final geometry = _ClayGeometry(rrect, spec, dark);
+    final geometry = _ClayGeometry(rrect, spec, bottomSheet);
     _cache[key] = geometry;
     if (_cache.length > 128) _cache.remove(_cache.keys.first);
     return geometry;
@@ -381,18 +419,16 @@ class _ClayPainter extends CustomPainter {
     required this.colours,
     required this.borderRadius,
     required this.circle,
-    required this.dark,
     required this.outline,
-    required this.shadowUp,
+    required this.bottomSheet,
   });
 
   final ClayDepthSpec spec;
   final _ClayColours colours;
   final BorderRadius borderRadius;
   final bool circle;
-  final bool dark;
   final BorderSide? outline;
-  final bool shadowUp;
+  final bool bottomSheet;
 
   static double _sigma(double blur) => blur > 0 ? blur * 0.57735 + 0.5 : 0;
 
@@ -402,11 +438,11 @@ class _ClayPainter extends CustomPainter {
     final rrect = circle
         ? RRect.fromRectAndRadius(rect, Radius.circular(size.shortestSide / 2))
         : borderRadius.toRRect(rect);
-    final geometry = _ClayGeometry.of(rrect, spec, dark);
+    final geometry = _ClayGeometry.of(rrect, spec, bottomSheet);
 
     if (spec.shadowBlur > 0 && colours.shadow.a > 0) {
       canvas.drawRRect(
-        rrect.shift(Offset(0, shadowUp ? -spec.shadowY : spec.shadowY)),
+        rrect.shift(Offset(0, bottomSheet ? -spec.shadowY : spec.shadowY)),
         Paint()
           ..color = colours.shadow
           ..maskFilter = MaskFilter.blur(
@@ -419,7 +455,7 @@ class _ClayPainter extends CustomPainter {
 
     canvas.save();
     canvas.clipRRect(rrect);
-    if (dark) {
+    if (spec.rimmed) {
       final rim = colours.rimIsDark
           ? Colors.black.withValues(alpha: spec.rimAlpha)
           : colours.highlight;
@@ -478,9 +514,8 @@ class _ClayPainter extends CustomPainter {
       old.colours != colours ||
       old.borderRadius != borderRadius ||
       old.circle != circle ||
-      old.dark != dark ||
       old.outline != outline ||
-      old.shadowUp != shadowUp;
+      old.bottomSheet != bottomSheet;
 }
 
 /// Clay discs painted once into images, for map pins (Q-1): the map then
@@ -516,7 +551,7 @@ abstract final class ClayDiscCache {
     if (cached != null) return _images[key] = cached;
 
     final dark = brightness == Brightness.dark;
-    final spec = ClayDepthSpec.of(depth, brightness);
+    final spec = ClayDepthSpec.of(depth, brightness, tone: tone);
     final pad = margin(depth, brightness);
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder)
@@ -533,9 +568,8 @@ abstract final class ClayDiscCache {
       ),
       borderRadius: BorderRadius.zero,
       circle: true,
-      dark: dark,
       outline: null,
-      shadowUp: false,
+      bottomSheet: false,
     ).paint(canvas, Size.square(diameter));
     final picture = recorder.endRecording();
     final side = ((diameter + 2 * pad) * pixelRatio).ceil();

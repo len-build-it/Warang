@@ -386,7 +386,13 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
   /// layered maya arrives (FEAT-003 D-2).
   Widget _maya() {
     final size = widget.size;
-    final art = size * 1.9;
+    // In the 1254 square artwork, a circle of radius 214 around (650, 403)
+    // holds the whole face and leaves out the camera and the W.
+    const side = 1254.0;
+    const face = Offset(650, 403);
+    const radius = 214.0;
+    final scale = size / (2 * radius);
+    final art = side * scale;
     return SizedBox.square(
       dimension: size,
       child: ClipOval(
@@ -395,10 +401,9 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
           child: Stack(
             clipBehavior: Clip.hardEdge,
             children: [
-              // The head's centre sits about a third of the way down.
               Positioned(
-                left: size / 2 - art * .5,
-                top: size / 2 - art * .33,
+                left: size / 2 - face.dx * scale,
+                top: size / 2 - face.dy * scale,
                 width: art,
                 height: art,
                 child: Image.asset(

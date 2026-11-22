@@ -153,6 +153,9 @@ class _WarangDockState extends State<WarangDock>
                       horizontal: WarangDock._inset,
                     ),
                     child: Row(
+                      // Full height, so `iconTop` is measured from the pill
+                      // and the highlight sits behind the icon.
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         for (var index = 0; index < 4; index++) ...[
                           if (index == 2)
