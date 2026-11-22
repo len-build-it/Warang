@@ -28,6 +28,7 @@ import 'package:warang/data/files/photo_store.dart';
 import 'package:warang/data/repository.dart';
 import 'package:warang/features/capture/capture_screen.dart';
 import 'package:warang/features/map/map_tile_store.dart';
+import 'package:warang/features/search/search_tab_screen.dart';
 
 const _label = String.fromEnvironment('UX_LABEL', defaultValue: 'latest');
 
@@ -273,7 +274,14 @@ void main() {
       await settle(tester);
       await tester.enterText(find.byType(TextField), 'beach');
       await shot(tester, '06_search_$theme');
-      await tester.tap(find.byType(ListTile).first);
+      await tester.tap(
+        find
+            .descendant(
+              of: find.byType(MomentSearchResults),
+              matching: find.byType(InkWell),
+            )
+            .first,
+      );
       await shot(tester, '04_moment_open_$theme');
       await tester.tap(find.text('Edit'));
       await shot(tester, '13_edit_sheet_$theme');
@@ -315,6 +323,12 @@ void main() {
       await settle(tester);
       await tester.tap(find.text('Settings'));
       await shot(tester, '11_settings_$theme');
+      await tester.pageBack();
+      await settle(tester);
+      await tester.tap(find.byTooltip('You'));
+      await settle(tester);
+      await tester.tap(find.text('About Warang'));
+      await shot(tester, '19_about_$theme');
     });
 
     testWidgets('photo pins $theme', (tester) async {
