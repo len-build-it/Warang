@@ -1,5 +1,8 @@
 import 'package:flutter/widgets.dart';
 
+import '../../core/models.dart';
+import '../../core/trip_rules.dart';
+
 /// One keepsake colour from FEAT-003 V2, with its tints and text colours.
 ///
 /// Labels on a solid [fill] are always `ink`, never white. Large areas use
@@ -121,6 +124,20 @@ abstract final class WarangKeepsake {
 
   /// The six trip colours, in assignment order (amber is never a trip).
   static const tripTones = [gumamela, dagat, kalamansi, ube, langit, santan];
+
+  /// A trip's colour (FEAT-003 D-1), or null for Everyday, which is drawn
+  /// neutral.
+  static KeepsakeTone? forTrip(Trip trip) => byKey(tripColorKey(trip));
+
+  /// The person's own colour (C3): their first trip's, or amber.
+  static KeepsakeTone forUser(Iterable<Trip> trips) {
+    final made = trips.where((trip) => !trip.isEveryday).toList()
+      ..sort(
+        (a, b) =>
+            (a.createdAt ?? DateTime(0)).compareTo(b.createdAt ?? DateTime(0)),
+      );
+    return made.isEmpty ? amber : forTrip(made.first) ?? amber;
+  }
 
   static KeepsakeTone? byKey(String? key) {
     for (final tone in all) {

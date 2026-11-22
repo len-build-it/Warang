@@ -275,6 +275,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
                         Flexible(
                           child: WarangChip(
                             label: 'Saving to ${trip.title}',
+                            tone: WarangKeepsake.forTrip(trip),
                             icon: WarangGlyphs.trips,
                           ),
                         ),

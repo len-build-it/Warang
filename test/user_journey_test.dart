@@ -17,6 +17,7 @@ import 'package:warang/app/app_state.dart';
 import 'package:warang/app/device_providers.dart';
 import 'package:warang/app/theme/components.dart';
 import 'package:warang/app/theme/tokens.dart';
+import 'package:warang/core/formatting.dart';
 import 'package:warang/data/db/database.dart';
 import 'package:warang/data/files/photo_store.dart';
 import 'package:warang/data/repository.dart';
@@ -121,7 +122,10 @@ void main() {
     await settle(tester);
     await tester.tap(find.text('Everyday'));
     await settle(tester);
-    await tester.tap(find.text('Moment'));
+    // A moment with no caption or place shows when it was taken.
+    await tester.tap(
+      find.text(formatMomentTime(repository.moments.single.capturedAt)),
+    );
     await settle(tester);
     expect(container.read(shellTabProvider), 0);
     expect(find.byType(MomentCard), findsOneWidget);

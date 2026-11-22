@@ -392,6 +392,7 @@ class WarangStamp extends StatefulWidget {
     required int this.number,
     required String this.word,
     required this.tone,
+    this.countUp = false,
   }) : lines = const [],
        place = false;
 
@@ -402,6 +403,7 @@ class WarangStamp extends StatefulWidget {
     required this.tone,
   }) : number = null,
        word = null,
+       countUp = false,
        place = true;
 
   final String id;
@@ -410,6 +412,10 @@ class WarangStamp extends StatefulWidget {
   final List<String> lines;
   final KeepsakeTone tone;
   final bool place;
+
+  /// The number counts up from zero (`count`) the first time the stamp is
+  /// shown in a session, as the Trips shelf's stamps do.
+  final bool countUp;
 
   Size get size =>
       place ? Size(120, lines.length > 2 ? 80 : 64) : const Size.square(84);
@@ -436,6 +442,7 @@ class _WarangStampState extends State<WarangStamp>
     vsync: this,
     value: 1,
   );
+  bool _counting = false;
 
   @override
   void didChangeDependencies() {
@@ -443,6 +450,7 @@ class _WarangStampState extends State<WarangStamp>
     if (_stampsShown.add(widget.id) && !WarangMotion.reduced(context)) {
       _pop.value = 0;
       _pop.animateWith(WarangMotion.pop.simulate(0, 1));
+      _counting = widget.countUp;
     }
   }
 
@@ -480,9 +488,17 @@ class _WarangStampState extends State<WarangStamp>
         : Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                '${widget.number}',
-                style: WarangType.stampNumber.copyWith(color: ink),
+              TweenAnimationBuilder<int>(
+                tween: IntTween(
+                  begin: _counting ? 0 : widget.number,
+                  end: widget.number,
+                ),
+                duration: WarangMotion.count,
+                curve: WarangMotion.countCurve,
+                builder: (context, value, _) => Text(
+                  '$value',
+                  style: WarangType.stampNumber.copyWith(color: ink),
+                ),
               ),
               const SizedBox(height: 2),
               SizedBox(

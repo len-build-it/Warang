@@ -126,6 +126,7 @@ class _MomentEditSheetState extends State<MomentEditSheet> {
                     for (final trip in trips) ...[
                       WarangChip(
                         label: trip.title,
+                        tone: WarangKeepsake.forTrip(trip),
                         selected: trip.id == _tripId,
                         onSelected: () => setState(() => _tripId = trip.id),
                       ),

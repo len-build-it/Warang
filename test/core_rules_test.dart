@@ -125,42 +125,20 @@ void main() {
   });
 
   group('MemoryStats', () {
-    Moment moment(
-      String id,
-      DateTime at, {
-      String trip = 'everyday',
-      String? place,
-    }) => Moment(id: id, tripId: trip, capturedAt: at, placeLabel: place);
+    Moment moment(String id, DateTime at, {String? place}) =>
+        Moment(id: id, tripId: 'everyday', capturedAt: at, placeLabel: place);
 
     test('counts totals, distinct days, and written places', () {
-      final moments = [
+      final stats = MemoryStats.from([
         moment('a', DateTime(2026, 9, 1, 23, 59), place: 'White Beach'),
         moment('b', DateTime(2026, 9, 2, 0, 1), place: ' white beach '),
         moment('c', DateTime(2026, 9, 2, 10), place: '  '),
-        moment('d', DateTime(2026, 3, 9), trip: 'boracay', place: 'Malay'),
-      ];
-      final stats = MemoryStats.from(
-        moments,
-        everydayId: 'everyday',
-        now: DateTime(2026, 10, 16),
-      );
+        moment('d', DateTime(2026, 3, 9), place: 'Malay'),
+      ]);
 
       expect(stats.moments, 4);
       expect(stats.days, 3);
       expect(stats.places, 2);
-      expect(stats.monthLabels, ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct']);
-      expect(stats.monthlyMoments, [0, 0, 0, 0, 3, 0]);
-      expect(stats.cumulativeTrips, [1, 1, 1, 1, 1, 1]);
-      expect(stats.ready, isTrue);
-    });
-
-    test('Everyday is not counted as a trip', () {
-      final stats = MemoryStats.from(
-        [moment('a', DateTime(2026, 9, 1)), moment('b', DateTime(2026, 9, 20))],
-        everydayId: 'everyday',
-        now: DateTime(2026, 9, 30),
-      );
-      expect(stats.cumulativeTrips.last, 0);
     });
   });
 

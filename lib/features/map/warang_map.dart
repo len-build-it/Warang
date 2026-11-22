@@ -20,6 +20,7 @@ class WarangMapSurface extends StatefulWidget {
     required this.moments,
     required this.selectedId,
     this.placingId,
+    this.tripRings = const {},
     required this.palette,
     required this.dark,
     required this.onMomentTap,
@@ -38,6 +39,10 @@ class WarangMapSurface extends StatefulWidget {
   /// The moment whose pin is being placed. The centre pin stands for it, and
   /// no other pin opens until placement ends.
   final String? placingId;
+
+  /// Each trip's fill, by trip id, for its pins' rings (C10). Everyday is
+  /// absent and draws `surface`.
+  final Map<String, Color> tripRings;
   final MapPalette palette;
   final bool dark;
   final ValueChanged<Moment> onMomentTap;
@@ -254,6 +259,12 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
     );
   }
 
+  /// A cluster of one trip takes that trip's fill; any other is amber.
+  Color? _clusterRing(_PinGroup group) {
+    final tripIds = {for (final moment in group.moments) moment.tripId};
+    return tripIds.length == 1 ? widget.tripRings[tripIds.single] : null;
+  }
+
   Marker _clusterMarker(_PinGroup group) {
     final point = _projection.offsetToLatLng(group.centre, _currentZoom);
     return Marker(
@@ -268,7 +279,10 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
           child: GestureDetector(
             onTap: () => _openCluster(group, point),
             child: ExcludeSemantics(
-              child: WarangClusterPin(count: group.moments.length),
+              child: WarangClusterPin(
+                count: group.moments.length,
+                ringColor: _clusterRing(group),
+              ),
             ),
           ),
         ),
@@ -441,7 +455,11 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
           builder: (context, snapshot) => GestureDetector(
             onTap: opens ? () => widget.onMomentTap(moment) : null,
             child: ExcludeSemantics(
-              child: WarangPhotoPin(file: snapshot.data, selected: selected),
+              child: WarangPhotoPin(
+                file: snapshot.data,
+                selected: selected,
+                ringColor: widget.tripRings[moment.tripId],
+              ),
             ),
           ),
         ),
@@ -490,8 +508,11 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
       },
       child: FutureBuilder<File?>(
         future: _photoFile(moment),
-        builder: (context, snapshot) =>
-            WarangPhotoPin(file: snapshot.data, selected: true),
+        builder: (context, snapshot) => WarangPhotoPin(
+          file: snapshot.data,
+          selected: true,
+          ringColor: widget.tripRings[moment.tripId],
+        ),
       ),
     ),
   );

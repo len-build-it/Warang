@@ -278,29 +278,33 @@ void main() {
       await tester.pump(const Duration(milliseconds: 200));
 
       expect(find.text('Trip name'), findsOneWidget);
-      expect(find.text('Place (optional)'), findsOneWidget);
+      final next = find.widgetWithText(WarangButton, 'Next');
 
-      final createButton = find.widgetWithText(WarangButton, 'Create');
-      expect(createButton, findsOneWidget);
-
-      // Tap create with empty trip name -> should validate and show error
-      await tester.tap(createButton);
+      // The name is required before the next question.
+      await tester.tap(next);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
-
       expect(find.text('Trip name is required'), findsOneWidget);
+      expect(find.text('Where to?'), findsOneWidget);
 
-      // Enter valid trip name
       await tester.enterText(
-        find.widgetWithText(TextField, 'Trip name'),
+        find.descendant(
+          of: find.widgetWithText(WarangField, 'Trip name'),
+          matching: find.byType(TextField),
+        ),
         'Visayas Expedition',
       );
       await tester.pump();
-
-      // Error text should clear
       expect(find.text('Trip name is required'), findsNothing);
 
-      // Tap create and wait for async DB insert
+      // Place and dates are optional, so Next goes straight through them.
+      for (var step = 0; step < 3; step++) {
+        await tester.tap(next);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 400));
+      }
+      final createButton = find.widgetWithText(WarangButton, 'Create');
+      expect(createButton, findsOneWidget);
       await tester.tap(createButton);
       await tester.pump();
       for (var i = 0; i < 20; i++) {

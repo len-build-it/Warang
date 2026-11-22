@@ -7,6 +7,7 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:warang/app/app.dart';
 import 'package:warang/app/app_state.dart';
 import 'package:warang/app/shell/app_shell.dart';
+import 'package:warang/app/theme/components.dart';
 import 'package:warang/app/theme/tokens.dart';
 import 'package:warang/core/formatting.dart';
 import 'package:warang/data/db/database.dart';
@@ -48,6 +49,12 @@ void main() {
     }
   }
 
+  /// The text field under the C5 label [label].
+  Finder field(String label) => find.descendant(
+    of: find.widgetWithText(WarangField, label),
+    matching: find.byType(TextField),
+  );
+
   Future<ProviderContainer> pumpHome(
     WidgetTester tester, {
     double width = 390,
@@ -81,10 +88,15 @@ void main() {
 
     await tester.tap(find.text('New trip'));
     await settle(tester);
-    await tester.enterText(
-      find.widgetWithText(TextField, 'Trip name'),
-      'Boracay long weekend',
-    );
+    // One question at a time: name, place, dates, then colour.
+    expect(find.text('Where to?'), findsOneWidget);
+    await tester.enterText(field('Trip name'), 'Boracay long weekend');
+    await tester.tap(find.text('Next'));
+    await settle(tester);
+    expect(find.text('Where is it?'), findsOneWidget);
+    await tester.tap(find.text('Next'));
+    await settle(tester);
+    expect(find.text('When?'), findsOneWidget);
     expect(
       find.text('Photos you take between these dates go into this trip.'),
       findsOneWidget,
@@ -108,7 +120,13 @@ void main() {
       DateTime(now.year, now.month, 19),
     );
     expect(find.text(range), findsOneWidget);
+    await tester.tap(find.text('Next'));
+    await settle(tester);
 
+    // The colour after the last trip's is chosen; another can be picked.
+    expect(find.text('Pick a colour'), findsOneWidget);
+    await tester.tap(find.text('Sky'));
+    await settle(tester);
     await tester.tap(find.text('Create'));
     await settle(tester);
 
@@ -117,6 +135,7 @@ void main() {
     );
     expect(trip.startDate, DateTime(now.year, now.month, 12));
     expect(trip.endDate, DateTime(now.year, now.month, 19));
+    expect(trip.colorKey, 'langit');
     expect(find.text('Trip "Boracay long weekend" created.'), findsOneWidget);
     expect(find.textContaining('$range · 0 moments'), findsOneWidget);
   });
@@ -196,20 +215,15 @@ void main() {
     await settle(tester);
     await tester.tap(find.text('Edit trip'));
     await settle(tester);
-    await tester.enterText(
-      find.widgetWithText(TextField, 'Trip name'),
-      'Iloilo food crawl',
-    );
+    await tester.enterText(field('Trip name'), 'Iloilo food crawl');
+    for (var step = 0; step < 3; step++) {
+      await tester.tap(find.text('Next'));
+      await settle(tester);
+    }
     await tester.tap(find.text('Save'));
     await settle(tester);
 
-    expect(
-      find.descendant(
-        of: find.byType(AppBar),
-        matching: find.text('Iloilo food crawl'),
-      ),
-      findsOneWidget,
-    );
+    expect(find.text('Iloilo food crawl'), findsOneWidget);
     expect(
       repository.trips.where((trip) => trip.title == 'Iloilo food crawl'),
       hasLength(1),

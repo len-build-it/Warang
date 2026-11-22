@@ -202,22 +202,13 @@ void main() {
       );
       expect(find.textContaining('\u2013', findRichText: true), findsNothing);
 
-      // Verify stat cards (subordinated summaries) are present
-      final list = find.byType(Scrollable).first;
-      await tester.scrollUntilVisible(
-        find.text('Moments'),
-        200,
-        scrollable: list,
-      );
-      expect(find.text('Moments'), findsOneWidget);
-      expect(find.text('Places'), findsOneWidget);
-      expect(find.text('Days'), findsOneWidget);
-      expect(find.text('Streak'), findsNothing);
-      await tester.scrollUntilVisible(
-        find.text('Cordillera Trek'),
-        -200,
-        scrollable: list,
-      );
+      // The totals are three stamps, and nothing counts a streak.
+      expect(find.bySemanticsLabel('0 moments'), findsOneWidget);
+      expect(find.bySemanticsLabel('0 places'), findsOneWidget);
+      expect(find.bySemanticsLabel('0 days'), findsOneWidget);
+      expect(find.textContaining('Streak'), findsNothing);
+      // The charts are gone (D-4).
+      expect(find.text('Moments captured'), findsNothing);
 
       // Tap trip card to verify navigation
       await tester.tap(find.text('Cordillera Trek'));

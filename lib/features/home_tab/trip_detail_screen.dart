@@ -1,21 +1,20 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/formatting.dart';
 import '../../app/app.dart';
 import '../../app/app_state.dart';
 import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
+import '../../core/formatting.dart';
 import '../../core/models.dart';
 import '../../data/files/photo_store.dart';
 import '../../data/repository.dart';
+import 'home_tab_screen.dart' show TripName;
 import 'trip_form_screen.dart';
+import 'trip_photo.dart';
 
-enum _TripAction { edit, delete }
-
-/// One trip and its moments, kept live against the repository.
+/// One trip and its moments (S7), kept live against the repository.
 class TripDetailScreen extends ConsumerWidget {
   const TripDetailScreen({super.key, required this.tripId});
 
@@ -66,289 +65,249 @@ class _TripDetailView extends StatelessWidget {
   final WarangRepository repository;
   final ValueChanged<Moment> onOpenMoment;
 
-  Moment? _findCoverMoment() {
-    if (trip.coverMomentId != null) {
-      for (final moment in moments) {
-        if (moment.id == trip.coverMomentId &&
-            (moment.relPath != null || moment.thumbRelPath != null)) {
-          return moment;
-        }
-      }
-    }
-    for (final moment in moments) {
-      if (moment.relPath != null || moment.thumbRelPath != null) {
-        return moment;
-      }
-    }
-    return null;
-  }
-
-  Future<void> _onAction(BuildContext context, _TripAction action) async {
-    switch (action) {
-      case _TripAction.edit:
-        await TripFormScreen.open(context, trip: trip);
-      case _TripAction.delete:
-        final count = moments.length;
-        final confirmed = await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Delete this trip?'),
-            content: Text(
-              count == 0
-                  ? 'The trip has no moments.'
-                  : 'Its $count ${count == 1 ? 'moment moves' : 'moments move'} to Everyday.',
+  /// The options sheet: Edit trip, and Delete trip after a confirmation.
+  Future<void> _options(BuildContext context) => showWarangSheet<void>(
+    context,
+    builder: (sheetContext) => SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            WarangButton.secondary(
+              label: 'Edit trip',
+              icon: WarangGlyphs.edit,
+              onPressed: () {
+                Navigator.of(sheetContext).pop();
+                TripFormScreen.open(context, trip: trip);
+              },
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Cancel'),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('Delete trip'),
-              ),
-            ],
-          ),
-        );
-        if (confirmed == true) await repository.deleteTrip(trip.id);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final dates = trip.isEveryday
-        ? 'Casual captures'
-        : trip.startDate == null
-        ? 'No dates'
-        : '${formatDate(trip.startDate!)}${trip.endDate == null ? '' : ' - ${formatDate(trip.endDate!)}'}';
-    final coverMoment = _findCoverMoment();
-    final coverPath = coverMoment?.relPath ?? coverMoment?.thumbRelPath;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(trip.title),
-        actions: [
-          if (!trip.isEveryday)
-            PopupMenuButton<_TripAction>(
-              tooltip: 'Trip options',
-              onSelected: (action) => _onAction(context, action),
-              itemBuilder: (context) => const [
-                PopupMenuItem(
-                  value: _TripAction.edit,
-                  child: Text('Edit trip'),
-                ),
-                PopupMenuItem(
-                  value: _TripAction.delete,
-                  child: Text('Delete trip'),
-                ),
-              ],
-            ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-        children: [
-          _TripCoverImage(coverPath: coverPath, photoStore: photoStore),
-          const SizedBox(height: 16),
-          if (trip.place != null && trip.place!.isNotEmpty)
-            Text(trip.place!, style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 6),
-          WarangMetadata('$dates · ${countLabel(moments.length, 'moment')}'),
-          if (trip.description != null && trip.description!.isNotEmpty) ...[
-            const SizedBox(height: 18),
-            Text(
-              trip.description!,
-              style: Theme.of(context).textTheme.bodyLarge,
+            const SizedBox(height: 12),
+            WarangButton.danger(
+              label: 'Delete trip',
+              icon: WarangGlyphs.delete,
+              onPressed: () {
+                Navigator.of(sheetContext).pop();
+                _confirmDelete(context);
+              },
             ),
           ],
-          const SizedBox(height: 28),
-          const WarangSectionLabel('Moments'),
-          const SizedBox(height: 10),
-          if (moments.isEmpty)
-            Text(
-              trip.startDate == null
-                  ? 'Your moments from this trip will appear here. Add dates to collect photos automatically, or move a moment here from its Edit sheet.'
-                  : 'Your moments from this trip will appear here.',
-              style: Theme.of(context).textTheme.bodyMedium,
-            )
-          else
-            ...moments.map(
-              (moment) => ListTile(
-                contentPadding: EdgeInsets.zero,
-                onTap: () => onOpenMoment(moment),
-                leading: _MomentTileThumbnail(
-                  moment: moment,
-                  photoStore: photoStore,
+        ),
+      ),
+    ),
+  );
+
+  Future<void> _confirmDelete(BuildContext context) async {
+    final count = moments.length;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete this trip?'),
+        content: Text(
+          count == 0
+              ? 'The trip has no moments.'
+              : 'Its $count ${count == 1 ? 'moment moves' : 'moments move'} to Everyday.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Delete trip'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      WarangHaptic.medium.play();
+      await repository.deleteTrip(trip.id);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    final neutrals = WarangNeutrals.of(context);
+    final tone = WarangKeepsake.forTrip(trip);
+    final band = tone?.tint(brightness) ?? neutrals.surface;
+    final detail = tone?.text(brightness) ?? neutrals.inkFaint;
+    final start = trip.startDate;
+    final dates = trip.isEveryday
+        ? 'Casual captures'
+        : start == null
+        ? 'No dates'
+        : '${formatDate(start)}${trip.endDate == null ? '' : ' - ${formatDate(trip.endDate!)}'}';
+    final place = trip.place?.trim();
+    final dark = brightness == Brightness.dark;
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+      child: Scaffold(
+        body: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: ColoredBox(
+                color: band,
+                child: SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 4, 8, 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const BackButton(),
+                            const Spacer(),
+                            if (!trip.isEveryday)
+                              IconButton(
+                                tooltip: 'Trip options',
+                                onPressed: () => _options(context),
+                                icon: const WarangIcon(WarangGlyphs.more),
+                              ),
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              SizedBox(
+                                width: 128,
+                                child: WarangPolaroid(
+                                  frame: const EdgeInsets.fromLTRB(7, 7, 7, 22),
+                                  rotationDegrees: -2,
+                                  photo: MomentPhoto(
+                                    moment: coverMoment(trip, moments),
+                                    photoStore: photoStore,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 18),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Semantics(
+                                      header: true,
+                                      child: TripName(
+                                        trip.title,
+                                        color: neutrals.ink,
+                                      ),
+                                    ),
+                                    if (place != null && place.isNotEmpty) ...[
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        place,
+                                        style: WarangType.meta.copyWith(
+                                          color: detail,
+                                        ),
+                                      ),
+                                    ],
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '$dates · ${countLabel(moments.length, 'moment')}',
+                                      style: WarangType.meta.copyWith(
+                                        color: detail,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                title: Text(
-                  moment.caption ?? moment.placeLabel ?? 'Moment',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: Text(formatMomentTime(moment.capturedAt)),
-                trailing: const WarangIcon(WarangGlyphs.chevron),
               ),
             ),
-        ],
+            if (moments.isEmpty)
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
+                sliver: SliverToBoxAdapter(
+                  child: Text(
+                    start == null && !trip.isEveryday
+                        ? 'Your moments from this trip will appear here. Add dates to collect photos automatically, or move a moment here from its Edit sheet.'
+                        : 'Your moments from this trip will appear here.',
+                    style: WarangType.body.copyWith(color: neutrals.inkSoft),
+                  ),
+                ),
+              )
+            else
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  24,
+                  20,
+                  28 + MediaQuery.paddingOf(context).bottom,
+                ),
+                sliver: SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 18,
+                    crossAxisSpacing: 16,
+                    // Room for a square photo and two lines of caption.
+                    childAspectRatio: .74,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => _MomentPrint(
+                      moment: moments[index],
+                      photoStore: photoStore,
+                      onTap: () => onOpenMoment(moments[index]),
+                    ),
+                    childCount: moments.length,
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _TripCoverImage extends StatefulWidget {
-  const _TripCoverImage({required this.coverPath, required this.photoStore});
-
-  final String? coverPath;
-  final PhotoStore photoStore;
-
-  @override
-  State<_TripCoverImage> createState() => _TripCoverImageState();
-}
-
-class _TripCoverImageState extends State<_TripCoverImage> {
-  Future<File?>? _future;
-
-  @override
-  void initState() {
-    super.initState();
-    _resolve();
-  }
-
-  @override
-  void didUpdateWidget(covariant _TripCoverImage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.coverPath != widget.coverPath ||
-        oldWidget.photoStore != widget.photoStore) {
-      _resolve();
-    }
-  }
-
-  void _resolve() {
-    final path = widget.coverPath;
-    _future = path == null
-        ? null
-        : widget.photoStore
-              .resolve(path)
-              .then<File?>((f) => f)
-              .catchError((_) => null);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_future == null) {
-      return _fallback(context);
-    }
-    return FutureBuilder<File?>(
-      future: _future,
-      builder: (context, snapshot) {
-        final file = snapshot.data;
-        if (file != null && file.existsSync()) {
-          return ClipRRect(
-            borderRadius: BorderRadius.circular(14),
-            child: SizedBox(
-              height: 160,
-              width: double.infinity,
-              child: Image.file(
-                file,
-                fit: BoxFit.cover,
-                frameBuilder: (context, child, frame, sync) =>
-                    sync || frame != null ? child : _fallback(context),
-                errorBuilder: (_, _, _) => _fallback(context),
-              ),
-            ),
-          );
-        }
-        return _fallback(context);
-      },
-    );
-  }
-
-  Widget _fallback(BuildContext context) => Container(
-    height: 160,
-    decoration: BoxDecoration(
-      color: Theme.of(context).extension<MapPalette>()!.landAlt,
-      borderRadius: BorderRadius.circular(14),
-    ),
-    child: const Center(child: WarangIcon(WarangGlyphs.photo, size: 42)),
-  );
-}
-
-class _MomentTileThumbnail extends StatefulWidget {
-  const _MomentTileThumbnail({required this.moment, required this.photoStore});
+/// A moment in the grid: a small polaroid with its caption, or its date
+/// when it has none.
+class _MomentPrint extends StatelessWidget {
+  const _MomentPrint({
+    required this.moment,
+    required this.photoStore,
+    required this.onTap,
+  });
 
   final Moment moment;
   final PhotoStore photoStore;
-
-  @override
-  State<_MomentTileThumbnail> createState() => _MomentTileThumbnailState();
-}
-
-class _MomentTileThumbnailState extends State<_MomentTileThumbnail> {
-  Future<File?>? _future;
-
-  @override
-  void initState() {
-    super.initState();
-    _resolve();
-  }
-
-  @override
-  void didUpdateWidget(covariant _MomentTileThumbnail oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.moment.thumbRelPath != widget.moment.thumbRelPath ||
-        oldWidget.moment.relPath != widget.moment.relPath ||
-        oldWidget.photoStore != widget.photoStore) {
-      _resolve();
-    }
-  }
-
-  void _resolve() {
-    final path = widget.moment.thumbRelPath ?? widget.moment.relPath;
-    _future = path == null
-        ? null
-        : widget.photoStore
-              .resolve(path)
-              .then<File?>((f) => f)
-              .catchError((_) => null);
-  }
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    if (_future == null) {
-      return _fallback(context);
-    }
-    return FutureBuilder<File?>(
-      future: _future,
-      builder: (context, snapshot) {
-        final file = snapshot.data;
-        if (file != null && file.existsSync()) {
-          return ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: SizedBox(
-              width: 44,
-              height: 44,
-              child: Image.file(
-                file,
-                fit: BoxFit.cover,
-                frameBuilder: (context, child, frame, sync) =>
-                    sync || frame != null ? child : _fallback(context),
-                errorBuilder: (_, _, _) => _fallback(context),
-              ),
-            ),
-          );
-        }
-        return _fallback(context);
-      },
+    final neutrals = WarangNeutrals.of(context);
+    final caption = moment.caption?.trim();
+    final written = caption != null && caption.isNotEmpty;
+    // Shantell Sans is only for words the user wrote (V3).
+    final label = written
+        ? caption
+        : moment.placeLabel ?? formatMomentTime(moment.capturedAt);
+    return ClayPressable(
+      onPressed: onTap,
+      semanticLabel: '$label, show on map',
+      builder: (context, press) => Align(
+        alignment: Alignment.topCenter,
+        child: WarangPolaroid(
+          frame: const EdgeInsets.fromLTRB(8, 8, 8, 52),
+          captionStyle: written
+              ? WarangType.hand.copyWith(color: neutrals.ink)
+              : WarangType.meta.copyWith(color: neutrals.inkFaint),
+          caption: label,
+          photo: MomentPhoto(moment: moment, photoStore: photoStore),
+        ),
+      ),
     );
   }
-
-  Widget _fallback(BuildContext context) => Container(
-    width: 44,
-    height: 44,
-    decoration: BoxDecoration(
-      color: Theme.of(context).extension<MapPalette>()!.landAlt,
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: const Center(child: WarangIcon(WarangGlyphs.capture, size: 20)),
-  );
 }

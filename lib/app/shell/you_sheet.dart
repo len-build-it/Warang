@@ -38,6 +38,7 @@ class AvatarBubble extends StatelessWidget {
           child: ProfileAvatar(
             profile: repository.profile,
             photoStore: repository.photoStore,
+            colour: WarangKeepsake.forUser(repository.trips).fill,
             size: 42,
           ),
         ),
@@ -102,6 +103,7 @@ class YouSheet extends StatelessWidget {
                 ProfileAvatar(
                   profile: profile,
                   photoStore: repository.photoStore,
+                  colour: WarangKeepsake.forUser(repository.trips).fill,
                   size: 72,
                   onTap: () => pickProfilePhoto(repository),
                 ),
@@ -306,7 +308,7 @@ class _NameDialogState extends State<_NameDialog> {
 }
 
 /// Circular profile picture, or the maya on the user's colour when there is
-/// no photo (C3). The user's colour is amber until trips have colours.
+/// no photo (C3): their first trip's colour, or amber.
 class ProfileAvatar extends StatefulWidget {
   const ProfileAvatar({
     super.key,
@@ -314,10 +316,14 @@ class ProfileAvatar extends StatefulWidget {
     required this.photoStore,
     this.onTap,
     this.size = 52,
+    this.colour,
   });
 
   final Profile profile;
   final PhotoStore photoStore;
+
+  /// Behind the maya when there is no photo; amber when null.
+  final Color? colour;
   final VoidCallback? onTap;
   final double size;
 
@@ -382,7 +388,7 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
     );
   }
 
-  /// The maya's head on amber, cropped from the bundled artwork until the
+  /// The maya's head on the user's colour, cropped from the bundled artwork until the
   /// layered maya arrives (FEAT-003 D-2).
   Widget _maya() {
     final size = widget.size;
@@ -397,7 +403,7 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
       dimension: size,
       child: ClipOval(
         child: ColoredBox(
-          color: WarangKeepsake.amber.fill,
+          color: widget.colour ?? WarangKeepsake.amber.fill,
           child: Stack(
             clipBehavior: Clip.hardEdge,
             children: [

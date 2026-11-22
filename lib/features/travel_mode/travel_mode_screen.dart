@@ -235,6 +235,11 @@ class TravelModeScreenState extends ConsumerState<TravelModeScreen> {
                 moments: moments,
                 selectedId: selected?.id,
                 placingId: placingId,
+                tripRings: {
+                  for (final trip in repository.trips)
+                    if (WarangKeepsake.forTrip(trip) case final tone?)
+                      trip.id: tone.fill,
+                },
                 palette: theme.extension<MapPalette>()!,
                 dark: dark,
                 tileStore: ref.watch(mapTileStoreProvider),
@@ -268,6 +273,9 @@ class TravelModeScreenState extends ConsumerState<TravelModeScreen> {
               IgnorePointer(
                 child: Center(
                   child: _PlacementPin(
+                    ringColor: placing == null
+                        ? null
+                        : _tripTone(repository, placing.tripId)?.fill,
                     moment: placing,
                     photoStore: photoStore,
                     moving: _moving,
@@ -375,6 +383,14 @@ class TravelModeScreenState extends ConsumerState<TravelModeScreen> {
   }
 }
 
+/// The colour of the trip with [tripId], or null for Everyday.
+KeepsakeTone? _tripTone(WarangRepository repository, String tripId) {
+  for (final trip in repository.trips) {
+    if (trip.id == tripId) return WarangKeepsake.forTrip(trip);
+  }
+  return null;
+}
+
 /// The live moment with [id], or null once it is deleted.
 Moment? momentById(WarangRepository repository, String id) {
   for (final moment in repository.moments) {
@@ -388,11 +404,13 @@ Moment? momentById(WarangRepository repository, String id) {
 /// exact centre of the map.
 class _PlacementPin extends StatefulWidget {
   const _PlacementPin({
+    required this.ringColor,
     required this.moment,
     required this.photoStore,
     required this.moving,
   });
 
+  final Color? ringColor;
   final Moment? moment;
   final PhotoStore photoStore;
   final ValueListenable<bool> moving;
@@ -443,7 +461,8 @@ class _PlacementPinState extends State<_PlacementPin> {
         ),
         child: FutureBuilder<File?>(
           future: _file,
-          builder: (context, snapshot) => WarangPhotoPin(file: snapshot.data),
+          builder: (context, snapshot) =>
+              WarangPhotoPin(file: snapshot.data, ringColor: widget.ringColor),
         ),
       ),
     );
