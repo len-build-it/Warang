@@ -14,16 +14,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart' as sqflite;
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:warang/app/app.dart';
+import 'package:warang/app/app_state.dart';
 import 'package:warang/app/device_providers.dart';
+import 'package:warang/app/theme/components.dart';
 import 'package:warang/app/theme/tokens.dart';
 import 'package:warang/data/db/database.dart';
 import 'package:warang/data/files/photo_store.dart';
 import 'package:warang/data/repository.dart';
 import 'package:warang/features/capture/capture_screen.dart';
+import 'package:warang/features/map/map_tile_store.dart';
 
 const _label = String.fromEnvironment('UX_LABEL', defaultValue: 'latest');
 
@@ -77,6 +81,7 @@ void main() {
   late WarangDatabase database;
   late WarangRepository repository;
   late PhotoStore photoStore;
+  late MapTileStore tileStore;
 
   setUpAll(() async {
     sqfliteFfiInit();
@@ -111,9 +116,12 @@ void main() {
     photoStore = PhotoStore(documentsDirectory: documents);
     repository = WarangRepository(database, photoStore: photoStore);
     await repository.initialize();
+    // In memory, so no camera or location leaks in from an earlier run.
+    tileStore = MapTileStore(databasePath: sqflite.inMemoryDatabasePath);
   });
 
   tearDown(() async {
+    await tileStore.close();
     repository.dispose();
     await database.close();
   });
@@ -151,8 +159,40 @@ void main() {
     });
   }
 
+  /// Pins far enough apart to stand alone at zoom 13, and two that group.
+  Future<void> seedPins(WidgetTester tester) async {
+    await tester.runAsync(() async {
+      await repository.setName('Len');
+      final moments = <(double, double, String)>[
+        (11.9950, 121.9000, 'Puka Beach'),
+        (11.9840, 121.9380, 'Bulabog'),
+        (11.9560, 121.9070, 'Sunset at White Beach'),
+        (11.9450, 121.9390, 'Ferry over'),
+        (11.9456, 121.9394, 'Halo-halo'),
+      ];
+      for (var index = 0; index < moments.length; index++) {
+        final (latitude, longitude, caption) = moments[index];
+        final stored = await photoStore.storeBytesAsset(_photo(index));
+        await repository.addMoment(
+          caption: caption,
+          latitude: latitude,
+          longitude: longitude,
+          relPath: stored.relPath,
+          thumbRelPath: stored.thumbRelPath,
+          width: stored.width,
+          height: stored.height,
+          bytes: stored.bytes,
+          capturedAt: DateTime(2026, 9, 1 + index, 16, 42),
+        );
+      }
+      // The map reopens on the camera the user left it at.
+      await tileStore.saveCamera(const LatLng(11.9690, 121.9180), 13);
+    });
+  }
+
+  // Looking up, reading, and decoding a photo each need a real-async turn.
   Future<void> settle(WidgetTester tester) async {
-    for (var index = 0; index < 6; index++) {
+    for (var index = 0; index < 16; index++) {
       await tester.runAsync(
         () => Future<void>.delayed(const Duration(milliseconds: 120)),
       );
@@ -163,6 +203,7 @@ void main() {
   Widget host(Widget home, Brightness brightness) => ProviderScope(
     overrides: [
       repositoryProvider.overrideWithValue(repository),
+      mapTileStoreProvider.overrideWithValue(tileStore),
       locationReaderProvider.overrideWithValue(
         () async => (latitude: 11.9686, longitude: 121.918),
       ),
@@ -233,7 +274,8 @@ void main() {
       await shot(tester, '14_placement_$theme');
       await tester.tap(find.text('Cancel'));
       await settle(tester);
-      await tester.tapAt(const Offset(200, 120));
+      // On the dimmer, beside the selected pin.
+      await tester.tapAt(const Offset(40, 120));
       await settle(tester);
 
       await tester.tap(find.bySemanticsLabel('Trips').first);
@@ -260,6 +302,19 @@ void main() {
       await settle(tester);
       await tester.tap(find.text('Settings'));
       await shot(tester, '11_settings_$theme');
+    });
+
+    testWidgets('photo pins $theme', (tester) async {
+      phone(tester);
+      await seedPins(tester);
+      await tester.pumpWidget(host(const WarangHome(), brightness));
+      await settle(tester);
+      expect(find.byType(WarangPhotoPin), findsNWidgets(3));
+      expect(find.byType(WarangClusterPin), findsOneWidget);
+      await shot(tester, '16_map_pins_$theme');
+      // The southern pin would be under the card, so the map makes room.
+      await tester.tap(find.bySemanticsLabel('Pin, Sunset at White Beach'));
+      await shot(tester, '17_pin_selected_$theme');
     });
 
     testWidgets('capture $theme', (tester) async {
