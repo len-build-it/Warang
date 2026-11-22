@@ -1,7 +1,7 @@
 # Verification: FEAT-003
 
 Created: 2026-11-21T21:21:00+08:00
-Updated: 2026-11-23T06:39:27+08:00
+Updated: 2026-11-23T06:51:52+08:00
 
 All checks below ran on Len's Windows host with Flutter 3.44.7 (Dart 3.12.2) in the Flutter test runner or the Gradle debug build.
 Screenshots come from `tool/ux_screenshots_test.dart` at 390x844 logical, 2x DPR, in both themes.
@@ -173,3 +173,23 @@ Notes for Len:
 - The empty shelf shows the current maya image until Phase 9's maya.
 - Drift code was regenerated in the same commit as the schema change, because the migration and the generated table cannot build apart.
 - One full test run hung after all tests had finished while some were failing; it did not recur in the next 4 runs.
+
+## Phase 8 (S9 to S12, V8)
+
+Recorded: 2026-11-23T06:51:52+08:00
+
+| Check | Environment | Actual result | Notes |
+| --- | --- | --- | --- |
+| Gate 1: format | Windows host | Passed (exit 0) | - |
+| Gate 2: `flutter analyze` | Windows host | Passed (`No issues found!`) | - |
+| Gate 3: `flutter test` | Windows host | Passed (`+238: All tests passed!`, up from 235) | New: News loading and empty messages, postcards with stamps, staggered search results with and without reduced motion. Updated for new text and widgets only: Settings (Saved map areas, the quiet Clear button, the footer), search rows (polaroid, middle dot), About as a page instead of the system dialog, and the You sheet test now checks the dock is unreachable with a hit test instead of a tap that landed on About. |
+| Found and fixed | Windows host, widget test | Fixed | Clearing saved map areas called `setState` with a closure that returned a Future, which Flutter rejects; it now assigns inside a block. |
+| Gate 4: `flutter build apk --debug` | Windows host | Passed | - |
+| Gate 5: `UX_LABEL=feat-003-phase-8` | Windows host | Passed (`+10: All tests passed!`, 38 PNGs) | New `19_about`. Compared with phase 7: Search rows with polaroid thumbnails; News with its loading message (the test host never finishes loading bundled assets, so the postcards themselves are covered by the widget test, not the screenshot); Settings as clay cards with sentence-case labels; About as a page. Everything else unchanged. |
+| Gate 6: metrics | Windows host | Passed: the News widget test finds a message while loading and when empty; `grep -rniE` for every V8 "current text" string in `lib` returns nothing | - |
+
+Notes for Len:
+
+- About keeps a Licences button, because the system dialog it replaced was the only way to see the open-source licences, and it now names OpenStreetMap and its licence too.
+- News categories in `assets/data/news_items.json` are now in sentence case.
+- The maya pictures on Search, News, Settings, and About are the current image until Phase 9.

@@ -1,7 +1,7 @@
 # Implementation Plan: FEAT-003 Clay keepsake redesign
 
 Created: 2026-11-21T20:38:00+08:00
-Updated: 2026-11-23T06:39:27+08:00
+Updated: 2026-11-23T06:51:52+08:00
 Revision: 1
 Status: Approved - in progress
 Feature spec and revision: [FEAT-003 revision 1](../features/FEAT-003-clay-keepsake-redesign.md)
@@ -221,14 +221,14 @@ Checkpoint message: `docs(plan): FEAT-003 phase 7 - trip colours and shelf`
 ## Phase 8: Search, News, Settings, and About
 
 Requirements: S9 to S12
-State: Approved - not started
+State: Complete (checkpoint commit recorded in `HANDOFF.md`)
 
 ### Tasks
 
-- [ ] Restyle Search (S9) with polaroid thumbnails and the staggered results.
-- [ ] Restyle News (S10) as postcards, and add a clear loading and empty state in place of the lone dot.
-- [ ] Restyle Settings (S11) and add About (S12), both opened from the You sheet.
-- [ ] Apply the V8 copy changes everywhere.
+- [x] Restyle Search (S9) with polaroid thumbnails and the staggered results.
+- [x] Restyle News (S10) as postcards, and add a clear loading and empty state in place of the lone dot.
+- [x] Restyle Settings (S11) and add About (S12), both opened from the You sheet.
+- [x] Apply the V8 copy changes everywhere.
 
 ### Success metrics
 
