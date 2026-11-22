@@ -1,7 +1,7 @@
 # Implementation Plan: FEAT-003 Clay keepsake redesign
 
 Created: 2026-11-21T20:38:00+08:00
-Updated: 2026-11-23T06:10:23+08:00
+Updated: 2026-11-23T06:39:27+08:00
 Revision: 1
 Status: Approved - in progress
 Feature spec and revision: [FEAT-003 revision 1](../features/FEAT-003-clay-keepsake-redesign.md)
@@ -199,17 +199,17 @@ Checkpoint message: `docs(plan): FEAT-003 phase 6 - map, capture, and moment car
 ## Phase 7: Trip colours, Trips shelf, trip detail, and trip form
 
 Requirements: REQ-013, REQ-014, REQ-016, S6 to S8
-State: Approved - not started
+State: Complete (checkpoint commit recorded in `HANDOFF.md`)
 
 ### Tasks
 
-- [ ] Add a nullable `colorKey` text column to `Trips`, bump `schemaVersion` to 2, and add an `onUpgrade` step that adds the column and assigns colours to existing non-Everyday trips in creation order.
-- [ ] Regenerate Drift code in its own commit.
-- [ ] Assign the next colour to new trips in the repository, and add `colorKey` to the `Trip` model.
-- [ ] Draw pin rings and shelf cards in each trip's colour.
-- [ ] Replace the Home tab with the Trips shelf (S6), and delete `analytics_charts.dart` and its tests.
-- [ ] Restyle trip detail (S7) with a polaroid grid and the options sheet.
-- [ ] Rebuild the trip form (S8) as four steps with the colour step.
+- [x] Add a nullable `colorKey` text column to `Trips`, bump `schemaVersion` to 2, and add an `onUpgrade` step that adds the column and assigns colours to existing non-Everyday trips in creation order.
+- [x] Regenerate Drift code in its own commit.
+- [x] Assign the next colour to new trips in the repository, and add `colorKey` to the `Trip` model.
+- [x] Draw pin rings and shelf cards in each trip's colour.
+- [x] Replace the Home tab with the Trips shelf (S6), and delete `analytics_charts.dart` and its tests.
+- [x] Restyle trip detail (S7) with a polaroid grid and the options sheet.
+- [x] Rebuild the trip form (S8) as four steps with the colour step.
 
 ### Success metrics
 

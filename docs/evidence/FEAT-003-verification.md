@@ -1,7 +1,7 @@
 # Verification: FEAT-003
 
 Created: 2026-11-21T21:21:00+08:00
-Updated: 2026-11-23T06:10:23+08:00
+Updated: 2026-11-23T06:39:27+08:00
 
 All checks below ran on Len's Windows host with Flutter 3.44.7 (Dart 3.12.2) in the Flutter test runner or the Gradle debug build.
 Screenshots come from `tool/ux_screenshots_test.dart` at 390x844 logical, 2x DPR, in both themes.
@@ -150,3 +150,26 @@ Len, 2026-11-23 06:06 (Asia/Manila), project thread: "1. i approve, 2. yes, upda
 
 No screen changed, so `feat-003-phase-6` was not re-rendered.
 Not checked on a phone: reconnecting after offline tiles.
+
+## Phase 7 (REQ-013, REQ-014, REQ-016, S6 to S8)
+
+Recorded: 2026-11-23T06:39:27+08:00
+
+| Check | Environment | Actual result | Notes |
+| --- | --- | --- | --- |
+| Gate 4 for the Phase 6 close at `ebf2d13` | Windows host | Passed (`Built build\app\outputs\flutter-apk\app-debug.apk`) | Run before Phase 7 began. |
+| Gate 1: format | Windows host | Passed (exit 0) | - |
+| Gate 2: `flutter analyze` | Windows host | Passed (`No issues found!`) | - |
+| Gate 3: `flutter test` | Windows host | Passed (`+235: All tests passed!`, up from 219) | New: 5 colour data tests in `data_layer_test.dart` (schema 2, next colour, chosen colour, steady fallback, schema 1 upgrade); `trips_shelf_test.dart` (12). Removed with the charts (D-4): the monthly and cumulative `MemoryStats` assertions. Updated for new text and widgets only: the four-step form in `trips_flow_test.dart` and `utility_screens_test.dart`, the stamps in `tactile_memories_test.dart`, and the uncaptioned moment's date label in `user_journey_test.dart`. |
+| Mutation: migration step removed | Windows host | The schema 1 upgrade test failed, then passed once restored | - |
+| Gate 4: `flutter build apk --debug` | Windows host | Passed | - |
+| Gate 5: `UX_LABEL=feat-003-phase-7` | Windows host | Passed (`+10: All tests passed!`, 36 PNGs) | New `18_trip_colour`. Compared with phase 6: the Trips shelf (stamps, Everyday fan, trip card in its tint, New trip), trip detail band and polaroid grid, the four-step form, coral rings on the trip's pins, and coloured trip chips in the edit sheet. Everything else unchanged. |
+| Gate 6: metrics | Windows host | Passed: fresh database at schema 2; schema 1 upgrades and colours trips in creation order; new trips get the next colour; Everyday stays null; `analytics_charts.dart` gone | - |
+
+Notes for Len:
+
+- Creating a trip now takes four steps, as S8 asks, so it costs three more taps than the old single form. Editing goes through the same steps.
+- A trip name too long for one line of Bagel drops to two lines of Atkinson, keeping the V3 rule.
+- The empty shelf shows the current maya image until Phase 9's maya.
+- Drift code was regenerated in the same commit as the schema change, because the migration and the generated table cannot build apart.
+- One full test run hung after all tests had finished while some were failing; it did not recur in the next 4 runs.

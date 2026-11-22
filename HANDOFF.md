@@ -1,8 +1,8 @@
 # Current handoff
 
 Created: 2026-10-16T22:55:00+08:00
-Updated: 2026-11-23T06:10:23+08:00
-State: FEAT-003 Phase 6 approved (P-1); Phases 7-10 running; FEAT-001 and FEAT-002 physical-device checks pending
+Updated: 2026-11-23T06:39:27+08:00
+State: FEAT-003 Phases 1-7 complete; Phases 8-10 running; FEAT-001 and FEAT-002 physical-device checks pending
 Feature: FEAT-003 clay keepsake redesign (spec and plan revision 1)
 
 ## Read first
@@ -47,6 +47,7 @@ FEAT-003 Phase 6 (map, capture, and moment card) complete in the commit `docs(pl
 FEAT-003 Phase 6 visual review fixes (8 must-fix, 8 polish) complete in the commit `docs(plan): FEAT-003 phase 6 - visual review fixes`; the P-1 stop stays open for Len's approval of the re-render.
 The two older map bugs (clustering, attribution) are fixed in the commit `docs(plan): FEAT-003 phase 6 - map bug fixes`.
 P-1 approved; the full-zoom cluster tap and the offline tile fix are in the commit `docs(plan): FEAT-003 phase 6 - approval and last fixes`.
+FEAT-003 Phase 7 complete in the commit `docs(plan): FEAT-003 phase 7 - trip colours and shelf`.
 Preserve the existing untracked paths: `.agents/skills/*`, `.agents/templates/`, `.claude/`, `CLAUDE.md`, `releases/`, and `scripts/`.
 
 ## Checks and evidence
