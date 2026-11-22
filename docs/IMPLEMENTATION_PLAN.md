@@ -665,7 +665,7 @@ Adapted for Warang: aqone caches *feed responses* per feed with a per-feed max a
 
 - [x] **T17.14** Delete the `positions` `Offset` table in `_buildPin`. Pins become `Marker`s at `LatLng(moment.lat, moment.lng)`. **Moments with null coordinates must not render on the map at all** — they surface in the trips sheet with the "Add location" affordance (T5.6), which is exactly why they are allowed to exist.
 - [x] **T17.15** Marker factory — one function producing a photo-pin, a cluster pin, or a selected pin from a moment plus a state, so every pin is built one way. (aqone's `divIcon` factory, in Flutter terms.)
-- [x] **T17.16** Distance-based clustering at the current zoom, replacing the `moments.length > 5` placeholder cluster. Cluster tapping zooms in; it does not open a card.
+- [x] **T17.16** Distance-based clustering at the current zoom, replacing the `moments.length > 5` placeholder cluster. Cluster tapping zooms in; it does not open a card. *Amended 2026-11-23 by Len (FEAT-003 P-1 answer 2): at full zoom, where the pins can never come apart, the tap opens the cluster's newest moment, and swiping reaches the rest.*
 - [x] **T17.17** Layer groups behind a small toggle: **Your moments** / **Clusters** / base map. Structured as a list of toggleable layers even though there are only two now — this is the seam future layers (trip routes, shared books) hang off.
 - [x] **T17.18** Tapping a pin still opens the card **over** the map with the map alive underneath. The map must not rebuild or recentre when the card opens.
 

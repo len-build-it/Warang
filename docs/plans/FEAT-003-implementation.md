@@ -1,7 +1,7 @@
 # Implementation Plan: FEAT-003 Clay keepsake redesign
 
 Created: 2026-11-21T20:38:00+08:00
-Updated: 2026-11-22T22:42:24+08:00
+Updated: 2026-11-23T06:10:23+08:00
 Revision: 1
 Status: Approved - in progress
 Feature spec and revision: [FEAT-003 revision 1](../features/FEAT-003-clay-keepsake-redesign.md)
@@ -168,7 +168,7 @@ Checkpoint message: `docs(plan): FEAT-003 phase 5 - dock and You sheet`
 ## Phase 6: Map, pins, capture, moment card, edit sheet, and placement
 
 Requirements: REQ-009, REQ-015, S2 to S5
-State: Complete; P-1 visual review pending (checkpoint commit recorded in `HANDOFF.md`)
+State: Complete; P-1 approved 2026-11-23 (checkpoint commit recorded in `HANDOFF.md`)
 
 ### Tasks
 
@@ -189,7 +189,10 @@ State: Complete; P-1 visual review pending (checkpoint commit recorded in `HANDO
 
 - [x] Fix the 16 items from the 2026-11-22 visual review and re-render `feat-003-phase-6`.
 - [x] Fix the two older map bugs Len approved on 2026-11-22 (clustering, attribution).
-- [ ] Send Len the Phase 6 screenshots of map, capture, moment card, edit sheet, and placement in both themes, and wait for his approval before Phase 7.
+- [x] Send Len the Phase 6 screenshots of map, capture, moment card, edit sheet, and placement in both themes, and wait for his approval before Phase 7.
+  Len approved on 2026-11-23 06:06 (Asia/Manila) in the project thread: "1. i approve, 2. yes, update the plan 3. yes.", approving the screens with the five spec differences in the evidence log, a cluster tap at full zoom that opens its newest moment (T17.16 amended), and the offline tile fix.
+- [x] At full zoom, a cluster tap opens its newest moment.
+- [x] Replace the corrupt offline placeholder tile and keep it out of the image cache.
 
 Checkpoint message: `docs(plan): FEAT-003 phase 6 - map, capture, and moment card`
 

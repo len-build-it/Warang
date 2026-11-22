@@ -1,7 +1,7 @@
 # Verification: FEAT-003
 
 Created: 2026-11-21T21:21:00+08:00
-Updated: 2026-11-22T22:42:24+08:00
+Updated: 2026-11-23T06:10:23+08:00
 
 All checks below ran on Len's Windows host with Flutter 3.44.7 (Dart 3.12.2) in the Flutter test runner or the Gradle debug build.
 Screenshots come from `tool/ux_screenshots_test.dart` at 390x844 logical, 2x DPR, in both themes.
@@ -136,3 +136,17 @@ Still open, reported to Len and not changed:
 - The offline placeholder tile `_placeholderBytes` in `map_tile_store.dart` is a corrupt PNG (bad IDAT checksum). It causes the `Codec failed to produce an image` logs that earlier entries called expected. Replacing only the bytes would let a blank tile stay in the image cache after the phone reconnects, so the fix also needs an eviction.
 
 Not checked: a phone or emulator, real tiles, and REQ-023 panning smoothness with the new grouping.
+
+## P-1 approval and last Phase 6 fixes
+
+Recorded: 2026-11-23T06:10:23+08:00
+Len, 2026-11-23 06:06 (Asia/Manila), project thread: "1. i approve, 2. yes, update the plan 3. yes."
+
+| Change | Check | Actual result |
+| --- | --- | --- |
+| At full zoom (18) a cluster tap opens its newest moment; below it the tap still zooms, now capped at 18. `docs/IMPLEMENTATION_PLAN.md` T17.16 amended. | `test/map_clusters_and_credit_test.dart` "at full zoom a cluster opens its newest moment" | Failed before the fix (no selection), passes after |
+| The offline placeholder tile is a valid transparent PNG and is evicted from the image cache, so the real tile loads after reconnecting. | `test/map_tile_store_test.dart` "an unreachable tile shows blank and is fetched again next time" | Failed before the fix (`Codec failed to produce an image`), passes after |
+| Gates 1 to 3 | `dart format`, `flutter analyze`, `flutter test` on the Windows host | Passed: 0 changed, `No issues found!`, `+219: All tests passed!`; `Codec failed` log lines in a full run went from 1655 to 0 |
+
+No screen changed, so `feat-003-phase-6` was not re-rendered.
+Not checked on a phone: reconnecting after offline tiles.
