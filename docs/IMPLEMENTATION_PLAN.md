@@ -89,6 +89,12 @@ These are settled decisions. If a task seems to require breaking one, **stop and
 > 1. **"No analytics" in the table above means third-party analytics/telemetry SDKs that phone home** (Firebase Analytics, Sentry, Mixpanel, etc.) — it does **not** mean the Home tab's in-app moments/trips charts (Phase 23). Those are computed entirely on-device from data already in Drift, rendered locally, sent nowhere, and stored nowhere but the existing tables. This was ambiguous enough to be worth spelling out explicitly rather than leaving Luna to infer it.
 > 2. **The News tab (Phase 24) ships static, bundled content only — no network fetch.** The human has stated an intent to eventually monetize this tab with user-curated ads, which would require a real content source and is a genuine future narrowing of the offline rule, on the order of the Phase 17 tile-fetch amendment. **That narrowing is not authorized by this note.** Do not add any network call, ad SDK, or remote content fetch to the News tab without the human explicitly signing off on it as its own decision, the same way Phase 17's tile fetch was.
 
+> **Amendment (2026-11-23, FEAT-004).** Len approved this narrowing in the project thread on 2026-11-23 19:29 (Asia/Manila): "go with recommendation for all of your questions" and "override the original doc rules in order to push this features".
+> The "no geocoding" rule stands: no place lookup is ever sent over the network.
+> A bundled, read-only OpenStreetMap place book may be searched on the phone, and a moment's place may come from it when the user picks it.
+> The "gamification" row is narrowed: private category stamps under the kindness rules of [FEAT-004](features/FEAT-004-places-search-stamps.md) are allowed; points, streaks, fog of war, leaderboards, and anything social stay rejected.
+> The `Moments.placeLabel` column is replaced by a `Places` table and `Moments.placeId` in schema 3, as FEAT-004 D-2 describes.
+
 ### Always do these
 
 - Every table gets `id` (UUID v4), `createdAt`, `updatedAt`, `deletedAt` (nullable), and `authorId`.
@@ -319,7 +325,7 @@ All tables carry: `id TEXT` (UUID v4, primary key), `createdAt`, `updatedAt`, `d
 
 **`Trips`** — `title`, `place?`, `description?`, `startDate?`, `endDate?`, `coverMomentId?`, `isEveryday BOOL`, `tagsJson`
 
-**`Moments`** — `tripId` (**non-null** FK → Trips), `caption?`, `capturedAt`, `latitude?`, `longitude?`, `accuracyM?`, `placeLabel?` (user-typed only, never geocoded), `sortIndex`
+**`Moments`** — `tripId` (**non-null** FK → Trips), `caption?`, `capturedAt`, `latitude?`, `longitude?`, `accuracyM?`, `placeLabel?` (user-typed only, never geocoded; replaced by `placeId?` and the `Places` table in schema 3, see the FEAT-004 amendment), `sortIndex`
 
 **`Photos`** — `momentId` FK, `relPath`, `thumbRelPath`, `width`, `height`, `bytes`, `position`
 

@@ -1,9 +1,9 @@
 # Current handoff
 
 Created: 2026-10-16T22:55:00+08:00
-Updated: 2026-11-23T08:47:34+08:00
-State: FEAT-003 Phases 1-10 complete, physical-device checks and D-2 art pending; FEAT-001 and FEAT-002 physical-device checks pending
-Feature: FEAT-003 clay keepsake redesign (spec and plan revision 1)
+Updated: 2026-11-23T20:15:00+08:00
+State: FEAT-004 spec and plan revision 1 approved, not started; FEAT-003 Phases 1-10 complete, physical-device checks and D-2 art pending; FEAT-001 and FEAT-002 physical-device checks pending
+Feature: FEAT-004 places, place search, and category stamps (spec and plan revision 1, approved); FEAT-003 clay keepsake redesign (spec and plan revision 1)
 
 ## Read first
 
@@ -11,6 +11,8 @@ Feature: FEAT-003 clay keepsake redesign (spec and plan revision 1)
 - [docs/SPEC_INDEX.md](docs/SPEC_INDEX.md)
 - [docs/DESIGN_SPEC.md](docs/DESIGN_SPEC.md) and [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) (architecture; T17 keeps the tile cache in `sqflite`)
 - [docs/features/FEAT-003-clay-keepsake-redesign.md](docs/features/FEAT-003-clay-keepsake-redesign.md) (replaces `docs/DESIGN_SPEC.md` for appearance once implemented) and [docs/plans/FEAT-003-implementation.md](docs/plans/FEAT-003-implementation.md)
+- [docs/features/FEAT-004-places-search-stamps.md](docs/features/FEAT-004-places-search-stamps.md) and [docs/plans/FEAT-004-implementation.md](docs/plans/FEAT-004-implementation.md) (approved; execute from Phase 0)
+- [docs/research/RES-002-place-search-categories-progression.md](docs/research/RES-002-place-search-categories-progression.md) (background research, decided)
 - [docs/research/RES-001-clay-motion-genz.md](docs/research/RES-001-clay-motion-genz.md) (background research, not a spec)
 - [docs/features/FEAT-002-ponytail-cleanup.md](docs/features/FEAT-002-ponytail-cleanup.md)
 - [docs/plans/FEAT-002-implementation.md](docs/plans/FEAT-002-implementation.md)
@@ -29,9 +31,13 @@ Reread these files and inspect actual Git status before acting; prior chat memor
 | FEAT-003 plan (includes P-1 to P-3 as recommended) | Revision 1 | 2026-11-21 20:40 project-thread decision card: "Approve plan as written" on "Approve FEAT-003 plan revision 1 with P-1 to P-3 as recommended?" |
 | FEAT-003 P-1 visual approval, T17.16 amendment, offline tile fix | Phase 6 at `c1f7163` | 2026-11-23 06:06 project thread: "1. i approve, 2. yes, update the plan 3. yes." |
 | FEAT-003 map bug fixes (clustering, attribution) only; not P-1 | - | 2026-11-22 22:28 project thread: "okay you can proceed with fixing it", answering "Should I also fix two older map bugs?" |
+| RES-002 recommendations and the rule overrides in FEAT-004 "Relationship to existing documents" | RES-002 draft of 2026-11-23 19:20 | 2026-11-23 19:29 project thread: "go with recommendation for all of your questions. use /council skill when youre having a hardtime. override the original doc rules in order to push this features. then come up with an implementation plan gemini can execute" |
+| FEAT-004 feature spec | Revision 1 | 2026-11-23 19:37 (Asia/Manila), project thread decision card: "Approve as written" on "Approve FEAT-004 spec and plan revision 1 for Gemini to execute?" |
+| FEAT-004 plan | Revision 1 | 2026-11-23 19:37 (Asia/Manila), project thread decision card: "Approve as written" on "Approve FEAT-004 spec and plan revision 1 for Gemini to execute?" |
 
 Allowed phases (FEAT-002, complete): Phases 1-4 continuously without hard stops (Len's instruction, 2026-11-21), with every gate passing in every phase.
 Allowed phases (FEAT-003): Phases 1-10 continuously, with every gate passing, and one stop after Phase 6 for Len's visual review (plan P-1).
+Allowed phases (FEAT-004): Phases 0-8 continuously, with every gate passing, stopping only at the Phase 1 size budget (if exceeded after the P-1 reductions) and after Phase 6 for Len's visual review.
 
 ## Progress and working tree
 
@@ -69,6 +75,7 @@ FEAT-001 evidence: [docs/evidence/FEAT-001-verification.md](docs/evidence/FEAT-0
 
 ## Next action
 
+00. **FEAT-004:** spec and plan revision 1 approved. Run the plan from Phase 0, which commits these documents; Phases 0-8 run continuously with the two planned stops (Phase 1 size budget, visual review after Phase 6). The FEAT-004 documents, the RES-002 file, and edits to `docs/IMPLEMENTATION_PLAN.md`, `docs/features/FEAT-003-clay-keepsake-redesign.md`, `docs/SPEC_INDEX.md`, and this file are uncommitted until Phase 0.
 0. **FEAT-003:** implemented through Phase 10. Waiting on Len for physical-device checks (REQ-023 steps are in the evidence log) and the layered maya art (D-2).
 1. **Claude UI screenshot capture (requested 2026-11-21):** capture fresh UI screenshots from the current codebase (`ba0c56a`) using [tool/ux_screenshots_test.dart](tool/ux_screenshots_test.dart).
    - Working directory: `C:\Users\User\Desktop\PersonalProjects\04-FUN-STUFF\WARANG\Warang` (inner repo root, not the outer `WARANG/` folder).

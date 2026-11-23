@@ -57,6 +57,7 @@ Out of scope:
 - New capabilities such as home-screen widgets, trip recaps, sharing, backup, or sync.
 - Any network call, account, analytics, or telemetry.
 - Streaks, scores, badges, or any count of missed days.
+  Amended 2026-11-23 by [FEAT-004](FEAT-004-places-search-stamps.md) with Len's approval: private category stamps under FEAT-004's kindness rules are allowed; streaks, scores, and counts of missed days stay out, and REQ-021 stays in force.
 - New runtime package dependencies. Fonts and artwork are bundled assets. Rive is excluded unless Len approves it separately (see D-3).
 - The map tile style in `docs/DESIGN_SPEC.md` section 13, which stays as it is apart from the pin changes here.
 
