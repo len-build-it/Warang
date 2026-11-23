@@ -1,9 +1,9 @@
 # Implementation Plan: FEAT-003 Clay keepsake redesign
 
 Created: 2026-11-21T20:38:00+08:00
-Updated: 2026-11-23T07:09:36+08:00
+Updated: 2026-11-23T08:47:34+08:00
 Revision: 1
-Status: Approved - in progress
+Status: Complete - physical-device checks and D-2 art pending
 Feature spec and revision: [FEAT-003 revision 1](../features/FEAT-003-clay-keepsake-redesign.md)
 Approved baseline and architecture revisions: `docs/IMPLEMENTATION_PLAN.md` at `dc407c5` for architecture; FEAT-003 revision 1 replaces `docs/DESIGN_SPEC.md` for appearance and motion
 Len's chat approval of the feature spec: 2026-11-21 20:37 (Asia/Manila), project thread decision card: "Approve as recommended" on "Approve FEAT-003 revision 1 with the recommended answers to D-1 to D-6?"
@@ -264,16 +264,16 @@ Checkpoint message: `docs(plan): FEAT-003 phase 9 - interactive maya`
 ## Phase 10: Dark mode, text scale, motion, performance, and documents
 
 Requirements: REQ-010, REQ-011, REQ-022, REQ-023, REQ-024, REQ-025
-State: Approved - not started
+State: Complete (checkpoint commit recorded in `HANDOFF.md`)
 
 ### Tasks
 
-- [ ] Review every screen in dark mode against V5 and fix differences.
-- [ ] Render goldens at text scale 2.0 and fix any clipping or overlap.
-- [ ] Run every screen's tests with `disableAnimations: true`.
-- [ ] Prepare the REQ-023 profile-mode check for Len's phone and record it as pending in the evidence log.
-- [ ] Archive `docs/DESIGN_SPEC.md` revision 1 to `docs/archive/DESIGN_SPEC-r1.md`, replace `docs/DESIGN_SPEC.md` with a short pointer to FEAT-003, and update `docs/SPEC_INDEX.md`.
-- [ ] Update the README "Design" section to describe the clay keepsake look.
+- [x] Review every screen in dark mode against V5 and fix differences.
+- [x] Render goldens at text scale 2.0 and fix any clipping or overlap.
+- [x] Run every screen's tests with `disableAnimations: true`.
+- [x] Prepare the REQ-023 profile-mode check for Len's phone and record it as pending in the evidence log.
+- [x] Archive `docs/DESIGN_SPEC.md` revision 1 to `docs/archive/DESIGN_SPEC-r1.md`, replace `docs/DESIGN_SPEC.md` with a short pointer to FEAT-003, and update `docs/SPEC_INDEX.md`.
+- [x] Update the README "Design" section to describe the clay keepsake look.
 
 ### Success metrics
 

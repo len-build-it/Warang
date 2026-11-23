@@ -1,7 +1,7 @@
 # Verification: FEAT-003
 
 Created: 2026-11-21T21:21:00+08:00
-Updated: 2026-11-23T07:09:36+08:00
+Updated: 2026-11-23T08:47:34+08:00
 
 All checks below ran on Len's Windows host with Flutter 3.44.7 (Dart 3.12.2) in the Flutter test runner or the Gradle debug build.
 Screenshots come from `tool/ux_screenshots_test.dart` at 390x844 logical, 2x DPR, in both themes.
@@ -211,3 +211,33 @@ Recorded: 2026-11-23T07:09:36+08:00
 Placeholder art (D-2): until the layered maya arrives, `assets/maya/body.png` is the existing transparent maya (from `design/warang-maya-foreground.png`, cropped and scaled to 360 wide), and props (bag, postcard, binoculars, nightcap, cheer) are small clay badges with glyphs at sizes of 56 and up.
 Poses are motion and props only; the eyes cannot close and wings cannot move until the layers exist.
 Not done, for Len to decide: the first-run "flies into the map" hand-off (it would delay Start, which V6 rule 1 forbids, so Start stays instant), and the foot-tapping pose while typing a caption, because M2 does not place the maya on the edit sheet.
+
+## Phase 10 (REQ-010, REQ-011, REQ-022 to REQ-025)
+
+Recorded: 2026-11-23T08:47:34+08:00
+
+| Check | Environment | Actual result | Notes |
+| --- | --- | --- | --- |
+| Gate 1: format | Windows host | Passed (exit 0) | - |
+| Gate 2: `flutter analyze` | Windows host | Passed (`No issues found!`) | - |
+| Gate 3: `flutter test` | Windows host | Passed (`+267: All tests passed!`, up from 257) | New `test/reduced_motion_test.dart`: ten screens (first run, map, Trips, trip detail, trip form, Search, News, Settings, About, capture) with reduced motion settle with nothing scaled mid-animation and no frame requested. Mutation: letting the first-run maya float under reduced motion made it fail. Updated for new behaviour only: a long trip name may now use three lines. A map test that intermittently left sqflite's 10 s lock-warning timer pending in full runs now lets it run out. |
+| Gate 4: `flutter build apk --debug` | Windows host | Passed | Covers the Phase 9 prop-size change made after its own build. |
+| Gate 5: `UX_LABEL=feat-003-phase-10` | Windows host | Passed (`+10: All tests passed!`, 38 PNGs) | Compared with phase 9: unchanged apart from the polaroid caption strip, which now grows instead of clipping (no change at normal size), the capture chip row, and the settings rows. |
+| REQ-022: `UX_LABEL=feat-003-phase-10-text-2x`, `--dart-define=UX_TEXT_SCALE=2.0` | Windows host | Passed (`+10: All tests passed!`, 38 PNGs, no overflow reported) | The first render found and this phase fixed: the wordmark wrapping on first run and About, the polaroid caption cut to one line, the capture trip chip cut, the name hint cut, settings labels crushed by their values, trip names cut at two lines, and an overflow in the trip detail grid. The dock hides its labels above 160% as Q-3 says. Remaining by design: captions longer than two lines and the edit sheet's trip chips scroll sideways. |
+| REQ-024: dark review | Windows host, by eye | Done | Every phase's dark renders were compared with V5: dark clay uses the 1 px rim, amber keeps its highlight, Everyday pins have a boundary edge, and sheets light only their top. No further differences found. Len reviews the dark screens. |
+| REQ-025: dependencies | `git diff ba0c56a -- pubspec.yaml` | Passed | No runtime dependency added; only font and asset entries changed. |
+| Found and fixed | Windows host | Fixed | Map tiles faded in under reduced motion; they now appear at once. |
+
+### REQ-023: map smoothness on Len's phone (pending)
+
+Not run; it needs Len's phone.
+Steps: seed at least 50 moments with photos spread over a city, run `flutter run --profile`, open the Map, start the DevTools performance view, and pan steadily for 10 seconds.
+Pass: no frame over 16 ms on the UI or raster thread during the pan.
+Record the phone model, Android version, pin count, worst UI and raster frame times, and the date here.
+
+### What is left for FEAT-003
+
+- Len: physical-device checks, including REQ-023 above and a screen reader pass.
+- D-2: the layered maya artwork; the app uses the placeholder until it arrives.
+- Spec differences Len approved at P-1 are listed earlier in this log; the trip form's four steps cost three more taps than the old single form.
+- Q-5 named `docs/evidence/FEAT-003/` for screenshots; they live under `docs/evidence/FEAT-001/feat-003-*` with the earlier harness, as in every phase.

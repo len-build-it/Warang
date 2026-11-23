@@ -1,8 +1,8 @@
 # Current handoff
 
 Created: 2026-10-16T22:55:00+08:00
-Updated: 2026-11-23T07:09:36+08:00
-State: FEAT-003 Phases 1-9 complete; Phases 10-10 running; FEAT-001 and FEAT-002 physical-device checks pending
+Updated: 2026-11-23T08:47:34+08:00
+State: FEAT-003 Phases 1-10 complete, physical-device checks and D-2 art pending; FEAT-001 and FEAT-002 physical-device checks pending
 Feature: FEAT-003 clay keepsake redesign (spec and plan revision 1)
 
 ## Read first
@@ -50,6 +50,7 @@ P-1 approved; the full-zoom cluster tap and the offline tile fix are in the comm
 FEAT-003 Phase 7 complete in the commit `docs(plan): FEAT-003 phase 7 - trip colours and shelf`.
 FEAT-003 Phase 8 complete in the commit `docs(plan): FEAT-003 phase 8 - search, news, and settings`.
 FEAT-003 Phase 9 complete in the commit `docs(plan): FEAT-003 phase 9 - interactive maya`.
+FEAT-003 Phase 10 complete in the commit `docs(plan): FEAT-003 phase 10 - polish and documents`.
 Preserve the existing untracked paths: `.agents/skills/*`, `.agents/templates/`, `.claude/`, `CLAUDE.md`, `releases/`, and `scripts/`.
 
 ## Checks and evidence
@@ -68,7 +69,7 @@ FEAT-001 evidence: [docs/evidence/FEAT-001-verification.md](docs/evidence/FEAT-0
 
 ## Next action
 
-0. **FEAT-003:** P-1 approved on 2026-11-23. Run Phases 7-10 continuously per the plan, with every gate passing.
+0. **FEAT-003:** implemented through Phase 10. Waiting on Len for physical-device checks (REQ-023 steps are in the evidence log) and the layered maya art (D-2).
 1. **Claude UI screenshot capture (requested 2026-11-21):** capture fresh UI screenshots from the current codebase (`ba0c56a`) using [tool/ux_screenshots_test.dart](tool/ux_screenshots_test.dart).
    - Working directory: `C:\Users\User\Desktop\PersonalProjects\04-FUN-STUFF\WARANG\Warang` (inner repo root, not the outer `WARANG/` folder).
    - Command (choose a fresh label such as `claude-review` or `latest`):
