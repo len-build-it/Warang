@@ -7,11 +7,13 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
-import '../../core/formatting.dart';
 import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
+import '../../core/formatting.dart';
 import '../../core/models.dart';
+import '../../core/place_categories.dart';
 import '../../data/files/photo_store.dart';
+import '../../data/places/place_book.dart';
 import 'map_tile_store.dart';
 
 class WarangMapSurface extends StatefulWidget {
@@ -31,6 +33,9 @@ class WarangMapSurface extends StatefulWidget {
     this.onDimmerTap,
     this.landingId,
     this.moving,
+    this.markedPlace,
+    this.onClearMarkedPlace,
+    this.onUserPan,
   });
 
   final List<Moment> moments;
@@ -64,18 +69,28 @@ class WarangMapSurface extends StatefulWidget {
   /// Set true while the user moves the map and false once it rests.
   final ValueNotifier<bool>? moving;
 
+  /// A place chosen from map search (FEAT-004 F1), shown as a stamp marker.
+  final BookPlace? markedPlace;
+  final VoidCallback? onClearMarkedPlace;
+
+  /// Called when the user pans or zooms the map by gesture.
+  final VoidCallback? onUserPan;
+
   @override
   WarangMapSurfaceState createState() => WarangMapSurfaceState();
 }
 
-class WarangMapSurfaceState extends State<WarangMapSurface> {
+class WarangMapSurfaceState extends State<WarangMapSurface>
+    with SingleTickerProviderStateMixin {
   late final MapTileStore _tileStore = widget.tileStore ?? MapTileStore();
   late final PhotoStore _photoStore = widget.photoStore ?? PhotoStore();
   final _mapController = MapController();
+  AnimationController? _moveAnim;
   Position? _position;
   DateTime? _staleSince;
   double _currentZoom = 5.8;
   Timer? _rest;
+  bool _markedPlaceUncached = false;
 
   /// Photo lookups, kept so panning never restarts them and pins never
   /// flash empty between frames.
@@ -104,10 +119,36 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
         _returning.add(id);
       }
     }
+    if (widget.markedPlace != oldWidget.markedPlace) {
+      _checkMarkedPlaceTile();
+    }
+  }
+
+  Future<void> _checkMarkedPlaceTile() async {
+    final place = widget.markedPlace;
+    if (place == null) {
+      if (_markedPlaceUncached && mounted) {
+        setState(() => _markedPlaceUncached = false);
+      }
+      return;
+    }
+    final coords = tileCoordsForLatLng(place.latLng, 16);
+    final cached = await _tileStore.hasTile(16, coords.x, coords.y);
+    if (!mounted || widget.markedPlace != place) return;
+    setState(() => _markedPlaceUncached = !cached);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.markedPlace != null) {
+      _checkMarkedPlaceTile();
+    }
   }
 
   @override
   void dispose() {
+    _moveAnim?.dispose();
     _rest?.cancel();
     if (widget.tileStore == null) _tileStore.close();
     super.dispose();
@@ -136,6 +177,7 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
               // Pins regroup when the app zooms, as well as the user.
               if (zoomed && !hasGesture && mounted) setState(() {});
               if (hasGesture) {
+                widget.onUserPan?.call();
                 widget.moving?.value = true;
                 _rest?.cancel();
                 _rest = Timer(const Duration(milliseconds: 180), () {
@@ -170,6 +212,8 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
               markers: [
                 if (_position != null) _positionMarker(_position!),
                 ..._momentMarkers(),
+                if (widget.markedPlace != null)
+                  _placeMarker(widget.markedPlace!),
               ],
             ),
             if (widget.dimmed)
@@ -336,6 +380,112 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
     double longitude, [
     double zoom = 15.0,
   ]) => _mapController.move(LatLng(latitude, longitude), zoom);
+
+  /// Moves the map to [point] at [zoom] using the FEAT-003 spring, or jumps
+  /// immediately with no animation frames under reduced motion (FEAT-004 F1).
+  void moveToPlace(LatLng point, {double zoom = 16.0}) {
+    _moveAnim?.stop();
+    if (WarangMotion.reduced(context)) {
+      _mapController.move(point, zoom);
+      return;
+    }
+    final startCenter = _mapController.camera.center;
+    final startZoom = _mapController.camera.zoom;
+    final controller = _moveAnim ??= AnimationController(
+      vsync: this,
+      duration: WarangMotion.sheet.duration,
+    );
+    controller.reset();
+    void tick() {
+      if (!mounted) return;
+      final t = WarangMotion.sheet.settleCurve.transform(controller.value);
+      _mapController.move(
+        LatLng(
+          startCenter.latitude + (point.latitude - startCenter.latitude) * t,
+          startCenter.longitude + (point.longitude - startCenter.longitude) * t,
+        ),
+        startZoom + (zoom - startZoom) * t,
+      );
+    }
+
+    controller
+      ..removeListener(tick)
+      ..addListener(tick);
+    controller.forward().whenComplete(() => controller.removeListener(tick));
+  }
+
+  Marker _placeMarker(BookPlace place) {
+    final category =
+        PlaceCategories.byKey(place.category) ?? PlaceCategories.town;
+    final neutrals = WarangNeutrals.of(context);
+    return Marker(
+      point: place.latLng,
+      width: 260,
+      height: _markedPlaceUncached ? 108 : 82,
+      alignment: Alignment.topCenter,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ClaySurface(
+            depth: ClayDepth.clay2,
+            borderRadius: BorderRadius.circular(WarangRadius.control),
+            outline: BorderSide(color: neutrals.boundary),
+            padding: const EdgeInsets.fromLTRB(10, 6, 4, 6),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CategoryDisc(category: category, size: 32),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        place.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: WarangType.titleS.copyWith(color: neutrals.ink),
+                      ),
+                      Text(
+                        category.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: WarangType.meta.copyWith(
+                          color: neutrals.inkFaint,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Close place marker',
+                  onPressed: widget.onClearMarkedPlace,
+                  constraints: const BoxConstraints(
+                    minWidth: 48,
+                    minHeight: 48,
+                  ),
+                  icon: const WarangIcon(WarangGlyphs.close, size: 18),
+                ),
+              ],
+            ),
+          ),
+          if (_markedPlaceUncached) ...[
+            const SizedBox(height: 4),
+            ClaySurface(
+              depth: ClayDepth.clay1,
+              borderRadius: BorderRadius.circular(WarangRadius.chip),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+              child: Text(
+                'Map not saved here yet',
+                style: WarangType.caption.copyWith(color: neutrals.inkSoft),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
 
   /// Keeps a selected pin in the visible strip from [top] to [bottom], as
   /// above the moment card (S4).

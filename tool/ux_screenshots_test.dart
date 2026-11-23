@@ -474,7 +474,7 @@ void main() {
 
       await tester.enterText(find.byType(TextField).last, 'kap');
       await shot(tester, '22_place_picker_typing_$theme');
-      await tester.binding.handlePopRoute();
+      Navigator.of(tester.element(find.byType(PlacePickerSheet))).pop();
       await settle(tester);
 
       late File file;
@@ -494,6 +494,71 @@ void main() {
         ),
       );
       await shot(tester, '23_capture_place_chip_$theme');
+    });
+
+    testWidgets('map search, marker, filter, and placement search $theme', (
+      tester,
+    ) async {
+      phone(tester);
+      await tester.runAsync(() async {
+        await repository.setName('Len');
+        final cafe = (await placeBook.search('Kape ni Juan')).first;
+        final beach = (await placeBook.search('White Beach')).first;
+        final stored0 = await photoStore.storeBytesAsset(_photo(0));
+        final stored1 = await photoStore.storeBytesAsset(_photo(1));
+        await repository.addMoment(
+          caption: 'Morning pour-over',
+          latitude: cafe.latitude,
+          longitude: cafe.longitude,
+          place: cafe,
+          relPath: stored0.relPath,
+          thumbRelPath: stored0.thumbRelPath,
+          width: stored0.width,
+          height: stored0.height,
+          bytes: stored0.bytes,
+          capturedAt: DateTime(2026, 9, 2, 9, 15),
+        );
+        await repository.addMoment(
+          caption: 'Sunset swim',
+          latitude: beach.latitude,
+          longitude: beach.longitude,
+          place: beach,
+          relPath: stored1.relPath,
+          thumbRelPath: stored1.thumbRelPath,
+          width: stored1.width,
+          height: stored1.height,
+          bytes: stored1.bytes,
+          capturedAt: DateTime(2026, 9, 3, 17, 30),
+        );
+        await tileStore.saveCamera(const LatLng(11.83, 122.14), 10);
+      });
+
+      await tester.pumpWidget(host(const WarangHome(), brightness));
+      await settle(tester);
+      await tester.tap(find.text('Cafe'));
+      await settle(tester);
+      await shot(tester, '26_map_filter_$theme');
+      await tester.tap(find.text('All'));
+      await settle(tester);
+
+      await tester.tap(find.bySemanticsLabel('Find a place'));
+      await settle(tester);
+      await tester.enterText(find.byType(TextField).last, 'Kape');
+      await shot(tester, '24_map_search_$theme');
+
+      await tester.tap(find.text('Kape ni Juan'));
+      await shot(tester, '25_map_place_marker_$theme');
+
+      await tester.tap(find.byTooltip('Close place marker'));
+      await settle(tester);
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(WarangHome)),
+      );
+      container
+          .read(placingMomentProvider.notifier)
+          .start(repository.moments.first.id);
+      await settle(tester);
+      await shot(tester, '27_placement_search_$theme');
     });
   }
 }

@@ -75,6 +75,25 @@ class PlacingMomentNotifier extends Notifier<String?> {
   void stop() => state = null;
 }
 
+/// Active category key filtering pins on the map (FEAT-004 F5). In-memory only;
+/// resets when the app restarts.
+final mapCategoryFilterProvider =
+    NotifierProvider<MapCategoryFilterNotifier, String?>(
+      MapCategoryFilterNotifier.new,
+    );
+
+class MapCategoryFilterNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void select(String? categoryKey) => state = categoryKey;
+
+  void toggle(String categoryKey) =>
+      state = state == categoryKey ? null : categoryKey;
+
+  void clear() => state = null;
+}
+
 /// Opens [moment] over the map from anywhere in the app.
 void showMomentOnMap(BuildContext context, WidgetRef ref, Moment moment) {
   Navigator.of(context).popUntil((route) => route.isFirst);

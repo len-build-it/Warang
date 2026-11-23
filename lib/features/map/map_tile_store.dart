@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui';
 
@@ -13,6 +14,20 @@ import 'package:sqflite/sqflite.dart' as sqflite;
 
 const mapTileMaxAge = Duration(days: 30);
 const mapTileMaxBytes = 200 * 1024 * 1024;
+
+/// Slippy-map Web Mercator tile coordinates for [point] at zoom [z].
+({int x, int y}) tileCoordsForLatLng(LatLng point, int z) {
+  final n = 1 << z;
+  final latRad = point.latitude * math.pi / 180.0;
+  final x = ((point.longitude + 180.0) / 360.0 * n).floor().clamp(0, n - 1);
+  final y =
+      ((1.0 - math.log(math.tan(latRad) + 1.0 / math.cos(latRad)) / math.pi) /
+              2.0 *
+              n)
+          .floor()
+          .clamp(0, n - 1);
+  return (x: x, y: y);
+}
 
 class MapTileRecord {
   const MapTileRecord({
@@ -98,6 +113,27 @@ class MapTileStore {
       );
     } finally {
       _opening = null;
+    }
+  }
+
+  Future<bool> hasTile(
+    int z,
+    int x,
+    int y, {
+    String layerId = 'osm-standard',
+  }) async {
+    if (_closed) return false;
+    try {
+      final rows = await (await _db).query(
+        'tiles',
+        columns: const ['z'],
+        where: 'z = ? AND x = ? AND y = ? AND layerId = ?',
+        whereArgs: [z, x, y, layerId],
+        limit: 1,
+      );
+      return rows.isNotEmpty;
+    } catch (_) {
+      return false;
     }
   }
 

@@ -17,9 +17,11 @@ import '../../core/formatting.dart';
 import '../../core/models.dart';
 import '../../core/place_categories.dart';
 import '../../data/files/photo_store.dart';
+import '../../data/places/place_book.dart';
 import '../../data/repository.dart';
 import '../map/warang_map.dart';
 import '../maya/maya_companion.dart';
+import '../places/place_picker_sheet.dart';
 import 'moment_edit_sheet.dart';
 
 /// The map home (S2): the map, the avatar bubble, the recenter button, the
@@ -44,6 +46,13 @@ class TravelModeScreenState extends ConsumerState<TravelModeScreen> {
 
   /// A just-saved moment whose pin lands on the map.
   String? _landingId;
+
+  /// A place chosen from map search (FEAT-004 F1).
+  BookPlace? _markedPlace;
+
+  /// A place chosen from placement search (FEAT-004 F2); cleared if the user
+  /// pans away before confirming.
+  BookPlace? _pendingPlacementPlace;
 
   /// OpenStreetMap's credit must be seen without a tap. It may fold into
   /// its button after five seconds.
@@ -128,12 +137,17 @@ class TravelModeScreenState extends ConsumerState<TravelModeScreen> {
   }
 
   void _startPlacement(Moment moment) {
+    setState(() {
+      _markedPlace = null;
+      _pendingPlacementPlace = null;
+    });
     ref.read(selectedMomentProvider.notifier).clear();
     ref.read(placingMomentProvider.notifier).start(moment.id);
     _focus(moment);
   }
 
   void _endPlacement() {
+    setState(() => _pendingPlacementPlace = null);
     final placing = ref.read(placingMomentProvider);
     final moment = placing == null
         ? null
@@ -148,10 +162,39 @@ class TravelModeScreenState extends ConsumerState<TravelModeScreen> {
     final id = ref.read(placingMomentProvider);
     final center = _mapKey.currentState?.center;
     if (id == null || center == null) return;
-    await ref
-        .read(repositoryProvider)
-        .setMomentLocation(id, center.latitude, center.longitude);
+    final repository = ref.read(repositoryProvider);
+    final pendingPlace = _pendingPlacementPlace;
+    await repository.setMomentLocation(id, center.latitude, center.longitude);
+    if (pendingPlace != null) {
+      await repository.attachBookPlace(id, pendingPlace);
+    }
     if (mounted) _endPlacement();
+  }
+
+  Future<void> _openMapPlaceSearch() async {
+    final c = _mapKey.currentState?.center;
+    final picked = await showPlacePickerSheet(
+      context,
+      near: c == null ? null : LatLng(c.latitude, c.longitude),
+      allowUserPlace: false,
+      showNearbyWhenEmpty: false,
+    );
+    if (!mounted || picked is! BookPlacePick) return;
+    setState(() => _markedPlace = picked.place);
+    _mapKey.currentState?.moveToPlace(picked.place.latLng, zoom: 16);
+  }
+
+  Future<void> _searchDuringPlacement() async {
+    final c = _mapKey.currentState?.center;
+    final picked = await showPlacePickerSheet(
+      context,
+      near: c == null ? null : LatLng(c.latitude, c.longitude),
+      allowUserPlace: false,
+      showNearbyWhenEmpty: false,
+    );
+    if (!mounted || picked is! BookPlacePick) return;
+    setState(() => _pendingPlacementPlace = picked.place);
+    _mapKey.currentState?.moveToPlace(picked.place.latLng, zoom: 16);
   }
 
   void _focus(Moment moment) {
@@ -203,6 +246,37 @@ class TravelModeScreenState extends ConsumerState<TravelModeScreen> {
     final theme = Theme.of(context);
     final dark = theme.brightness == Brightness.dark;
     final moments = repository.moments;
+    final activeCategory = ref.watch(mapCategoryFilterProvider);
+    final categoryCounts = <String, int>{};
+    for (final moment in moments) {
+      final key = moment.placeCategory;
+      if (key != null && PlaceCategories.byKey(key) != null) {
+        categoryCounts[key] = (categoryCounts[key] ?? 0) + 1;
+      }
+    }
+    final filterCategories =
+        categoryCounts.keys
+            .map(PlaceCategories.byKey)
+            .whereType<PlaceCategory>()
+            .toList()
+          ..sort((a, b) {
+            final cmp = (categoryCounts[b.key] ?? 0).compareTo(
+              categoryCounts[a.key] ?? 0,
+            );
+            if (cmp != 0) return cmp;
+            return PlaceCategories.all
+                .indexOf(a)
+                .compareTo(PlaceCategories.all.indexOf(b));
+          });
+    final effectiveFilter =
+        activeCategory != null && categoryCounts.containsKey(activeCategory)
+        ? activeCategory
+        : null;
+    final visibleMoments = effectiveFilter == null
+        ? moments
+        : moments
+              .where((moment) => moment.placeCategory == effectiveFilter)
+              .toList(growable: false);
     final size = MediaQuery.sizeOf(context);
     final selection = ref.watch(selectedMomentProvider);
     final selected = selection == null
@@ -245,7 +319,7 @@ class TravelModeScreenState extends ConsumerState<TravelModeScreen> {
             Positioned.fill(
               child: WarangMapSurface(
                 key: _mapKey,
-                moments: moments,
+                moments: visibleMoments,
                 selectedId: selected?.id,
                 placingId: placingId,
                 tripRings: {
@@ -258,11 +332,25 @@ class TravelModeScreenState extends ConsumerState<TravelModeScreen> {
                 tileStore: ref.watch(mapTileStoreProvider),
                 photoStore: photoStore,
                 onMomentTap: selectionNotifier.select,
-                onMapTap: selected == null ? null : selectionNotifier.clear,
+                onMapTap: selected != null || _markedPlace != null
+                    ? () {
+                        if (selected != null) selectionNotifier.clear();
+                        if (_markedPlace != null) {
+                          setState(() => _markedPlace = null);
+                        }
+                      }
+                    : null,
                 dimmed: selected != null,
                 onDimmerTap: selectionNotifier.clear,
                 landingId: _landingId,
                 moving: _moving,
+                markedPlace: _markedPlace,
+                onClearMarkedPlace: () => setState(() => _markedPlace = null),
+                onUserPan: () {
+                  if (_pendingPlacementPlace != null) {
+                    setState(() => _pendingPlacementPlace = null);
+                  }
+                },
               ),
             ),
             // The dimmer already darkens the top under an open moment.
@@ -280,6 +368,29 @@ class TravelModeScreenState extends ConsumerState<TravelModeScreen> {
                 child: AvatarBubble(
                   repository: repository,
                   onPressed: widget.onOpenYou!,
+                ),
+              ),
+            if (placingId == null && selected == null)
+              Positioned(
+                top: topOffset,
+                left: widget.onOpenYou != null ? 76 : 16,
+                right: 16,
+                child: _FindPlacePill(onPressed: _openMapPlaceSearch),
+              ),
+            if (placingId == null &&
+                selected == null &&
+                filterCategories.length >= 2)
+              Positioned(
+                top: topOffset + 56,
+                left: 0,
+                right: 0,
+                child: _CategoryFilterRow(
+                  categories: filterCategories,
+                  selectedKey: effectiveFilter,
+                  onSelectAll: () =>
+                      ref.read(mapCategoryFilterProvider.notifier).clear(),
+                  onToggle: (key) =>
+                      ref.read(mapCategoryFilterProvider.notifier).toggle(key),
                 ),
               ),
             if (placingId != null) ...[
@@ -302,6 +413,7 @@ class TravelModeScreenState extends ConsumerState<TravelModeScreen> {
                 child: _PlacementBar(
                   onCancel: _endPlacement,
                   onConfirm: _confirmPlacement,
+                  onSearch: _searchDuringPlacement,
                 ),
               ),
             ] else if (selected == null) ...[
@@ -483,9 +595,14 @@ class _PlacementPinState extends State<_PlacementPin> {
 }
 
 class _PlacementBar extends StatelessWidget {
-  const _PlacementBar({required this.onCancel, required this.onConfirm});
+  const _PlacementBar({
+    required this.onCancel,
+    required this.onConfirm,
+    required this.onSearch,
+  });
   final VoidCallback onCancel;
   final VoidCallback onConfirm;
+  final VoidCallback onSearch;
 
   @override
   Widget build(BuildContext context) => WarangSheetFrame(
@@ -507,6 +624,24 @@ class _PlacementBar extends StatelessWidget {
             const SizedBox(height: 14),
             Row(
               children: [
+                ClayPressable(
+                  onPressed: onSearch,
+                  semanticLabel: 'Search for a place',
+                  tooltip: 'Search for a place',
+                  builder: (context, press) => ClaySurface(
+                    depth: ClayDepth.clay1,
+                    press: press,
+                    borderRadius: BorderRadius.circular(WarangRadius.control),
+                    child: const SizedBox(
+                      width: 56,
+                      height: 56,
+                      child: Center(
+                        child: WarangIcon(WarangGlyphs.search, size: 22),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
                 Expanded(
                   child: WarangButton.secondary(
                     besidePrimary: true,
@@ -514,7 +649,7 @@ class _PlacementBar extends StatelessWidget {
                     onPressed: onCancel,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 Expanded(
                   child: WarangButton.primary(
                     label: 'Confirm',
@@ -526,6 +661,103 @@ class _PlacementBar extends StatelessWidget {
           ],
         ),
       ),
+    ),
+  );
+}
+
+/// Top map search pill (FEAT-004 F1): C5-style clay pill, 48 dp tall.
+class _FindPlacePill extends StatelessWidget {
+  const _FindPlacePill({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final neutrals = WarangNeutrals.of(context);
+    return ClayPressable(
+      onPressed: onPressed,
+      semanticLabel: 'Find a place',
+      builder: (context, press) => ExcludeSemantics(
+        child: ClaySurface(
+          depth: ClayDepth.clay2,
+          press: press,
+          borderRadius: BorderRadius.circular(WarangRadius.pill),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 48),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: Row(
+                children: [
+                  WarangIcon(
+                    WarangGlyphs.search,
+                    size: 20,
+                    color: neutrals.inkSoft,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Find a place',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: WarangType.body.copyWith(color: neutrals.inkFaint),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Horizontal row of category filter chips under the map search pill (FEAT-004 F5).
+class _CategoryFilterRow extends StatelessWidget {
+  const _CategoryFilterRow({
+    required this.categories,
+    required this.selectedKey,
+    required this.onSelectAll,
+    required this.onToggle,
+  });
+
+  final List<PlaceCategory> categories;
+  final String? selectedKey;
+  final VoidCallback onSelectAll;
+  final ValueChanged<String> onToggle;
+
+  @override
+  Widget build(BuildContext context) => SingleChildScrollView(
+    scrollDirection: Axis.horizontal,
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: Row(
+      children: [
+        ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 48),
+          child: Center(
+            child: WarangChip(
+              label: 'All',
+              selected: selectedKey == null,
+              onSelected: onSelectAll,
+            ),
+          ),
+        ),
+        for (final category in categories) ...[
+          const SizedBox(width: 8),
+          ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 48),
+            child: Center(
+              child: WarangChip(
+                label: category.name,
+                tone: category.tone,
+                icon: category.glyph,
+                selected: selectedKey == category.key,
+                onSelected: () => onToggle(category.key),
+              ),
+            ),
+          ),
+        ],
+      ],
     ),
   );
 }
