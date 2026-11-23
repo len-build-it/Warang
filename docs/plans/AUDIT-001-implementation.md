@@ -1,9 +1,9 @@
 # Implementation Plan: AUDIT-001 code quality audit report
 
 Created: 2026-11-24T09:30:00+08:00
-Updated: 2026-11-24T07:24:00+08:00
+Updated: 2026-11-24T07:34:00+08:00
 Revision: 1
-Status: In progress (Phase 2 complete)
+Status: In progress (Phase 3 complete)
 Feature spec and revision: None; this plan holds its own requirements (AUD-REQ-001 to AUD-REQ-010) because it produces a report and changes no app behavior
 Approved baseline and architecture revisions: `docs/IMPLEMENTATION_PLAN.md` at `dc407c5`, FEAT-001 to FEAT-004 revision 1 as listed in `docs/SPEC_INDEX.md`
 Len's chat approval: 2026-11-24T07:09:41+08:00 and 2026-11-24T07:10:47+08:00 chat: "read and execute:  docs/audits/AUDIT-001-code-quality-report.md." clarified as "docs/plans/AUDIT-001-implementation.md"
@@ -272,34 +272,34 @@ For each area, answer every question in its checklist in the evidence log, with 
 ## Phase 3: Verify every candidate
 
 Requirements: AUD-REQ-003, AUD-REQ-004, AUD-REQ-005, AUD-REQ-007
-State: Awaiting approval
+State: Complete
 
 ### Tasks
 
-- [ ] For each candidate, apply at least one method from "Verification methods" and record the method, the command or chain, and the observed output in the evidence log.
-- [ ] For every `unnecessary` candidate, use V1, and also check that removing it changes no screen: name the screens or tests that touch the code, or state that none do.
-- [ ] For every `dangerous` candidate rated `critical` or `high`, try V3 first.
+- [x] For each candidate, apply at least one method from "Verification methods" and record the method, the command or chain, and the observed output in the evidence log.
+- [x] For every `unnecessary` candidate, use V1, and also check that removing it changes no screen: name the screens or tests that touch the code, or state that none do.
+- [x] For every `dangerous` candidate rated `critical` or `high`, try V3 first.
       Write the probe under `test/_audit_probe/`, run it with `flutter test test/_audit_probe/<name>_test.dart`, and record the command and output.
       If a probe cannot reach the code without changing `lib/`, use V4 and write down why the probe was not possible.
-- [ ] For every `stdlib` or `native` candidate, add V5 with the API name and URL.
-- [ ] For every `shrink` candidate, write the shorter form in the finding, and count the lines saved.
-- [ ] Merge duplicates: candidates with the same root cause become one finding that lists every location.
-- [ ] Give each surviving candidate a final ID `AUD-NNN`, numbered after ranking in Phase 4, and set its status to Confirmed or Plausible.
+- [x] For every `stdlib` or `native` candidate, add V5 with the API name and URL.
+- [x] For every `shrink` candidate, write the shorter form in the finding, and count the lines saved.
+- [x] Merge duplicates: candidates with the same root cause become one finding that lists every location.
+- [x] Give each surviving candidate a final ID `AUD-NNN`, numbered after ranking in Phase 4, and set its status to Confirmed or Plausible.
       Move every failed candidate to the rejected list with its `C-NNN` ID and a one-line reason.
-- [ ] Second pass: rerun every Confirmed proof command at HEAD and check that each cited `path:line` still points to the quoted code.
+- [x] Second pass: rerun every Confirmed proof command at HEAD and check that each cited `path:line` still points to the quoted code.
       A proof that gives a different result drops to Plausible or Rejected, with the reason recorded.
-- [ ] Delete `test/_audit_probe/` and confirm `git status --porcelain -- test` prints nothing.
+- [x] Delete `test/_audit_probe/` and confirm `git status --porcelain -- test` prints nothing.
 
 ### Verification
 
-- [ ] Gates 1 to 4 pass.
-- [ ] The evidence log shows, for each candidate, one of Confirmed, Plausible, or Rejected, and the counts add up to the Phase 1 and Phase 2 total.
-- [ ] `flutter analyze` and `flutter test` give the same results as the Phase 0 baseline.
+- [x] Gates 1 to 4 pass.
+- [x] The evidence log shows, for each candidate, one of Confirmed, Plausible, or Rejected, and the counts add up to the Phase 1 and Phase 2 total.
+- [x] `flutter analyze` and `flutter test` give the same results as the Phase 0 baseline.
 
 ### Review and checkpoint
 
-- [ ] Stage `docs/evidence/AUDIT-001-verification.md` and `docs/plans/AUDIT-001-implementation.md` only.
-- [ ] Commit `docs(audit): AUDIT-001 phase 3 - verified candidates`, and confirm the hash.
+- [x] Stage `docs/evidence/AUDIT-001-verification.md` and `docs/plans/AUDIT-001-implementation.md` only.
+- [x] Commit `docs(audit): AUDIT-001 phase 3 - verified candidates`, and confirm the hash.
 
 ## Phase 4: Write the report
 

@@ -1,7 +1,7 @@
 # Verification: AUDIT-001
 
 Created: 2026-11-24T07:13:00+08:00
-Updated: 2026-11-24T07:24:00+08:00
+Updated: 2026-11-24T07:34:00+08:00
 
 | Requirement / phase | Check or scenario | Environment and conditions | Actual result | When run | Evidence / limitations |
 | --- | --- | --- | --- | --- | --- |
@@ -15,7 +15,11 @@ Updated: 2026-11-24T07:24:00+08:00
 | Phase 1 / automated scans | Scans `03` to `21` via `public_symbols.py`, `complexity.py`, `duplicates.py`, `run_phase1_scans.py` | Windows 11, Python 3 stdlib + `git grep` | Passed under stated conditions: all 21 scan files (`01` to `21`) written under `docs/audits/AUDIT-001/scans/`, all 4 scripts copied to `docs/audits/AUDIT-001/scripts/`, 46 Phase 1 candidates (`C-001` to `C-046`) logged below | 2026-11-24T07:17:45+08:00 | Every scan file starts with its producing command |
 | Phase 1 / Gates 1-4 | Gate 1, Gate 2, Gate 3, `git worktree list`, scan file headers | Windows 11, `Warang` | Passed under stated conditions: Gate 1 empty, Gate 2 absent, Gate 3 `0`, 1 worktree; committed as `9448f82` | 2026-11-24T07:20:11+08:00 | Clean checkpoint |
 | Phase 2 / manual review | Full line-by-line review of all 49 hand-written `lib/` files (15080 lines), Android manifests/Gradle, tooling scripts, and key test suites (`migration_test.dart`, `android_hardening_test.dart`, `icon_semantics_test.dart`, `maya_test.dart`, `utility_screens_test.dart`), plus cross-check against `docs/SPEC_INDEX.md` and FEAT-001 to FEAT-004 | Windows 11, `Warang` at `9448f82` | Passed under stated conditions: all 49 `lib/` files read in full, all 6 area checklists answered below, 31 manual candidates (`C-047` to `C-077`) added (77 total candidates across Phases 1-2) | 2026-11-24T07:24:00+08:00 | Note: `lib/app/theme/warang_icons.dart` (187 lines) carries a generated header from `design/icons/build_icons.py` but was read in full |
-| Phase 2 / Gates 1-4 | Gate 1, Gate 2, Gate 3, all area checklists answered, all 49 `lib/` files listed | Windows 11, `Warang` | Passed under stated conditions: Gate 1 empty, Gate 2 absent, Gate 3 `0` | 2026-11-24T07:24:30+08:00 | Verified before Phase 2 commit |
+| Phase 2 / Gates 1-4 | Gate 1, Gate 2, Gate 3, all area checklists answered, all 49 `lib/` files listed | Windows 11, `Warang` | Passed under stated conditions: Gate 1 empty, Gate 2 absent, Gate 3 `0`; committed as `081d32d` | 2026-11-24T07:24:30+08:00 | Clean checkpoint |
+| Phase 3 / V3 probes | Temporary reproduction probes under `test/_audit_probe/` (`map_tile_probe_test.dart`, `state_and_data_probe_test.dart`, `capture_back_probe_test.dart`), then deleted | Windows 11, Flutter 3.44.7 | Passed under stated conditions: all 8 probe tests passed and printed observed outputs (7 bug reproductions confirmed; 1 sub-claim on `TileLayer` `User-Agent` disproved because `TileLayer` sets `flutter_map (ph.warang.app)` in `provider.headers`); `test/_audit_probe/` deleted and `git status --porcelain -- test` empty | 2026-11-24T07:28:48+08:00 | Exact probe outputs recorded in Phase 3 section below |
+| Phase 3 / V1 & second pass | Second-pass V1 `git grep`, Android plugin manifest inspection across all 9 plugins in `.flutter-plugins-dependencies`, and line-citation verification at HEAD `081d32d` | Windows 11, Python 3 stdlib + git | Passed under stated conditions: 0 of 9 Android plugins declare `INTERNET`, all V1 reference counts reproduced identically, all cited `path:line` anchors verified at HEAD | 2026-11-24T07:31:19+08:00 | Script executed from `%TEMP%\warang-audit\phase3_verify.py` |
+| Phase 3 / baseline check | `flutter analyze` and `flutter test` after probe deletion | Windows 11, `Warang` at `081d32d` | Passed under stated conditions: `flutter analyze` -> `No issues found! (ran in 55.1s)`; `flutter test` -> `00:44 +329: All tests passed!` (identical to Phase 0 baseline) | 2026-11-24T07:32:35+08:00 | Zero regression, zero product edits |
+| Phase 3 / Gates 1-4 | Gate 1, Gate 2, Gate 3, candidate reconciliation (`50` findings + `15` merged + `12` rejected = `77`) | Windows 11, `Warang` | Passed under stated conditions: Gate 1 empty, Gate 2 absent, Gate 3 `0` | 2026-11-24T07:34:00+08:00 | Ready for Phase 3 commit |
 
 Use Not run, Passed under stated conditions, Failed, or Blocked.
 Record actual commands or repeatable scenarios, not just conclusions.
@@ -225,3 +229,118 @@ Combined Phase 1 + Phase 2 total candidates: **77** (`C-001` to `C-077`).
 - `docs/features/FEAT-003-clay-keepsake-redesign.md`: Bundled font OFL files in `pubspec.yaml` (`C-012`) are required by FEAT-003 V3/REQ-004 (candidate `C-012` conflicts with FEAT-003 REQ-004). `WarangToggle` (`C-065`) is specified in FEAT-003 C11 and `MayaPose.footTap` (`C-069`) in FEAT-003 M4 (conflicts noted). Layered Maya art (`D-2`) is intentionally pending.
 - `docs/features/FEAT-004-places-search-stamps.md`: Separate `assets/place_book/place_book.sqlite` file (`C-002`) is approved under FEAT-004 C-1 and REQ-003 (25.3 MB is within the 40 MB installed budget). `design/icons/` SVG sources and `build_icons.py` (`C-013`) are required by FEAT-004 P-3 and FEAT-003 P-2.
 - `docs/REMEDIATION_IMPLEMENTATION_PLAN.md`: Phase 5 explicitly specifies skipping revalidation for fresh tiles, reusing a bounded HTTP client with timeout, and only batching N+1 photo lookups if profiling justifies it (`C-032`, `C-053`, `C-056`). Non-goals explicitly forbid ad SDKs/advertising (`C-066`).
+
+
+## Phase 3 candidate verification
+
+### Accounting summary
+
+- Total raw candidates from Phase 1 (46) + Phase 2 (31): **77** (`C-001` to `C-077`).
+- Merged duplicates (combined into a finding sharing the same root cause): **15** (`C-003`, `C-004`, `C-009`, `C-011`, `C-015`, `C-022`, `C-023`, `C-024`, `C-031`, `C-037`, `C-041`, `C-042`, `C-052`, `C-056`, `C-060`).
+- Unique evaluated candidates (`77 - 15`): **62**.
+- Reported findings (`Confirmed` + `Plausible`): **50** (`AUD-001` to `AUD-050`: 30 `Confirmed`, 20 `Plausible`).
+- Rejected candidates (in report Appendix): **12** (`C-002`, `C-007`, `C-012`, `C-013`, `C-016`, `C-017`, `C-018`, `C-019`, `C-020`, `C-028`, `C-029`, `C-045`).
+- Check: `50 reported + 15 merged + 12 rejected = 77` (`62 unique - 50 reported = 12 rejected`).
+
+### V3 reproduction probe outputs (run before deleting `test/_audit_probe/`)
+
+Command 1:
+`flutter test -j 1 -r expanded test/_audit_probe/state_and_data_probe_test.dart`
+Observed outputs (all 5 passed):
+- `PROBE_SEARCH_STALE_AFTER_EDIT: stillEmpty=true foundNew=false` (`C-063` / `AUD-016`)
+- `PROBE_CORRUPT_MILESTONES_THREW=FormatException: FormatException: Unexpected character (at character 2)` (`C-025` / `AUD-008`)
+- `PROBE_AVATAR_ORPHAN: first=warang/profile/64433336-5429-4bae-bc41-2227397d4785.jpg second=warang/profile/b735b086-74d8-4b9b-9bff-baa38ec0e241.jpg firstStillExists=true sweepDeleted=0` (`C-048` / `AUD-011`)
+- `PROBE_MAYALINES_FAILED_CACHE: err1=Bad state: boom err2=Bad state: boom` (`C-068` / `AUD-010`)
+- `PROBE_PLACE_PICKER_ERROR: errors=1 (StateError) stuckSpinner=true` (`C-061` / `AUD-014`)
+
+Command 2:
+`flutter test -j 1 -r expanded test/_audit_probe/map_tile_probe_test.dart test/_audit_probe/capture_back_probe_test.dart`
+Observed outputs (all 3 passed):
+- `PROBE_FRESH_HIT_HTTP_REQUESTS=1 paths=[/10/1/2.png] ua=[flutter_map (ph.warang.app)]` (`C-032` + `C-056` / `AUD-002`)
+- `PROBE_TILELAYER_PROVIDER_HEADERS={User-Agent: flutter_map (ph.warang.app)} receivedCount=0 firstUA=null` (disproved the `User-Agent` omission sub-claim in `C-056`, because `flutter_map` `TileLayer` mutates `tileProvider.headers` in place via `putIfAbsent('User-Agent', () => 'flutter_map ($userAgentPackageName)')`)
+- `PROBE_CAPTURE_BACK_MID_SAVE: poppedMidSave=true routeReturned=true poppedResult=null snackBarShown=false momentsInDb=0` (`C-057` / `AUD-005`)
+
+Probe cleanup check:
+`Remove-Item -Recurse -Force test/_audit_probe; git status --porcelain -- test` -> empty output (exit code 0).
+
+### Complete candidate disposition table (`C-001` to `C-077`)
+
+| Candidate | Final ID / disposition | Category | Severity | Status | Method | Verification evidence summary |
+| --- | --- | --- | --- | --- | --- | --- |
+| C-001 | `AUD-019` | dangerous | medium | Confirmed | V2 | `flutter pub outdated` in `00-inventory.txt` reports `sqlite3_flutter_libs 0.5.43 -> 0.6.0+eol`. |
+| C-002 | Rejected | - | - | Rejected | V1 | `assets/place_book/place_book.sqlite` (25.3 MB) is approved by FEAT-004 C-1 and within REQ-003 40 MB budget; `docs/evidence/` PNGs are non-runtime verification files outside APK assets. |
+| C-003 | Merged into `AUD-025` | unnecessary (shrink) | medium | Confirmed | V2 | `dart fix --dry-run` in `02-dart-fix.txt` (`lib/app/theme/clay.dart:746` `unnecessary_null_checks`). |
+| C-004 | Merged into `AUD-025` | unnecessary (shrink) | medium | Confirmed | V2 | `dart fix --dry-run` in `02-dart-fix.txt` (`repository.dart:414`, `trip_detail_screen.dart:127`). |
+| C-005 | `AUD-036` | sloppy | low | Confirmed | V2 | `01-strict-lints.txt`: 29 `discarded_futures` hits across 13 `lib/` files. |
+| C-006 | `AUD-038` | sloppy | low | Confirmed | V2 | `01-strict-lints.txt`: 19 `avoid_catches_without_on_clauses` hits in `lib/` (4 in `test/`). |
+| C-007 | Rejected | - | - | Rejected | V4 | `avoid_slow_async_io` targets CLI/server Dart; async `File.exists()` in Flutter UI intentionally avoids blocking the UI thread. |
+| C-008 | `AUD-025` | unnecessary (shrink) | medium | Confirmed | V2 | `02-dart-fix.txt`: 74 proposed mechanical fixes across 30 files (70 redundant defaults, 1 unnecessary `!`, 2 `== true`, 1 unnecessary lambda). |
+| C-009 | Merged into `AUD-025` | unnecessary (shrink) | medium | Confirmed | V2 | `02-dart-fix.txt`: `test/migration_test.dart:217` `unnecessary_lambdas`. |
+| C-010 | `AUD-026` | unnecessary (delete) | medium | Confirmed | V1 | `git grep -n "Logo.png"` / `"Logo2.png"` -> 0 hits; undeclared in `pubspec.yaml` (2223 KB). |
+| C-011 | Merged into `AUD-026` | unnecessary (delete) | medium | Confirmed | V1 | `git grep -n "warang-canvas.html"` / `"ui-update"` -> 0 hits; 15 undeclared legacy design files (~800+ KB). |
+| C-012 | Rejected | - | - | Rejected | V4 | Font OFL text files in `pubspec.yaml:44-46` are required by `docs/features/FEAT-003-clay-keepsake-redesign.md` V3 and REQ-004. |
+| C-013 | Rejected | - | - | Rejected | V4 | `design/icons/` SVG sources and `build_icons.py` are required build inputs under FEAT-003 P-2 and FEAT-004 P-3. |
+| C-014 | `AUD-024` | unnecessary (delete) | medium | Confirmed | V1 | `git grep -n "upsertImportedTrip" -- lib test tool` -> 1 hit (`lib/data/repository.dart:555` declaration only; 75 lines, 0 callers). |
+| C-015 | Merged into `AUD-027` | unnecessary (delete) | low | Confirmed | V1 | `git grep -n "lightDotInactive"` / `"darkDotInactive"` -> 1 hit each (declarations in `tokens.dart:35-36` only). |
+| C-016 | Rejected | - | - | Rejected | V1 | `WarangStamp.resetSession` is an intentional test-isolation hook called in 6 test files (broader static state tracked under `AUD-010`). |
+| C-017 | Rejected | - | - | Rejected | V1 | `WarangKeepsake.tripTones` is an intentional palette contract constant verified by `test/trips_shelf_test.dart:88`. |
+| C-018 | Rejected | - | - | Rejected | V1 | `PlaceCategories.stampCategories` is an intentional FEAT-004 REQ-009 contract list verified by `test/stamps_test.dart:89,208`. |
+| C-019 | Rejected | - | - | Rejected | V1 | `PhotoStore.storeBytesAsset` is an intentional test/screenshot fixture helper used at 7 call sites across `test/photo_store_test.dart` and `tool/ux_screenshots_test.dart`. |
+| C-020 | Rejected | - | - | Rejected | V1 | `PlaceBook.readMeta` is required by FEAT-004 REQ-002 metadata verification and tested in `test/place_book_test.dart:155`. |
+| C-021 | `AUD-021` | dangerous | low | Confirmed | V2, V4 | `06-catch.txt`: `map_tile_store.dart:235,272` empty `catch (_) {}` blocks silently drop write errors. |
+| C-022 | Merged into `AUD-021` | dangerous | low | Confirmed | V2, V4 | `06-catch.txt`: `you_sheet.dart:459`, `trip_photo.dart:46`, `travel_mode_screen.dart:1102` swallow photo-resolution errors silently. |
+| C-023 | Merged into `AUD-020` | dangerous | low | Confirmed | V2, V4 | `07-null-and-late.txt`: `repository.dart:225` `_placesById[placeId]!` relies on unguarded cache invariant. |
+| C-024 | Merged into `AUD-020` | dangerous | low | Confirmed | V2, V4 | `07-null-and-late.txt`: `clay.dart:61,63`, `trip_form_screen.dart:369`, `warang_map.dart:115` assert `!` on map lookups. |
+| C-025 | `AUD-008` | dangerous | medium | Confirmed | V3, V4 | V3 probe: `PROBE_CORRUPT_MILESTONES_THREW=FormatException` on `repository.dart:345`; V4 unchecked `as` casts on asset JSON in `stamps.dart:33`, `maya_companion.dart:74`, `news_tab_screen.dart:31`. |
+| C-026 | `AUD-020` | dangerous | low | Confirmed | V2, V4 | `08-dynamic-and-casts.txt`: raw `sqflite` row maps cast via `! as` at `map_tile_store.dart:157-164,216-219,246-251`. |
+| C-027 | `AUD-009` | dangerous | medium | Plausible | V4 | `trip_form_screen.dart:98` calls `setState` after `await showDateRangePicker` without `mounted`; also `maya_companion.dart:255` (from `C-069`) and `travel_mode_screen.dart:152`. |
+| C-028 | Rejected | - | - | Rejected | V4 | `place_picker_sheet.dart:156` runs synchronously before `await book.search(...)` at line 157; earlier `await` at line 136 is inside an early-returning `if (query.isEmpty)` branch. |
+| C-029 | Rejected | - | - | Rejected | V4 | Every controller, `FocusNode`, `StreamSubscription`, and `Timer` in `10-lifecycle.txt` has matching `dispose()`/`cancel()` (`_ownFocus?.dispose()` at `clay_components.dart:257`). |
+| C-030 | `AUD-041` | sloppy | low | Confirmed | V1, V2 | `11-sql-and-fts.txt`: `_categoryNameCaseSql` (`database.dart:36-54`) duplicates category display names from `place_categories.dart:32-41` across 4 SQL statements. |
+| C-031 | Merged into `AUD-003` | dangerous | high | Plausible | V4 | `place_book_installer.dart:78-81` deletes `target` before renaming `tmp`. |
+| C-032 | `AUD-002` | dangerous | high | Confirmed | V3, V4 | V3 probe: `PROBE_FRESH_HIT_HTTP_REQUESTS=1` on a 1-minute-old cached tile; V4: new `HttpClient()` per tile with no timeout (`map_tile_store.dart:368-412`). |
+| C-033 | `AUD-047` | sloppy | low | Confirmed | V2 | `14-debug-and-markers.txt`: `test/stamps_test.dart:230-231` and `test/place_book_test.dart:194` print during routine test runs. |
+| C-034 | `AUD-037` | sloppy | low | Confirmed | V2 | `15-hardcoded-style.txt`: 30 literal `EdgeInsets`, `Duration`, and `Colors.transparent` hits outside `lib/app/theme/`. |
+| C-035 | `AUD-039` | sloppy | low | Confirmed | V2 | `16-time-and-random.txt`: direct `DateTime.now()` and unseeded `Random()` in 4 `lib/` files and 3 test files. |
+| C-036 | `AUD-030` | sloppy | medium | Confirmed | V2 | `17-complexity.txt`: 12 hand-written `lib/` files exceed 400 lines (max 1516 lines). |
+| C-037 | Merged into `AUD-030` | sloppy | medium | Confirmed | V2 | `17-complexity.txt`: 34 functions or `build` methods exceed 60 lines (max 264 lines). |
+| C-038 | `AUD-031` | sloppy | medium | Confirmed | V2 | `18-duplicates.txt`: 160 merged duplicate normalized >=8-line window pairs across `lib/`. |
+| C-039 | `AUD-001` | dangerous | critical | Confirmed | V1, V2 | `git grep -n "android.permission.INTERNET" -- android` finds only `debug/` and `profile/`; inspection of all 9 Android plugins in `.flutter-plugins-dependencies` confirmed `INTERNET=False` for every plugin. V3 skipped because building a signed release APK requires untracked `android/key.properties` and a device. |
+| C-040 | `AUD-042` | sloppy | low | Confirmed | V2 | `19-android.txt`: `android/app/build.gradle.kts:57-63` leaves `isMinifyEnabled` and `isShrinkResources` unset on `release`. |
+| C-041 | Merged into `AUD-042` | sloppy | low | Confirmed | V2 | `19-android.txt`: leftover Flutter template `TODO` (`build.gradle.kts:36`) and unchecked `as String` casts on `keystoreProperties` (`:49-52`). |
+| C-042 | Merged into `AUD-022` | dangerous | low | Plausible | V4 | `20-tooling.txt`: `tool/place_book/README.md:26` downloads Geofabrik PBF with no `.md5` checksum check. |
+| C-043 | `AUD-022` | dangerous | low | Plausible | V4 | `20-tooling.txt`: `tool/place_book/build_place_book.py:325,423,427` swallows all exceptions, unlinks output before rebuild, and uses whitespace-sensitive string replacement. |
+| C-044 | `AUD-012` | dangerous | medium | Plausible | V4 | `20-tooling.txt`: `scripts/build-and-archive.sh:50-100` allows 0-APK archives and unescaped JSON heredoc; neither script runs `apksigner verify`. |
+| C-045 | Rejected | - | - | Rejected | V4 | `icon_semantics_test.dart` asserts inside `expectLabelledIcons()`, `maya_test.dart` asserts inside `expectMaya()`, and `tool/ux_screenshots_test.dart` is a golden generator using `matchesGoldenFile`. |
+| C-046 | `AUD-040` | sloppy | low | Confirmed | V2 | `21-tests.txt`: `test/utility_screens_test.dart` calls `Future.delayed` 5 times; `maya_test.dart`, `reduced_motion_test.dart`, `shell_navigation_test.dart` pump fixed 11-second durations. |
+| C-047 | `AUD-004` | dangerous | high | Plausible | V4, V5 | `photo_store.dart:54-67,180-246` runs `img.decodeImage`, `bakeOrientation`, `copyResize`, `encodeJpg` synchronously on UI isolate before checking 30 MP cap; V5 `Isolate.run` (`api.dart.dev`). V3 skipped because proving real frame drop/OOM requires device camera profiling. |
+| C-048 | `AUD-011` | dangerous | medium | Confirmed | V3, V4 | V3 probe: `PROBE_AVATAR_ORPHAN: firstStillExists=true sweepDeleted=0`; `setAvatar` (`repository.dart:129-139`) leaves superseded files and has no DB-failure cleanup. |
+| C-049 | `AUD-017` | dangerous | medium | Plausible | V4 | `database.dart:65-68` runs schema 1->2 outside a transaction; `test/migration_test.dart` tests 1->3 and 2->3 only. |
+| C-050 | `AUD-048` | sloppy | low | Plausible | V4 | `database.dart:138-142,218-320` re-executes 10 DDL statements inside `beforeOpen` on every app launch. |
+| C-051 | `AUD-003` | dangerous | high | Plausible | V4, V5 | `place_book.dart:80-83` opens 25.96 MB SQLite DB with `NativeDatabase(file)` on UI isolate instead of `NativeDatabase.createInBackground(file)` (used in `database.dart:33`). V3 skipped because simulating mid-copy power loss or UI jank requires device instrumentation. |
+| C-052 | Merged into `AUD-003` | dangerous | high | Plausible | V4, V5 | `place_book_installer.dart:55-84,147-162` buffers 25.96 MB in RAM on UI isolate, checks only `expectedBytes` (no SQLite check), and lacks disposal guard in `PlaceBookNotifier.ensureReady`. |
+| C-053 | `AUD-032` | sloppy | medium | Plausible | V4 | `repository.dart:47-67,120-271,399-553,665-748` triggers `_refreshAll()` alongside Drift streams and runs N+1 photo queries without a generation guard. |
+| C-054 | `AUD-034` | sloppy | medium | Plausible | V4 | `main.dart:28` awaits `sweepOrphans` before `runApp()`; `photo_store.dart:118-178` uses `List.contains` (O(N^2)) and soft-deletes per row outside a transaction. |
+| C-055 | `AUD-033` | sloppy | medium | Plausible | V4 | `warang_map.dart:186,197-203,631-636,677-684` persists camera every pan frame, allocates `CachedTileProvider` and mutates pin sets inside `build()`, and never evicts `_photos`. |
+| C-056 | Merged into `AUD-002` | dangerous | high | Confirmed | V3, V4 | Fresh-tile revalidation confirmed by V3; full-table `SUM` + unserialized FIFO eviction on every `put()` verified by V4 (`map_tile_store.dart:172-204`). Note: `User-Agent` omission sub-claim was disproved by V3 (`TileLayer` injects `flutter_map (ph.warang.app)`). |
+| C-057 | `AUD-005` | dangerous | high | Confirmed | V3, V4 | V3 probe: `PROBE_CAPTURE_BACK_MID_SAVE: poppedMidSave=true routeReturned=true poppedResult=null snackBarShown=false momentsInDb=0`; V4 `trip_form_screen.dart:196-209`. |
+| C-058 | `AUD-013` | dangerous | medium | Plausible | V4, V5 | `capture_screen.dart:211-218` and `travel_mode_screen.dart:1157-1164` omit `cacheWidth`/`cacheHeight` on `Image.file`; `_MomentPolaroid.build` calls `file.existsSync()`. V5 `Image.file` (`api.flutter.dev`). |
+| C-059 | `AUD-006` | dangerous | high | Plausible | V4 | `moment_edit_sheet.dart:107-136` runs up to 3 separate repository writes outside a single Drift transaction. V3 skipped because injecting a mid-write fault between sequential `WarangRepository` calls requires subclassing internal DAO wiring. |
+| C-060 | Merged into `AUD-006` | dangerous | high | Plausible | V4 | `travel_mode_screen.dart:192-203` runs 2 sequential repository writes in `_confirmPlacement` with no transaction, saving guard, or `try/catch`. |
+| C-061 | `AUD-014` | dangerous | medium | Confirmed | V3 | V3 probe: `PROBE_PLACE_PICKER_ERROR: errors=1 (StateError) stuckSpinner=true` at `place_picker_sheet.dart:136,157`. |
+| C-062 | `AUD-018` | dangerous | medium | Plausible | V4 | `you_sheet.dart:347-353` calls `ImagePicker().pickImage(...)` and `repository.setAvatar(...)` directly with no `try/catch`. V3 skipped because `ImagePicker` is instantiated inline and cannot be stubbed without editing `lib/`. |
+| C-063 | `AUD-016` | dangerous | medium | Confirmed | V3 | V3 probe: `PROBE_SEARCH_STALE_AFTER_EDIT: stillEmpty=true foundNew=false` at `search_tab_screen.dart:139-142`. |
+| C-064 | `AUD-007` | dangerous | medium | Confirmed | V1, V4 | `git grep -n "mapTileStoreProvider"` shows `lib/main.dart:32` overrides with `overrideWithValue(MapTileStore())`, bypassing `ref.onDispose(store.close)` in `lib/app/app_state.dart:17`. |
+| C-065 | `AUD-023` | unnecessary (delete) | medium | Confirmed | V1 | `git grep -n "WarangToggle" -- lib test tool` -> 0 `lib/` callers (103 lines at `clay_components.dart:1147-1249`; only `test/clay_components_test.dart:297-322`). Conflicts with FEAT-003 C11. |
+| C-066 | `AUD-028` | unnecessary (yagni) | low | Confirmed | V1 | `git grep -n "NewsAdSlot"` -> 0 constructors outside `news_tab_screen.dart:41-42,131`; contradicts `REMEDIATION_IMPLEMENTATION_PLAN.md` non-goals. |
+| C-067 | `AUD-015` | dangerous | medium | Plausible | V4, V5 | `clay.dart:541-583` keys `ClayDiscCache._images` by `Object.hash(...)` (`int`) and evicts `ui.Image` without calling `.dispose()`. V5 `ui.Image.dispose` (`api.flutter.dev`). |
+| C-068 | `AUD-010` | dangerous | medium | Confirmed | V3, V4 | V3 probe: `PROBE_MAYALINES_FAILED_CACHE: err1=Bad state: boom err2=Bad state: boom`; same pattern in `stamp_titles.dart:22-26`; static caches also in `clay_components.dart:383`. |
+| C-069 | `AUD-029` | unnecessary (delete) | low | Confirmed | V1 | `git grep -n "footTap" -- lib test tool` -> 1 hit (`maya_companion.dart:20` declaration only; conflicts with FEAT-003 M4). Note: `_onDragEnd` missing `mounted` check from `C-069` is covered in `AUD-009`. |
+| C-070 | `AUD-043` | sloppy | low | Confirmed | V1, V4 | `tokens.dart:33-34` (`0xFF8A6412`/`0xFFE8A020`) diverges from `palette.dart:67,69`; `tokens.dart:266-267` hardcodes raw error colours. |
+| C-071 | `AUD-049` | sloppy | low | Plausible | V4 | `motion.dart:24-43` creates `SpringDescription` and `SpringSimulation` inside `transformInternal` on every animation frame. |
+| C-072 | `AUD-045` | sloppy | low | Confirmed | V1 | `git grep -n "AboutScreen.version"` and `"1.0.0"` show version hardcoded at `about_screen.dart:12` and read at `settings_screen.dart:103`. |
+| C-073 | `AUD-050` | sloppy | low | Plausible | V4 | `trip_rules.dart:38-42` adds `Duration(days: 1)` without `.toLocal()` normalization, diverging from `stamps.dart:114`. |
+| C-074 | `AUD-044` | sloppy | low | Confirmed | V1 | `HomeTabScreen` renders the "Trips" tab, `TravelModeScreen` renders the "Map" tab, and `MemoryStats` aggregates `Moment` records. |
+| C-075 | `AUD-046` | sloppy | low | Plausible | V4 | `device_providers.dart:35-42` omits `isLocationServiceEnabled()` and explanation dialog compared to `warang_map.dart:526-557`. |
+| C-076 | `AUD-027` | unnecessary (delete) | low | Confirmed | V1 | Zero callers for `WarangButton()` (`clay_components.dart:25`), `WarangField.helperText` (`:206`), `WarangSpeechBubble.tailAlignment`/`tailDown` (`:1323-1324`), `WarangSettingsRow.onTap` (`components.dart:529`). Note: `WarangPositionMarker` (`components.dart:230,246`) was checked and does respect `MediaQuery.of(context).disableAnimations`, so that sub-claim was dropped. |
+| C-077 | `AUD-035` | sloppy | medium | Plausible | V4 | `test/android_hardening_test.dart:5-58` greps raw source files and missed both missing `INTERNET` (`AUD-001`) and unconfigured R8 shrinking (`AUD-042`). |
