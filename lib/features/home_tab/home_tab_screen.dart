@@ -382,7 +382,7 @@ class TripShelfCard extends StatelessWidget {
 }
 
 /// A trip's name in `displayM` when it fits on one line; a longer name
-/// drops to `titleS` over two lines, because Bagel Fat One is never used
+/// drops to `titleS` over up to three lines, because Bagel Fat One is never used
 /// for more than one line (V3).
 class TripName extends StatelessWidget {
   const TripName(this.name, {super.key, required this.color});
@@ -403,7 +403,7 @@ class TripName extends StatelessWidget {
       painter.dispose();
       return Text(
         name,
-        maxLines: fits ? 1 : 2,
+        maxLines: fits ? 1 : 3,
         overflow: TextOverflow.ellipsis,
         style: fits ? display : WarangType.titleS.copyWith(color: color),
       );

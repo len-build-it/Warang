@@ -252,8 +252,11 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                    // Wraps at large text sizes, so the chip keeps its words.
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 16,
+                      runSpacing: 12,
                       children: [
                         // Room for three lines from the start, so nothing
                         // below moves when the location arrives.
@@ -271,13 +274,10 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
                             ),
                           ),
                         ),
-                        const SizedBox(width: 16),
-                        Flexible(
-                          child: WarangChip(
-                            label: 'Saving to ${trip.title}',
-                            tone: WarangKeepsake.forTrip(trip),
-                            icon: WarangGlyphs.trips,
-                          ),
+                        WarangChip(
+                          label: 'Saving to ${trip.title}',
+                          tone: WarangKeepsake.forTrip(trip),
+                          icon: WarangGlyphs.trips,
                         ),
                       ],
                     ),

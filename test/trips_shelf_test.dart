@@ -124,7 +124,7 @@ void main() {
     });
   }
 
-  testWidgets('a long name leaves Bagel for two lines of Atkinson', (
+  testWidgets('a long name leaves Bagel for Atkinson over more lines', (
     tester,
   ) async {
     await tester.runAsync(() async {
@@ -146,7 +146,7 @@ void main() {
       find.text('Boracay long weekend with friends'),
     );
     expect(long.style?.fontFamily, WarangType.textFamily);
-    expect(long.maxLines, 2);
+    expect(long.maxLines, 3);
   });
 
   testWidgets('the stamps count up the first time only', (tester) async {

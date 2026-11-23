@@ -89,7 +89,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ),
                 ),
                 const SizedBox(height: 40),
-                Text('Warang', style: theme.textTheme.displayLarge),
+                // Bagel Fat One is never more than one line (V3), so the
+                // wordmark shrinks to fit rather than wrap.
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Warang',
+                    maxLines: 1,
+                    style: theme.textTheme.displayLarge,
+                  ),
+                ),
                 const SizedBox(height: 12),
                 ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 280),

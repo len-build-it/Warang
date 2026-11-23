@@ -230,5 +230,9 @@ void main() {
     expect(container.read(selectedMomentProvider)?.momentId, moment.id);
     expect(container.read(selectedMomentProvider)?.focus, isTrue);
     expect(find.byType(MomentCard), findsOneWidget);
+    // When the whole suite runs, a tile-cache query can still hold
+    // sqflite's 10 s lock-warning timer here; let it run out.
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(const Duration(seconds: 11));
   });
 }

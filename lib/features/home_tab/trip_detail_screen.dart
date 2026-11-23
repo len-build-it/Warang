@@ -263,21 +263,28 @@ class _TripDetailView extends StatelessWidget {
                   20,
                   28 + MediaQuery.paddingOf(context).bottom,
                 ),
-                sliver: SliverGrid(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 18,
-                    crossAxisSpacing: 16,
-                    // Room for a square photo and two lines of caption.
-                    childAspectRatio: .74,
-                  ),
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) => _MomentPrint(
-                      moment: moments[index],
-                      photoStore: photoStore,
-                      onTap: () => onOpenMoment(moments[index]),
-                    ),
-                    childCount: moments.length,
+                // Two columns in rows that take their tallest print's
+                // height, so captions grow with the text size.
+                sliver: SliverList.separated(
+                  itemCount: (moments.length + 1) ~/ 2,
+                  separatorBuilder: (_, _) => const SizedBox(height: 18),
+                  itemBuilder: (context, row) => Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (final column in [0, 1]) ...[
+                        if (column == 1) const SizedBox(width: 16),
+                        Expanded(
+                          child: row * 2 + column < moments.length
+                              ? _MomentPrint(
+                                  moment: moments[row * 2 + column],
+                                  photoStore: photoStore,
+                                  onTap: () =>
+                                      onOpenMoment(moments[row * 2 + column]),
+                                )
+                              : const SizedBox.shrink(),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ),
@@ -313,16 +320,13 @@ class _MomentPrint extends StatelessWidget {
     return ClayPressable(
       onPressed: onTap,
       semanticLabel: '$label, show on map',
-      builder: (context, press) => Align(
-        alignment: Alignment.topCenter,
-        child: WarangPolaroid(
-          frame: const EdgeInsets.fromLTRB(8, 8, 8, 52),
-          captionStyle: written
-              ? WarangType.hand.copyWith(color: neutrals.ink)
-              : WarangType.meta.copyWith(color: neutrals.inkFaint),
-          caption: label,
-          photo: MomentPhoto(moment: moment, photoStore: photoStore),
-        ),
+      builder: (context, press) => WarangPolaroid(
+        frame: const EdgeInsets.fromLTRB(8, 8, 8, 52),
+        captionStyle: written
+            ? WarangType.hand.copyWith(color: neutrals.ink)
+            : WarangType.meta.copyWith(color: neutrals.inkFaint),
+        caption: label,
+        photo: MomentPhoto(moment: moment, photoStore: photoStore),
       ),
     );
   }

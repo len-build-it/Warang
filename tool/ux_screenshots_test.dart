@@ -32,6 +32,11 @@ import 'package:warang/features/search/search_tab_screen.dart';
 
 const _label = String.fromEnvironment('UX_LABEL', defaultValue: 'latest');
 
+/// The system text size, for the REQ-022 check at 2.0.
+final _textScale = double.parse(
+  const String.fromEnvironment('UX_TEXT_SCALE', defaultValue: '1'),
+);
+
 Future<void> _loadFont(String family, List<String> files) async {
   final loader = FontLoader(family);
   for (final file in files) {
@@ -233,6 +238,8 @@ void main() {
     tester.view.padding = const FakeViewPadding(top: 96, bottom: 68);
     tester.view.viewPadding = const FakeViewPadding(top: 96, bottom: 68);
     addTearDown(tester.view.reset);
+    tester.platformDispatcher.textScaleFactorTestValue = _textScale;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
   }
 
   Future<void> shot(WidgetTester tester, String name) async {
@@ -295,6 +302,9 @@ void main() {
 
       await tester.tap(find.bySemanticsLabel('Trips').first);
       await shot(tester, '07_home_$theme');
+      // At large text sizes the button is further down the shelf.
+      await tester.ensureVisible(find.text('New trip'));
+      await settle(tester);
       await tester.tap(find.text('New trip'));
       await shot(tester, '15_trip_form_$theme');
       await tester.enterText(find.byType(TextField), 'Antique');

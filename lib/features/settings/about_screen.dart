@@ -35,9 +35,14 @@ class AboutScreen extends StatelessWidget {
               Center(
                 child: Semantics(
                   header: true,
-                  child: Text(
-                    'Warang',
-                    style: WarangType.wordmark.copyWith(color: neutrals.ink),
+                  // One line always (V3): it shrinks to fit at large text.
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      'Warang',
+                      maxLines: 1,
+                      style: WarangType.wordmark.copyWith(color: neutrals.ink),
+                    ),
                   ),
                 ),
               ),

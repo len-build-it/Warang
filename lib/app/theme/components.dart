@@ -543,11 +543,18 @@ class WarangSettingsRow extends StatelessWidget {
                   style: WarangType.body.copyWith(color: neutrals.ink),
                 ),
               ),
-              if (value != null)
-                Text(
-                  value!,
-                  style: WarangType.meta.copyWith(color: neutrals.inkSoft),
+              // Label and value share the row, so at large text sizes both
+              // wrap instead of one crushing the other.
+              if (value != null) ...[
+                const SizedBox(width: 12),
+                Flexible(
+                  child: Text(
+                    value!,
+                    textAlign: TextAlign.end,
+                    style: WarangType.meta.copyWith(color: neutrals.inkSoft),
+                  ),
                 ),
+              ],
               if (trailing != null) ...[const SizedBox(width: 10), trailing!],
             ],
           ),

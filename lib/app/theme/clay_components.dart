@@ -291,6 +291,8 @@ class _WarangFieldState extends State<WarangField> {
         focusedBorder: InputBorder.none,
         errorBorder: InputBorder.none,
         hintText: widget.hintText,
+        // A long hint wraps at large text sizes instead of being cut.
+        hintMaxLines: widget.multiline ? null : 3,
         hintStyle:
             widget.hintStyle ??
             WarangType.bodyL.copyWith(color: neutrals.inkFaint),
@@ -832,19 +834,23 @@ class WarangPolaroid extends StatelessWidget {
                 child: photo,
               ),
             ),
-            SizedBox(
-              height: frame.bottom,
+            // The strip grows with large text, so a caption is never cut.
+            ConstrainedBox(
+              constraints: BoxConstraints(minHeight: frame.bottom),
               child: caption == null || caption.isEmpty
                   ? null
                   : Align(
                       alignment: Alignment.centerLeft,
-                      child: Text(
-                        caption,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style:
-                            captionStyle ??
-                            WarangType.handL.copyWith(color: neutrals.ink),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Text(
+                          caption,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              captionStyle ??
+                              WarangType.handL.copyWith(color: neutrals.ink),
+                        ),
                       ),
                     ),
             ),

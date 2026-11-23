@@ -160,6 +160,10 @@ class WarangMapSurfaceState extends State<WarangMapSurface> {
                   },
                 ),
                 maxZoom: 19,
+                // Tiles fade in, except under reduced motion (V6 rule 2).
+                tileDisplay: WarangMotion.reduced(context)
+                    ? const TileDisplay.instantaneous()
+                    : const TileDisplay.fadeIn(),
               ),
             ),
             MarkerLayer(
