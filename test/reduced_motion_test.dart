@@ -9,9 +9,14 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:warang/app/app.dart';
 import 'package:warang/app/app_state.dart';
 import 'package:warang/app/shell/app_shell.dart';
+import 'package:warang/app/shell/you_sheet.dart';
 import 'package:warang/app/theme/components.dart';
 import 'package:warang/app/theme/tokens.dart';
+import 'package:warang/core/place_categories.dart';
+import 'package:warang/core/stamps.dart';
 import 'package:warang/data/db/database.dart';
+import 'package:warang/data/places/place_book.dart';
+import 'package:warang/data/places/place_book_installer.dart';
 import 'package:warang/data/repository.dart';
 import 'package:warang/features/capture/capture_screen.dart';
 import 'package:warang/features/home_tab/home_tab_screen.dart';
@@ -20,14 +25,27 @@ import 'package:warang/features/home_tab/trip_form_screen.dart';
 import 'package:warang/features/map/map_tile_store.dart';
 import 'package:warang/features/news_tab/news_tab_screen.dart';
 import 'package:warang/features/onboarding/onboarding_screen.dart';
+import 'package:warang/features/places/place_picker_sheet.dart';
 import 'package:warang/features/search/search_tab_screen.dart';
 import 'package:warang/features/settings/about_screen.dart';
 import 'package:warang/features/settings/settings_screen.dart';
+import 'package:warang/features/stamps/stamp_page_sheet.dart';
+
+import 'support/place_book_fixture.dart';
+
+class _ReadyBook extends PlaceBookNotifier {
+  _ReadyBook(this._book);
+  final PlaceBook _book;
+
+  @override
+  PlaceBookState build() => PlaceBookState.ready(_book);
+}
 
 void main() {
   late WarangDatabase database;
   late WarangRepository repository;
   late MapTileStore tileStore;
+  late PlaceBook book;
 
   setUpAll(() {
     sqfliteFfiInit();
@@ -41,19 +59,65 @@ void main() {
     await repository.initialize();
     await repository.setName('Len');
     await repository.addTrip('Aklan', 'Malay', null, null);
+    book = await openFixturePlaceBook();
+    final cafe = (await book.search('Kape ni Juan')).first;
+    final cafe2 = (await book.search('Poblacion Brew')).first;
+    final beach = (await book.search('White Beach')).first;
+    await repository.addMoment(
+      caption: 'Morning coffee',
+      latitude: cafe.latitude,
+      longitude: cafe.longitude,
+      place: cafe,
+      capturedAt: DateTime(2026, 8, 1, 9),
+    );
+    await repository.addMoment(
+      caption: 'Afternoon coffee',
+      latitude: cafe.latitude,
+      longitude: cafe.longitude,
+      place: cafe,
+      capturedAt: DateTime(2026, 8, 2, 9),
+    );
+    await repository.addMoment(
+      caption: 'Second cafe',
+      latitude: cafe2.latitude,
+      longitude: cafe2.longitude,
+      place: cafe2,
+      capturedAt: DateTime(2026, 8, 3, 9),
+    );
     await repository.addMoment(
       caption: 'Sunset',
-      latitude: 11.97,
-      longitude: 121.92,
+      latitude: beach.latitude,
+      longitude: beach.longitude,
+      place: beach,
+      capturedAt: DateTime(2026, 8, 4, 17),
     );
     tileStore = MapTileStore(databasePath: sqflite.inMemoryDatabasePath);
   });
 
   tearDown(() async {
+    await book.close();
     await tileStore.close();
     repository.dispose();
     await database.close();
   });
+
+  final sampleStamp = CategoryStamp(
+    categoryKey: 'cafe',
+    tier: 1,
+    title: 'Kape lover',
+    visits: 3,
+    places: 2,
+    firstVisitDate: DateTime(2026, 8, 1),
+    firstVisitPlaceName: 'Kape ni Juan',
+    placeVisits: [
+      PlaceVisitCount(
+        placeId: 'p1',
+        placeName: 'Kape ni Juan',
+        visits: 2,
+        firstVisit: DateTime(2026, 8, 1),
+      ),
+    ],
+  );
 
   final screens = <String, Widget Function(WarangRepository)>{
     'first run': (_) => const OnboardingScreen(),
@@ -68,6 +132,26 @@ void main() {
     'about': (_) => const AboutScreen(),
     'capture': (_) =>
         CaptureScreen(initialPhoto: XFile('missing.jpg'), fetchLocation: false),
+    'place search sheet': (_) => const Scaffold(
+      body: PlacePickerSheet(allowUserPlace: false, showNearbyWhenEmpty: false),
+    ),
+    'place picker sheet': (repo) => Scaffold(
+      body: PlacePickerSheet(
+        allowUserPlace: true,
+        showNearbyWhenEmpty: true,
+        userPlaces: repo.places,
+      ),
+    ),
+    'you sheet stamps': (repo) => Scaffold(
+      body: YouSheet(repository: repo, onSettings: () {}, onAbout: () {}),
+    ),
+    'stamp page sheet': (_) => Scaffold(
+      body: StampPageSheet(
+        stamp: sampleStamp,
+        category: PlaceCategories.cafe,
+        onSelectPlace: (_) {},
+      ),
+    ),
   };
 
   for (final MapEntry(key: name, value: build) in screens.entries) {
@@ -85,6 +169,7 @@ void main() {
           overrides: [
             repositoryProvider.overrideWithValue(repository),
             mapTileStoreProvider.overrideWithValue(tileStore),
+            placeBookProvider.overrideWith(() => _ReadyBook(book)),
           ],
           child: MaterialApp(
             theme: buildWarangTheme(Brightness.light),

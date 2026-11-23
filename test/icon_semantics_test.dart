@@ -19,11 +19,14 @@ import 'package:warang/app/theme/components.dart';
 import 'package:warang/app/theme/tokens.dart';
 import 'package:warang/core/models.dart';
 import 'package:warang/core/place_categories.dart';
+import 'package:warang/core/stamps.dart';
 import 'package:warang/data/db/database.dart';
 import 'package:warang/data/files/photo_store.dart';
 import 'package:warang/data/repository.dart';
 import 'package:warang/features/capture/capture_screen.dart';
 import 'package:warang/features/map/map_tile_store.dart';
+import 'package:warang/features/settings/about_screen.dart';
+import 'package:warang/features/stamps/stamp_page_sheet.dart';
 
 void main() {
   late Directory documents;
@@ -215,4 +218,74 @@ void main() {
     }
     handle.dispose();
   });
+
+  testWidgets(
+    'REQ-029 & REQ-032: credits and new FEAT-004 interactive controls have labels and >= 48 dp targets',
+    (tester) async {
+      final handle = tester.ensureSemantics();
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      // Map credit + Find a place pill.
+      await tester.pumpWidget(host(const AppShell()));
+      await settle(tester);
+      expect(
+        find.textContaining('Places and map © OpenStreetMap contributors'),
+        findsOneWidget,
+      );
+      final pill = find.bySemanticsLabel('Find a place');
+      expect(pill, findsOneWidget);
+      expect(tester.getSize(pill).height, greaterThanOrEqualTo(48));
+
+      // About screen credits (REQ-029).
+      await tester.pumpWidget(host(const AboutScreen()));
+      await settle(tester);
+      expect(
+        find.textContaining('Places and map © OpenStreetMap contributors'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('Place data is available under the ODbL'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('tool/place_book'), findsOneWidget);
+
+      // Stamp page place row target >= 48 dp and labelled.
+      final stamp = CategoryStamp(
+        categoryKey: 'cafe',
+        tier: 1,
+        title: 'Kape lover',
+        visits: 3,
+        places: 2,
+        firstVisitDate: DateTime(2026, 8, 1),
+        firstVisitPlaceName: 'Kape ni Juan',
+        placeVisits: [
+          PlaceVisitCount(
+            placeId: 'p1',
+            placeName: 'Kape ni Juan',
+            visits: 2,
+            firstVisit: DateTime(2026, 8, 1),
+          ),
+        ],
+      );
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: buildWarangTheme(Brightness.light),
+          home: Scaffold(
+            body: StampPageSheet(
+              stamp: stamp,
+              category: PlaceCategories.cafe,
+              onSelectPlace: (_) {},
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+      final row = find.bySemanticsLabel('Kape ni Juan, 2 visits, show on map');
+      expect(row, findsOneWidget);
+      expect(tester.getSize(row).height, greaterThanOrEqualTo(48));
+      handle.dispose();
+    },
+  );
 }

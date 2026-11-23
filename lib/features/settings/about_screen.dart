@@ -65,8 +65,9 @@ class AboutScreen extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(left: 12),
                 child: Text(
-                  'Map data © OpenStreetMap contributors, under the Open '
-                  'Database License: openstreetmap.org/copyright',
+                  'Places and map © OpenStreetMap contributors.\n'
+                  'Place data is available under the ODbL '
+                  '(openstreetmap.org/copyright), built with tool/place_book.',
                   textAlign: TextAlign.center,
                   style: WarangType.meta.copyWith(color: neutrals.inkFaint),
                 ),

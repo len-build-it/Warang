@@ -418,10 +418,13 @@ class WarangMapSurfaceState extends State<WarangMapSurface>
     final category =
         PlaceCategories.byKey(place.category) ?? PlaceCategories.town;
     final neutrals = WarangNeutrals.of(context);
+    final textScale = MediaQuery.textScalerOf(
+      context,
+    ).scale(1.0).clamp(1.0, 2.5);
     return Marker(
       point: place.latLng,
-      width: 260,
-      height: _markedPlaceUncached ? 108 : 82,
+      width: (260 * (1 + (textScale - 1) * 0.35)).clamp(260.0, 350.0),
+      height: (_markedPlaceUncached ? 108.0 : 82.0) * textScale,
       alignment: Alignment.topCenter,
       child: Column(
         mainAxisSize: MainAxisSize.min,

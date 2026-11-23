@@ -841,13 +841,13 @@ class _MapCredit extends StatelessWidget {
   Widget build(BuildContext context) => IgnorePointer(
     child: ClaySurface(
       borderRadius: BorderRadius.circular(WarangRadius.chip),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       child: Text(
-        '© OpenStreetMap contributors\n'
-        'Open Database License\n'
-        'openstreetmap.org/copyright',
+        'Places and map © OpenStreetMap contributors\n'
+        'Open Database License, openstreetmap.org/copyright',
         style: WarangType.caption.copyWith(
           color: WarangNeutrals.of(context).inkSoft,
+          height: 1.15,
         ),
       ),
     ),

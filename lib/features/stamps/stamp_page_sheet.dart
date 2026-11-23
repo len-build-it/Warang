@@ -138,6 +138,7 @@ class _PlaceVisitRow extends StatelessWidget {
     return Semantics(
       button: true,
       label: '${visit.placeName}, $visitsText, show on map',
+      excludeSemantics: true,
       child: InkWell(
         onTap: onTap,
         child: ConstrainedBox(
