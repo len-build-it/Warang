@@ -1,9 +1,9 @@
 # Implementation Plan: AUDIT-001 code quality audit report
 
 Created: 2026-11-24T09:30:00+08:00
-Updated: 2026-11-24T07:19:00+08:00
+Updated: 2026-11-24T07:24:00+08:00
 Revision: 1
-Status: In progress (Phase 1 complete)
+Status: In progress (Phase 2 complete)
 Feature spec and revision: None; this plan holds its own requirements (AUD-REQ-001 to AUD-REQ-010) because it produces a report and changes no app behavior
 Approved baseline and architecture revisions: `docs/IMPLEMENTATION_PLAN.md` at `dc407c5`, FEAT-001 to FEAT-004 revision 1 as listed in `docs/SPEC_INDEX.md`
 Len's chat approval: 2026-11-24T07:09:41+08:00 and 2026-11-24T07:10:47+08:00 chat: "read and execute:  docs/audits/AUDIT-001-code-quality-report.md." clarified as "docs/plans/AUDIT-001-implementation.md"
@@ -217,7 +217,7 @@ Do not judge candidates in this phase; Phase 3 does that.
 ## Phase 2: Manual review by area
 
 Requirements: AUD-REQ-002, AUD-REQ-007
-State: Awaiting approval
+State: Complete
 
 Read every hand-written file in scope in full, in the order below.
 Add new candidates to the evidence log as `C-NNN` rows with source `manual`.
@@ -225,49 +225,49 @@ For each area, answer every question in its checklist in the evidence log, with 
 
 ### Tasks
 
-- [ ] Data layer: `lib/data/db/tables.dart`, `database.dart`, `daos.dart`, `lib/data/repository.dart`, `lib/data/files/photo_store.dart`, and `lib/data/places/*`.
+- [x] Data layer: `lib/data/db/tables.dart`, `database.dart`, `daos.dart`, `lib/data/repository.dart`, `lib/data/files/photo_store.dart`, and `lib/data/places/*`.
       Does any write touch both the database and the file system without a defined order, so a crash between them leaves an orphan file or a row with no file?
       Does every multi-step write run inside a Drift `transaction`?
       Does each schema migration step have a test in `test/migration_test.dart` that starts from the old schema with data?
       Can a user-typed search string reach an FTS5 `MATCH` or a `LIKE` without going through `lib/data/places/fts_query.dart`?
       Does the place book installer check the asset's size, version, or integrity, and what happens if the copy stops halfway?
       Are errors from disk or SQLite caught and shown, or swallowed?
-- [ ] Map: `lib/features/map/warang_map.dart` and `map_tile_store.dart`.
+- [x] Map: `lib/features/map/warang_map.dart` and `map_tile_store.dart`.
       Does the tile request send a user agent that meets the OpenStreetMap tile usage policy?
       Does the tile cache have a size limit and an eviction rule, and does the code enforce it?
       Is the `sqflite` tile database opened and closed once, and is it safe if two tiles write at once?
       Keep the separate `sqflite` cache itself as an approved decision (`docs/IMPLEMENTATION_PLAN.md` T17); report only costs inside it.
-- [ ] Capture and travel mode: `lib/features/capture/`, `lib/features/travel_mode/`, `lib/features/places/`.
+- [x] Capture and travel mode: `lib/features/capture/`, `lib/features/travel_mode/`, `lib/features/places/`.
       Are denied or permanently denied location permissions handled on every path?
       Is a large photo decoded at full size in memory, and is decoding done off the UI isolate?
       After each `await`, does the code check `mounted` or `context.mounted` before using `context` or `setState`?
       Can a user leave the screen during a save and lose the moment without a message?
-- [ ] Screens and shell: `lib/features/home_tab/`, `search/`, `news_tab/`, `stamps/`, `settings/`, `onboarding/`, `maya/`, and `lib/app/`.
+- [x] Screens and shell: `lib/features/home_tab/`, `search/`, `news_tab/`, `stamps/`, `settings/`, `onboarding/`, `maya/`, and `lib/app/`.
       Is any provider, controller, stream, or timer created in `build`, or never disposed?
       Is any widget over 300 lines doing layout, state, and data access together?
       Does `lib/app/app_state.dart` or `device_providers.dart` hold global state that tests cannot reset?
       Is the same concept named two ways across files, for example trip and journey, or moment and memory?
-- [ ] Theme and components: `lib/app/theme/*`.
+- [x] Theme and components: `lib/app/theme/*`.
       Does a token, component, or variant exist with one caller or none?
       Do `components.dart` and `clay_components.dart` implement the same widget twice?
       Do screens bypass tokens with literal colors, sizes, or durations (cross-check `15-hardcoded-style.txt`)?
-- [ ] Android, tooling, and tests: the files from Phase 1 scans `19`, `20`, and `21`.
+- [x] Android, tooling, and tests: the files from Phase 1 scans `19`, `20`, and `21`.
       Is the release build signed with the debug key?
       Would `android:allowBackup` copy the user's photos and database to a cloud backup without the user knowing, and does any spec decide this?
       Does any test pass even when the feature it names is broken?
-- [ ] Cross-check every candidate against the approved documents in `docs/SPEC_INDEX.md` and against FEAT-002.
+- [x] Cross-check every candidate against the approved documents in `docs/SPEC_INDEX.md` and against FEAT-002.
       Mark each candidate that an approved decision requires, and each one FEAT-002 already handled.
 
 ### Verification
 
-- [ ] Gates 1 to 4 pass.
-- [ ] Every area checklist question has an answer in the evidence log.
-- [ ] The evidence log lists every hand-written `lib/` file as read, with its line count.
+- [x] Gates 1 to 4 pass.
+- [x] Every area checklist question has an answer in the evidence log.
+- [x] The evidence log lists every hand-written `lib/` file as read, with its line count.
 
 ### Review and checkpoint
 
-- [ ] Stage `docs/evidence/AUDIT-001-verification.md` and `docs/plans/AUDIT-001-implementation.md` only.
-- [ ] Commit `docs(audit): AUDIT-001 phase 2 - manual review`, and confirm the hash.
+- [x] Stage `docs/evidence/AUDIT-001-verification.md` and `docs/plans/AUDIT-001-implementation.md` only.
+- [x] Commit `docs(audit): AUDIT-001 phase 2 - manual review`, and confirm the hash.
 
 ## Phase 3: Verify every candidate
 
