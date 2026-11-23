@@ -6,7 +6,7 @@
 
 **An offline-first map of your own photographs.**
 
-Aklanon: *warang* — going out and exploring.
+Aklanon: *warang*: going out and exploring.
 
 </div>
 
@@ -14,7 +14,7 @@ Aklanon: *warang* — going out and exploring.
 
 Most photo apps give you a scrolling wall of images. Warang gives you a map.
 
-Open it and you see where you are. Tap once and the camera is already open. The photo you take drops a pin exactly where you stood. Months later, zoom out — and the payoff is a map of everywhere you've been, filled in with your own pictures.
+Open it and you see where you are. Tap once and the camera is already open. The photo you take drops a pin exactly where you stood. Months later, zoom out, and the payoff is a map of everywhere you've been, filled in with your own pictures.
 
 No account. No feed. No servers holding your memories. Previously visited map
 areas remain visible with the radio off; uncached areas need a connection for
@@ -50,13 +50,17 @@ and are not exposed as finished features yet.
 
 ## Design
 
-Warang is deliberately quiet. Three rules govern every screen:
+Warang looks like a Philippine travel keepsake: soft clay controls, photos printed as polaroids, place stamps, and postcards.
+Photos and the map stay flat; only the controls around them are clay.
 
-- Photos are the only saturated thing on screen.
-- The accent colour appears at most four times per screen.
-- Nothing slows down a capture.
+- Amber `#E8A020` is the action colour, and each trip has its own colour from a small keepsake palette.
+- Every text and background pair meets WCAG 2.2 AA in both light and dark.
+- Motion is springy but never delays an action, and it all turns into simple fades under reduced motion.
+- Type is Bagel Fat One, Atkinson Hyperlegible Next, and Shantell Sans, bundled with their licences and never fetched.
+- The maya, the small brown sparrow you see everywhere in the Philippines, carrying a camera, reacts when you tap, hold, or drag it, and cheers your milestones.
+  It never asks you to keep a streak.
 
-Amber `#E8A020` against sage-grey neutrals, in both light and dark, following your system theme. Typeset in Bricolage Grotesque, Public Sans, and DM Mono — bundled, not fetched. The mascot is the maya, the small brown sparrow you see everywhere in the Philippines, here carrying a camera.
+The full specification is [FEAT-003](docs/features/FEAT-003-clay-keepsake-redesign.md).
 
 ## Built with
 
@@ -126,4 +130,4 @@ areas offline. Android cloud backup and device transfer are disabled for the app
 
 ## License
 
-Not yet licensed — all rights reserved for now.
+Not yet licensed: all rights reserved for now.
