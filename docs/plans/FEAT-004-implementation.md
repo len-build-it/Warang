@@ -193,18 +193,18 @@ Checkpoint message: `docs(plan): FEAT-004 phase 4 - categories and glyphs`
 ## Phase 5: Place picker, capture suggestion, and moment card
 
 Requirements: REQ-012, REQ-013, REQ-014, REQ-015, REQ-019, REQ-021
-State: Approved - not started
+State: Complete
 
 ### Tasks
 
-- [ ] Add `lib/features/places/place_picker_sheet.dart` (spec F3): C9-style sheet, focused C5 field, "Nearby", "Your places", "Places", "Use "<text>" as your own place", and "No place"; rows use `CategoryDisc`, `titleS`, and `meta`; 150 ms debounce; place book `preparing` and `failed` states from spec F1.
-- [ ] Replace the "Place name" field in `lib/features/travel_mode/moment_edit_sheet.dart` with a place field that opens the picker, followed by the "Category" C7 chip row (spec F3 step 3).
+- [x] Add `lib/features/places/place_picker_sheet.dart` (spec F3): C9-style sheet, focused C5 field, "Nearby", "Your places", "Places", "Use "<text>" as your own place", and "No place"; rows use `CategoryDisc`, `titleS`, and `meta`; 150 ms debounce; place book `preparing` and `failed` states from spec F1.
+- [x] Replace the "Place name" field in `lib/features/travel_mode/moment_edit_sheet.dart` with a place field that opens the picker, followed by the "Category" C7 chip row (spec F3 step 3).
   Remove the `placeLabel` parameter path added in Phase 3 once nothing uses it.
-- [ ] Capture save screen (`lib/features/capture/capture_screen.dart`, spec F4): the nearby chip and "Other place", with the radius rule, `selectionClick` on toggle, and nothing shown when the fix or place book is missing.
-- [ ] Moment card (`MomentCard` in `lib/features/travel_mode/travel_mode_screen.dart`) and trip detail rows: the category disc beside the place name.
-- [ ] Moment search results show the category disc when a moment has one.
-- [ ] Add screens to `tool/ux_screenshots_test.dart`: `21_place_picker_<theme>` (nearby list), `22_place_picker_typing_<theme>`, `23_capture_place_chip_<theme>`, and update `13_edit_sheet` and `04_moment_open` fixtures so one moment has a cafe.
-- [ ] Widget tests for REQ-012 to REQ-015, REQ-019, and REQ-021.
+- [x] Capture save screen (`lib/features/capture/capture_screen.dart`, spec F4): the nearby chip and "Other place", with the radius rule, `selectionClick` on toggle, and nothing shown when the fix or place book is missing.
+- [x] Moment card (`MomentCard` in `lib/features/travel_mode/travel_mode_screen.dart`) and trip detail rows: the category disc beside the place name.
+- [x] Moment search results show the category disc when a moment has one.
+- [x] Add screens to `tool/ux_screenshots_test.dart`: `21_place_picker_<theme>` (nearby list), `22_place_picker_typing_<theme>`, `23_capture_place_chip_<theme>`, and update `13_edit_sheet` and `04_moment_open` fixtures so one moment has a cafe.
+- [x] Widget tests for REQ-012 to REQ-015, REQ-019, and REQ-021.
 
 ### Success metrics
 
