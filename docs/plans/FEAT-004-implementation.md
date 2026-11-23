@@ -216,18 +216,18 @@ Checkpoint message: `docs(plan): FEAT-004 phase 5 - place picker and capture sug
 ## Phase 6: Map search, placement search, and category filter
 
 Requirements: REQ-007, REQ-008, REQ-009, REQ-020
-State: Approved - not started
+State: Implemented - awaiting Planned stop 2 visual approval
 
 ### Tasks
 
-- [ ] Add the "Find a place" pill at the top of the map, to the right of the avatar bubble, at the avatar's vertical centre, as a C5-style clay pill with the search glyph, height 48, ending 16 from the right edge; hidden during pin placement and while a moment card is open.
-- [ ] Reuse the picker list for map search (spec F1), without "Your places" or "Use as your own place", and with the empty-state line and maya.
-- [ ] Map move: zoom 16 with the FEAT-003 map spring, a jump under reduced motion; a stamp-shaped `PlaceMarker` layer in `lib/features/map/warang_map.dart` with name, category disc, and a close control; tapping the map clears it.
-- [ ] "Map not saved here yet": when offline and the tile store has no tile for the marker's tile at zoom 16, show the line under the marker. Add the smallest query needed to `MapTileStore` (`hasTile(z, x, y)`).
-- [ ] Placement bar search button (spec F2): moving the map to the place, holding the pending `BookPlace`, dropping it when the user pans, and attaching it on Confirm through `attachBookPlace`.
-- [ ] Category filter row (spec F5) under the pill: only categories with moments, ordered by moment count, shown when two or more exist; the filter is in-memory state in `lib/app/app_state.dart`; the pins and cluster counts in `warang_map.dart` respect it.
-- [ ] Add screens: `24_map_search_<theme>`, `25_map_place_marker_<theme>`, `26_map_filter_<theme>`, `27_placement_search_<theme>`.
-- [ ] Widget tests for REQ-007, REQ-008, REQ-009, and REQ-020, and the map navigation tests still pass.
+- [x] Add the "Find a place" pill at the top of the map, to the right of the avatar bubble, at the avatar's vertical centre, as a C5-style clay pill with the search glyph, height 48, ending 16 from the right edge; hidden during pin placement and while a moment card is open.
+- [x] Reuse the picker list for map search (spec F1), without "Your places" or "Use as your own place", and with the empty-state line and maya.
+- [x] Map move: zoom 16 with the FEAT-003 map spring, a jump under reduced motion; a stamp-shaped `PlaceMarker` layer in `lib/features/map/warang_map.dart` with name, category disc, and a close control; tapping the map clears it.
+- [x] "Map not saved here yet": when offline and the tile store has no tile for the marker's tile at zoom 16, show the line under the marker. Add the smallest query needed to `MapTileStore` (`hasTile(z, x, y)`).
+- [x] Placement bar search button (spec F2): moving the map to the place, holding the pending `BookPlace`, dropping it when the user pans, and attaching it on Confirm through `attachBookPlace`.
+- [x] Category filter row (spec F5) under the pill: only categories with moments, ordered by moment count, shown when two or more exist; the filter is in-memory state in `lib/app/app_state.dart`; the pins and cluster counts in `warang_map.dart` respect it.
+- [x] Add screens: `24_map_search_<theme>`, `25_map_place_marker_<theme>`, `26_map_filter_<theme>`, `27_placement_search_<theme>`.
+- [x] Widget tests for REQ-007, REQ-008, REQ-009, and REQ-020, and the map navigation tests still pass.
 - [ ] **Planned stop 2:** send Len the screenshots `21` to `27`, `04`, and `13` in both themes and wait for approval before Phase 7. Record his words and time in `HANDOFF.md`.
 
 ### Success metrics
