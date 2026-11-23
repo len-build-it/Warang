@@ -41,7 +41,14 @@ moment, place, and day counts and capture-trend charts.
 
 **News.** The News tab contains a small bundled set of offline travel notes.
 
-**Search.** Full-text search across captions and places, offline.
+**Places.** Search named Philippine places offline from the map or while placing a pin by hand.
+Every saved place can have a category, and capture offers a nearby place chip when a GPS fix matches the bundled place book.
+The map can also be filtered by category once two or more categories have moments.
+
+**Stamps.** Visiting places in a category earns keepsake category stamps on the You sheet, with richer rings as visits and distinct places grow.
+Stamps always reflect your current moments, never count down, and never track streaks or missed days.
+
+**Search.** Full-text search across your moments (captions, place names, and categories) alongside offline place search on the map.
 
 Backup, restore, sharing, and `.travelbook`
 import/export are tracked in
@@ -113,8 +120,12 @@ lib/
     map/          Map surface and offline tile store
     news_tab/     Bundled offline notes
     onboarding/   First run
-    settings/     Settings
+    places/       Offline place picker and search sheet
+    settings/     Settings and About
+    stamps/       Category stamp titles and stamp page sheet
     travel_mode/  Capture, map, search, and moment cards
+tool/
+  place_book/     Offline Philippine OpenStreetMap place book builder
 docs/             Implementation plan and design spec
 design/           Brand assets and the design canvas export
 assets/           Fonts and logos
@@ -123,10 +134,11 @@ test/             Widget and data-layer tests
 
 ## Privacy
 
-Warang makes no account, no sync, no telemetry, and no geocoding calls. Photos
-and locations live in the app's own storage and are never uploaded by Warang.
-OpenStreetMap tiles are the only network fetch, which means OpenStreetMap's servers see which map areas you view; tiles are cached for revisiting
-areas offline. Android cloud backup and device transfer are disabled for the app's data.
+Warang makes no account, no sync, no telemetry, and no geocoding calls.
+Place search uses a bundled read-only Philippine place book (`assets/place_book/place_book.sqlite`, built from OpenStreetMap data under the ODbL), so search queries never leave the phone.
+Photos and locations live in the app's own storage and are never uploaded by Warang.
+OpenStreetMap tiles are the only network fetch, which means OpenStreetMap's servers see which map areas you view; tiles are cached for revisiting areas offline.
+Android cloud backup and device transfer are disabled for the app's data.
 
 ## License
 

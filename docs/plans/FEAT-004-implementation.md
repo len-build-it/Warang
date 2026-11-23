@@ -264,16 +264,16 @@ Checkpoint message: `docs(plan): FEAT-004 phase 7 - category stamps`
 ## Phase 8: Polish, accessibility, and documents
 
 Requirements: REQ-029, REQ-030, REQ-031, REQ-032, REQ-033
-State: Approved - not started
+State: Complete
 
 ### Tasks
 
-- [ ] Credits: the map credit says "Places and map © OpenStreetMap contributors"; About adds the ODbL line and names `tool/place_book`.
-- [ ] Add the new sheets and screens to `test/reduced_motion_test.dart` and render the whole set at 200% text with `--dart-define=UX_LABEL=feat-004-phase-8-text-2x --dart-define=UX_TEXT_SCALE=2.0`, fixing any overflow.
-- [ ] Tap-target and label checks for every new control.
-- [ ] REQ-030 network review, recorded with the grep output.
-- [ ] Update `README.md`: "Search" becomes moments and places, new short sections for places and stamps, the privacy section names the bundled place book and that searches never leave the phone, and "Repository layout" lists `lib/features/places`, `lib/features/stamps`, and `tool/place_book`.
-- [ ] Set FEAT-004 and this plan to their implemented states in `docs/SPEC_INDEX.md`, and write the physical-device checklist in the evidence log for Len:
+- [x] Credits: the map credit says "Places and map © OpenStreetMap contributors"; About adds the ODbL line and names `tool/place_book`.
+- [x] Add the new sheets and screens to `test/reduced_motion_test.dart` and render the whole set at 200% text with `--dart-define=UX_LABEL=feat-004-phase-8-text-2x --dart-define=UX_TEXT_SCALE=2.0`, fixing any overflow.
+- [x] Tap-target and label checks for every new control.
+- [x] REQ-030 network review, recorded with the grep output.
+- [x] Update `README.md`: "Search" becomes moments and places, new short sections for places and stamps, the privacy section names the bundled place book and that searches never leave the phone, and "Repository layout" lists `lib/features/places`, `lib/features/stamps`, and `tool/place_book`.
+- [x] Set FEAT-004 and this plan to their implemented states in `docs/SPEC_INDEX.md`, and write the physical-device checklist in the evidence log for Len:
   1. first launch after install: time until place search is ready;
   2. search speed for a three-letter query;
   3. the capture nearby chip at three real cafes, noting whether the right one is offered first;

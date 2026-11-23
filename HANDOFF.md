@@ -1,8 +1,8 @@
 # Current handoff
 
 Created: 2026-10-16T22:55:00+08:00
-Updated: 2026-11-24T06:28:30+08:00
-State: FEAT-004 Phase 7 complete, Phase 8 (polish, accessibility, and documents) next; FEAT-003 Phases 1-10 complete, physical-device checks and D-2 art pending; FEAT-001 and FEAT-002 physical-device checks pending
+Updated: 2026-11-24T06:42:00+08:00
+State: FEAT-004 Phases 0-8 complete, physical-device checks pending; FEAT-003 Phases 1-10 complete, physical-device checks and D-2 art pending; FEAT-001 and FEAT-002 physical-device checks pending
 Feature: FEAT-004 places, place search, and category stamps (spec and plan revision 1, approved); FEAT-003 clay keepsake redesign (spec and plan revision 1)
 
 ## Read first
@@ -58,7 +58,7 @@ FEAT-003 Phase 7 complete in the commit `docs(plan): FEAT-003 phase 7 - trip col
 FEAT-003 Phase 8 complete in the commit `docs(plan): FEAT-003 phase 8 - search, news, and settings`.
 FEAT-003 Phase 9 complete in the commit `docs(plan): FEAT-003 phase 9 - interactive maya`.
 FEAT-003 Phase 10 complete in the commit `docs(plan): FEAT-003 phase 10 - polish and documents`.
-FEAT-004 spec and plan committed at `e4539d6`; visual baseline committed at `c22ec04`; Phase 0 complete in `docs(plan): FEAT-004 phase 0 - documents and baseline` (`feabe48`); Phase 1 complete in `docs(plan): FEAT-004 phase 1 - place book builder` (`1dec458`); Phase 2 complete in `docs(plan): FEAT-004 phase 2 - place book in the app` (`6683783`); Phase 3 complete in `docs(plan): FEAT-004 phase 3 - places table and migration` (`899ccef`); Phase 4 complete in `docs(plan): FEAT-004 phase 4 - categories and glyphs` (`30d5d31`); Phase 5 complete in `docs(plan): FEAT-004 phase 5 - place picker and capture suggestion` (`7ab55a5`); Phase 6 complete in `docs(plan): FEAT-004 phase 6 - map search and category filter` (`deb18a9`, pushed to GitHub); Phase 7 complete in `docs(plan): FEAT-004 phase 7 - category stamps` (324 tests passing, 58 PNGs in `docs/evidence/FEAT-001/feat-004-phase-7/`).
+FEAT-004 spec and plan committed at `e4539d6`; visual baseline committed at `c22ec04`; Phase 0 complete in `docs(plan): FEAT-004 phase 0 - documents and baseline` (`feabe48`); Phase 1 complete in `docs(plan): FEAT-004 phase 1 - place book builder` (`1dec458`); Phase 2 complete in `docs(plan): FEAT-004 phase 2 - place book in the app` (`6683783`); Phase 3 complete in `docs(plan): FEAT-004 phase 3 - places table and migration` (`899ccef`); Phase 4 complete in `docs(plan): FEAT-004 phase 4 - categories and glyphs` (`30d5d31`); Phase 5 complete in `docs(plan): FEAT-004 phase 5 - place picker and capture suggestion` (`7ab55a5`); Phase 6 complete in `docs(plan): FEAT-004 phase 6 - map search and category filter` (`deb18a9`, pushed to GitHub); Phase 7 complete in `docs(plan): FEAT-004 phase 7 - category stamps` (`175d80a`); Phase 8 complete in `docs(plan): FEAT-004 phase 8 - polish and documents` (329 tests passing, 58 PNGs at 200% text in `docs/evidence/FEAT-001/feat-004-phase-8-text-2x/` with 0 overflows).
 Preserve the existing untracked paths: `.agents/skills/*`, `.agents/templates/`, `.claude/`, `CLAUDE.md`, `releases/`, and `scripts/`.
 
 ## Checks and evidence
@@ -78,7 +78,7 @@ FEAT-001 evidence: [docs/evidence/FEAT-001-verification.md](docs/evidence/FEAT-0
 
 ## Next action
 
-00. **FEAT-004:** Phase 7 complete (`docs(plan): FEAT-004 phase 7 - category stamps`). Run Phase 8 (polish, accessibility, and documents).
+00. **FEAT-004:** Phases 0-8 complete (`docs(plan): FEAT-004 phase 8 - polish and documents`). Waiting on Len for the 5-item physical-device checklist in [docs/evidence/FEAT-004-verification.md](docs/evidence/FEAT-004-verification.md) (and optional push of Phase 7-8 commits to GitHub).
 0. **FEAT-003:** implemented through Phase 10. Waiting on Len for physical-device checks (REQ-023 steps are in the evidence log) and the layered maya art (D-2).
 1. **Claude UI screenshot capture (requested 2026-11-21):** capture fresh UI screenshots from the current codebase (`ba0c56a`) using [tool/ux_screenshots_test.dart](tool/ux_screenshots_test.dart).
    - Working directory: `C:\Users\User\Desktop\PersonalProjects\04-FUN-STUFF\WARANG\Warang` (inner repo root, not the outer `WARANG/` folder).
