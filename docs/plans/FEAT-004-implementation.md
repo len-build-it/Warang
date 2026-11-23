@@ -171,17 +171,17 @@ Checkpoint message: `docs(plan): FEAT-004 phase 3 - places table and migration`
 ## Phase 4: Categories, glyphs, and colours
 
 Requirements: REQ-017, REQ-018
-State: Approved - not started
+State: Complete
 
 ### Tasks
 
-- [ ] Add `lib/core/place_categories.dart`: an enum or constant list of the fourteen D-4 keys with display name, glyph, keepsake tone, and `countsForStamps` (false for `transit` and `town`).
+- [x] Add `lib/core/place_categories.dart`: an enum or constant list of the fourteen D-4 keys with display name, glyph, keepsake tone, and `countsForStamps` (false for `transit` and `town`).
   Tones: cafe and sweets `santan`, food `gumamela`, nightlife `ube`, beach and island `dagat`, nature and park `kalamansi`, church and heritage `amber`, market and stay `langit`, transit and town neutral.
-- [ ] Draw fourteen 24 by 24 glyphs in the FEAT-003 V7 style (2.5 px rounded stroke and duotone fill) in `design/icons/build_icons.py`, named `catCafe`, `catFood`, `catSweets`, `catNightlife`, `catBeach`, `catIsland`, `catNature`, `catPark`, `catChurch`, `catHeritage`, `catMarket`, `catStay`, `catTransit`, `catTown`, with new code points after the last used one; rebuild the font and `lib/app/theme/warang_icons.dart` with the three documented steps.
-- [ ] Add a `CategoryDisc` component in `lib/app/theme/clay_components.dart`: the glyph in a small clay disc in the category tone, sizes 32 and 40, with the category name as its semantic label.
-- [ ] Extend `test/contrast_test.dart` for each category's glyph on its disc and the disc label colours on `surface` and `surfaceRaised`, in both themes.
-- [ ] Extend `test/icon_semantics_test.dart` for the new glyphs.
-- [ ] Add a design canvas test page or extend `tool/ux_screenshots_test.dart` with `20_categories_<theme>`: all fourteen discs with names.
+- [x] Draw fourteen 24 by 24 glyphs in the FEAT-003 V7 style (2.5 px rounded stroke and duotone fill) in `design/icons/build_icons.py`, named `catCafe`, `catFood`, `catSweets`, `catNightlife`, `catBeach`, `catIsland`, `catNature`, `catPark`, `catChurch`, `catHeritage`, `catMarket`, `catStay`, `catTransit`, `catTown`, with new code points after the last used one; rebuild the font and `lib/app/theme/warang_icons.dart` with the three documented steps.
+- [x] Add a `CategoryDisc` component in `lib/app/theme/clay_components.dart`: the glyph in a small clay disc in the category tone, sizes 32 and 40, with the category name as its semantic label.
+- [x] Extend `test/contrast_test.dart` for each category's glyph on its disc and the disc label colours on `surface` and `surfaceRaised`, in both themes.
+- [x] Extend `test/icon_semantics_test.dart` for the new glyphs.
+- [x] Add a design canvas test page or extend `tool/ux_screenshots_test.dart` with `20_categories_<theme>`: all fourteen discs with names.
 
 ### Success metrics
 
