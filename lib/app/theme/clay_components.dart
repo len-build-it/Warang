@@ -7,6 +7,7 @@ import 'dart:ui' show PathMetric;
 
 import 'package:flutter/material.dart';
 
+import '../../core/place_categories.dart';
 import 'clay.dart';
 import 'components.dart' show WarangIcon;
 import 'motion.dart';
@@ -1304,4 +1305,40 @@ class _TailPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _TailPainter old) =>
       old.color != color || old.down != down;
+}
+
+/// A small clay disc showing a place category's glyph in its keepsake tone
+/// (FEAT-004). Standard sizes are 32 (compact rows/cards) and 40 (picker rows).
+class CategoryDisc extends StatelessWidget {
+  const CategoryDisc({super.key, required this.category, this.size = 32})
+    : assert(size == 32 || size == 40, 'CategoryDisc size must be 32 or 40');
+
+  final PlaceCategory category;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    final bg = category.discBackground(brightness);
+    final fg = category.discForeground(brightness);
+    return Semantics(
+      label: category.name,
+      child: SizedBox.square(
+        dimension: size,
+        child: ClaySurface(
+          depth: ClayDepth.clay1,
+          circle: true,
+          color: bg,
+          child: Center(
+            child: WarangIcon(
+              category.glyph,
+              size: size * 0.56,
+              color: fg,
+              fillColor: fg.withValues(alpha: 0.22),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

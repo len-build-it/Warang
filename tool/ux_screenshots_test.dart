@@ -23,6 +23,7 @@ import 'package:warang/app/app_state.dart';
 import 'package:warang/app/device_providers.dart';
 import 'package:warang/app/theme/components.dart';
 import 'package:warang/app/theme/tokens.dart';
+import 'package:warang/core/place_categories.dart';
 import 'package:warang/data/db/database.dart';
 import 'package:warang/data/files/photo_store.dart';
 import 'package:warang/data/repository.dart';
@@ -365,6 +366,55 @@ void main() {
         host(CaptureScreen(initialPhoto: XFile(file.path)), brightness),
       );
       await shot(tester, '12_capture_$theme');
+    });
+
+    testWidgets('categories $theme', (tester) async {
+      phone(tester);
+      await tester.pumpWidget(
+        host(
+          Scaffold(
+            body: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Categories', style: WarangType.displayM),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: GridView.count(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12,
+                        childAspectRatio: 3.0,
+                        children: [
+                          for (final category in PlaceCategories.all)
+                            Row(
+                              children: [
+                                CategoryDisc(category: category, size: 40),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    category.name,
+                                    style: WarangType.titleS,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          brightness,
+        ),
+      );
+      await shot(tester, '20_categories_$theme');
     });
   }
 }

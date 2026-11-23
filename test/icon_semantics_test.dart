@@ -18,6 +18,7 @@ import 'package:warang/app/shell/app_shell.dart';
 import 'package:warang/app/theme/components.dart';
 import 'package:warang/app/theme/tokens.dart';
 import 'package:warang/core/models.dart';
+import 'package:warang/core/place_categories.dart';
 import 'package:warang/data/db/database.dart';
 import 'package:warang/data/files/photo_store.dart';
 import 'package:warang/data/repository.dart';
@@ -180,6 +181,38 @@ void main() {
     );
     await settle(tester);
     expectLabelledIcons(tester, 'capture');
+    handle.dispose();
+  });
+
+  testWidgets('all 14 category glyphs exist and CategoryDisc carries labels', (
+    tester,
+  ) async {
+    expect(WarangGlyphs.all.length, 36);
+    expect(PlaceCategories.all.length, 14);
+    for (final category in PlaceCategories.all) {
+      expect(WarangGlyphs.all.values, contains(category.glyph));
+    }
+
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildWarangTheme(Brightness.light),
+        home: Scaffold(
+          body: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final category in PlaceCategories.all)
+                CategoryDisc(category: category, size: 40),
+            ],
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    for (final category in PlaceCategories.all) {
+      expect(find.bySemanticsLabel(category.name), findsOneWidget);
+    }
     handle.dispose();
   });
 }

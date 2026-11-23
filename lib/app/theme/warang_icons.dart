@@ -89,6 +89,62 @@ abstract final class WarangGlyphs {
     IconData(0xE02A, fontFamily: fontFamily),
   );
   static const check = WarangGlyph(IconData(0xE02B, fontFamily: fontFamily));
+  static const catCafe = WarangGlyph(
+    IconData(0xE02D, fontFamily: fontFamily),
+    IconData(0xE02E, fontFamily: fontFamily),
+  );
+  static const catFood = WarangGlyph(
+    IconData(0xE02F, fontFamily: fontFamily),
+    IconData(0xE030, fontFamily: fontFamily),
+  );
+  static const catSweets = WarangGlyph(
+    IconData(0xE031, fontFamily: fontFamily),
+    IconData(0xE032, fontFamily: fontFamily),
+  );
+  static const catNightlife = WarangGlyph(
+    IconData(0xE033, fontFamily: fontFamily),
+    IconData(0xE034, fontFamily: fontFamily),
+  );
+  static const catBeach = WarangGlyph(
+    IconData(0xE035, fontFamily: fontFamily),
+    IconData(0xE036, fontFamily: fontFamily),
+  );
+  static const catIsland = WarangGlyph(
+    IconData(0xE037, fontFamily: fontFamily),
+    IconData(0xE038, fontFamily: fontFamily),
+  );
+  static const catNature = WarangGlyph(
+    IconData(0xE039, fontFamily: fontFamily),
+    IconData(0xE03A, fontFamily: fontFamily),
+  );
+  static const catPark = WarangGlyph(
+    IconData(0xE03B, fontFamily: fontFamily),
+    IconData(0xE03C, fontFamily: fontFamily),
+  );
+  static const catChurch = WarangGlyph(
+    IconData(0xE03D, fontFamily: fontFamily),
+    IconData(0xE03E, fontFamily: fontFamily),
+  );
+  static const catHeritage = WarangGlyph(
+    IconData(0xE03F, fontFamily: fontFamily),
+    IconData(0xE040, fontFamily: fontFamily),
+  );
+  static const catMarket = WarangGlyph(
+    IconData(0xE041, fontFamily: fontFamily),
+    IconData(0xE042, fontFamily: fontFamily),
+  );
+  static const catStay = WarangGlyph(
+    IconData(0xE043, fontFamily: fontFamily),
+    IconData(0xE044, fontFamily: fontFamily),
+  );
+  static const catTransit = WarangGlyph(
+    IconData(0xE045, fontFamily: fontFamily),
+    IconData(0xE046, fontFamily: fontFamily),
+  );
+  static const catTown = WarangGlyph(
+    IconData(0xE047, fontFamily: fontFamily),
+    IconData(0xE048, fontFamily: fontFamily),
+  );
 
   static const all = <String, WarangGlyph>{
     'map': map,
@@ -113,5 +169,19 @@ abstract final class WarangGlyphs {
     'more': more,
     'explore': explore,
     'check': check,
+    'catCafe': catCafe,
+    'catFood': catFood,
+    'catSweets': catSweets,
+    'catNightlife': catNightlife,
+    'catBeach': catBeach,
+    'catIsland': catIsland,
+    'catNature': catNature,
+    'catPark': catPark,
+    'catChurch': catChurch,
+    'catHeritage': catHeritage,
+    'catMarket': catMarket,
+    'catStay': catStay,
+    'catTransit': catTransit,
+    'catTown': catTown,
   };
 }

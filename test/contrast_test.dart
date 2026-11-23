@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:warang/app/theme/tokens.dart';
+import 'package:warang/core/place_categories.dart';
 
 /// WCAG 2.x relative luminance, computed from sRGB channels.
 double _luminance(Color color) {
@@ -76,6 +77,22 @@ void main() {
         final enabled = theme.inputDecorationTheme.enabledBorder!;
         expect(enabled.borderSide.color, neutrals.boundary);
       });
+
+      for (final category in PlaceCategories.all) {
+        test(
+          'category ${category.key} glyph on disc and label on sheets meet AA',
+          () {
+            final fg = category.discForeground(brightness);
+            final disc = category.discBackground(brightness);
+            expect(contrast(fg, disc), greaterThanOrEqualTo(4.5));
+            expect(contrast(fg, neutrals.surface), greaterThanOrEqualTo(4.5));
+            expect(
+              contrast(fg, neutrals.surfaceRaised),
+              greaterThanOrEqualTo(4.5),
+            );
+          },
+        );
+      }
     });
   }
 }
