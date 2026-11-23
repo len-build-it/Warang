@@ -1,0 +1,163 @@
+# Scan 04: Declared asset usage and undeclared tracked files under assets/ and design/
+# Command: python docs/audits/AUDIT-001/scripts/run_phase1_scans.py (scan_04_assets)
+
+=== DECLARED ASSETS IN pubspec.yaml ===
+design/warang-maya.png                                  path_hits= 1  name_hits= 1
+    lib/app/shell/you_sheet.dart:517:                  'design/warang-maya.png',
+assets/data/news_items.json                             path_hits= 1  name_hits= 1
+    lib/features/news_tab/news_tab_screen.dart:62:    final raw = await rootBundle.loadString('assets/data/news_items.json');
+assets/data/maya_lines.json                             path_hits= 3  name_hits= 3
+    lib/features/maya/maya_companion.dart:68:/// The bundled lines, by place, from `assets/data/maya_lines.json`.
+    lib/features/maya/maya_companion.dart:73:      _lines ??= bundle.loadString('assets/data/maya_lines.json').then((raw) {
+    test/maya_test.dart:44:    rootBundle.evict('assets/data/maya_lines.json');
+assets/data/stamps.json                                 path_hits= 5  name_hits= 5
+    lib/core/stamps.dart:30:/// Parses the bundled `assets/data/stamps.json` document into a map of
+    lib/features/stamps/stamp_titles.dart:6:/// Loads and caches the bundled stamp titles from `assets/data/stamps.json`.
+    lib/features/stamps/stamp_titles.dart:8:  static const assetPath = 'assets/data/stamps.json';
+assets/maya/body.png                                    path_hits= 1  name_hits= 1
+    lib/features/maya/maya_companion.dart:379:              'assets/maya/body.png',
+assets/place_book/place_book.sqlite                     path_hits= 6  name_hits= 7
+    lib/data/places/place_book_installer.dart:28:    assetKey: 'assets/place_book/place_book.sqlite',
+    test/place_book_test.dart:139:        final assetFile = File('assets/place_book/place_book.sqlite');
+    tool/place_book/README.md:3:This directory builds Warang's bundled offline Philippine place book (`assets/place_book/place_book.sqlite`) from OpenStreetMap data.
+assets/fonts/BagelFatOne-OFL.txt                        path_hits= 0  name_hits= 0  <-- CANDIDATE (0 refs)
+assets/fonts/AtkinsonHyperlegibleNext-OFL.txt           path_hits= 0  name_hits= 0  <-- CANDIDATE (0 refs)
+assets/fonts/ShantellSans-OFL.txt                       path_hits= 0  name_hits= 0  <-- CANDIDATE (0 refs)
+assets/fonts/BagelFatOne-Regular.ttf                    path_hits= 1  name_hits= 2
+    test/identity_assets_test.dart:11:        'assets/fonts/BagelFatOne-Regular.ttf',
+assets/fonts/AtkinsonHyperlegibleNext-Regular.ttf       path_hits= 1  name_hits= 2
+    test/identity_assets_test.dart:12:        'assets/fonts/AtkinsonHyperlegibleNext-Regular.ttf',
+assets/fonts/AtkinsonHyperlegibleNext-SemiBold.ttf      path_hits= 1  name_hits= 2
+    test/identity_assets_test.dart:13:        'assets/fonts/AtkinsonHyperlegibleNext-SemiBold.ttf',
+assets/fonts/AtkinsonHyperlegibleNext-Bold.ttf          path_hits= 1  name_hits= 2
+    test/identity_assets_test.dart:14:        'assets/fonts/AtkinsonHyperlegibleNext-Bold.ttf',
+assets/fonts/ShantellSans-Medium.ttf                    path_hits= 1  name_hits= 2
+    test/identity_assets_test.dart:15:        'assets/fonts/ShantellSans-Medium.ttf',
+assets/fonts/WarangIcons.ttf                            path_hits= 0  name_hits= 1
+
+=== TRACKED FILES UNDER assets/ AND design/ NOT IN pubspec.yaml ===
+  1134 KB  assets/Logo.png  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+  1089 KB  assets/Logo2.png  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/back.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+    24 KB  design/icons/build_icons.py  refs=1
+     1 KB  design/icons/calendar.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/capture.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/catBeach.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/catCafe.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/catChurch.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/catFood.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/catHeritage.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/catIsland.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/catMarket.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/catNature.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/catNightlife.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/catPark.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/catStay.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/catSweets.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     2 KB  design/icons/catTown.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     2 KB  design/icons/catTransit.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/check.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/chevron.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/close.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     2 KB  design/icons/codepoints.json  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/delete.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/edit.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/explore.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     2 KB  design/icons/fantasticon.json  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/back.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/calendar-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     3 KB  design/icons/glyphs/calendar.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/capture-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     2 KB  design/icons/glyphs/capture.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/catBeach-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+    12 KB  design/icons/glyphs/catBeach.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/catCafe-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+    12 KB  design/icons/glyphs/catCafe.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/catChurch-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     3 KB  design/icons/glyphs/catChurch.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/catFood-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     3 KB  design/icons/glyphs/catFood.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/catHeritage-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     2 KB  design/icons/glyphs/catHeritage.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/catIsland-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+    20 KB  design/icons/glyphs/catIsland.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/catMarket-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     3 KB  design/icons/glyphs/catMarket.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/catNature-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     3 KB  design/icons/glyphs/catNature.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/catNightlife-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     2 KB  design/icons/glyphs/catNightlife.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/catPark-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     2 KB  design/icons/glyphs/catPark.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/catStay-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     3 KB  design/icons/glyphs/catStay.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/catSweets-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     4 KB  design/icons/glyphs/catSweets.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/catTown-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     4 KB  design/icons/glyphs/catTown.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/catTransit-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     3 KB  design/icons/glyphs/catTransit.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/check.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/chevron.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/close.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/delete-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     2 KB  design/icons/glyphs/delete.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/edit-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     2 KB  design/icons/glyphs/edit.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     2 KB  design/icons/glyphs/explore-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     5 KB  design/icons/glyphs/explore.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/info-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     3 KB  design/icons/glyphs/info.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/map-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     3 KB  design/icons/glyphs/map.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     2 KB  design/icons/glyphs/more.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/news-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     2 KB  design/icons/glyphs/news.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/photo-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     2 KB  design/icons/glyphs/photo.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/pin-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+    15 KB  design/icons/glyphs/pin.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/recenter-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     2 KB  design/icons/glyphs/recenter.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     3 KB  design/icons/glyphs/refresh.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/search-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     2 KB  design/icons/glyphs/search.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/searchEmpty-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     7 KB  design/icons/glyphs/searchEmpty.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/settings-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     2 KB  design/icons/glyphs/settings.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/theme-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     2 KB  design/icons/glyphs/theme.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/glyphs/trips-fill.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     3 KB  design/icons/glyphs/trips.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/info.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/map.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     2 KB  design/icons/more.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/news.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/photo.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     2 KB  design/icons/pin.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/posix-glob-shim.cjs  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/recenter.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/refresh.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/search.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/searchEmpty.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/settings.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     1 KB  design/icons/theme.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     2 KB  design/icons/trips.svg  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+    13 KB  design/ui-update/baseline/home_dark.png  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+    13 KB  design/ui-update/baseline/home_light.png  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     6 KB  design/ui-update/baseline/moment_open_dark.png  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     6 KB  design/ui-update/baseline/moment_open_light.png  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     4 KB  design/ui-update/baseline/search_dark.png  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     4 KB  design/ui-update/baseline/search_light.png  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+    13 KB  design/ui-update/baseline/settings_dark.png  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+    14 KB  design/ui-update/baseline/settings_light.png  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+    13 KB  design/ui-update/baseline/travel_mode_empty_dark.png  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+    13 KB  design/ui-update/baseline/travel_mode_empty_light.png  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+    15 KB  design/ui-update/baseline/travel_mode_populated_dark.png  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+    14 KB  design/ui-update/baseline/travel_mode_populated_light.png  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     7 KB  design/ui-update/baseline/trip_detail_dark.png  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+     7 KB  design/ui-update/baseline/trip_detail_light.png  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+   796 KB  design/warang-canvas.html  refs=0 <-- CANDIDATE (undeclared, 0 refs)
+   349 KB  design/warang-maya-foreground.png  refs=1 [flutter_launcher_icons]
+    39 KB  design/warang-maya-monochrome.png  refs=1 [flutter_launcher_icons]

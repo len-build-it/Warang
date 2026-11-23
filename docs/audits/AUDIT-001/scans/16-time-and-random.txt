@@ -1,0 +1,70 @@
+# Scan 16: DateTime.now() and Random() across lib, test, tool
+# Command: git grep -nE "DateTime\.now\(\)|Random\(" -- lib test tool (excluding *.g.dart)
+
+=== PER-FILE COUNTS ===
+  17  lib/data/repository.dart
+   4  lib/features/map/map_tile_store.dart
+   3  test/data_layer_test.dart
+   2  lib/data/files/photo_store.dart
+   2  lib/features/home_tab/home_tab_screen.dart
+   2  test/map_tile_store_test.dart
+   2  test/photo_store_test.dart
+   1  lib/core/formatting.dart
+   1  lib/data/db/database.dart
+   1  lib/features/capture/capture_screen.dart
+   1  lib/features/home_tab/trip_form_screen.dart
+   1  lib/features/map/warang_map.dart
+   1  lib/features/maya/maya_companion.dart
+   1  lib/features/settings/settings_screen.dart
+   1  test/capture_flow_test.dart
+   1  test/map_clusters_and_credit_test.dart
+   1  test/migration_test.dart
+   1  test/trips_flow_test.dart
+   1  test/user_journey_test.dart
+
+Total matching lines: 44
+
+lib/core/formatting.dart:26:  final thisYear = (now ?? DateTime.now()).year == date.year;
+lib/data/db/database.dart:147:      final now = DateTime.now();
+lib/data/files/photo_store.dart:140:    final now = DateTime.now();
+lib/data/files/photo_store.dart:190:    final date = now ?? DateTime.now();
+lib/data/repository.dart:121:    final now = DateTime.now();
+lib/data/repository.dart:135:        updatedAt: Value(DateTime.now()),
+lib/data/repository.dart:155:    final captured = capturedAt ?? DateTime.now();
+lib/data/repository.dart:163:    final now = DateTime.now();
+lib/data/repository.dart:215:    final now = DateTime.now();
+lib/data/repository.dart:236:    final now = DateTime.now();
+lib/data/repository.dart:255:        updatedAt: Value(DateTime.now()),
+lib/data/repository.dart:267:        updatedAt: Value(DateTime.now()),
+lib/data/repository.dart:388:        DateTime.now(),
+lib/data/repository.dart:408:    final now = DateTime.now();
+lib/data/repository.dart:448:        updatedAt: Value(DateTime.now()),
+lib/data/repository.dart:464:    final now = DateTime.now();
+lib/data/repository.dart:495:    await database.momentsDao.softDelete(id, DateTime.now());
+lib/data/repository.dart:506:        updatedAt: Value(DateTime.now()),
+lib/data/repository.dart:528:        updatedAt: Value(DateTime.now()),
+lib/data/repository.dart:549:        updatedAt: Value(DateTime.now()),
+lib/data/repository.dart:559:    final now = DateTime.now();
+lib/features/capture/capture_screen.dart:45:  final _capturedAt = DateTime.now();
+lib/features/home_tab/home_tab_screen.dart:129:                                  now: DateTime.now(),
+lib/features/home_tab/home_tab_screen.dart:322:    final planned = start != null && start.isAfter(DateTime.now());
+lib/features/home_tab/trip_form_screen.dart:90:    final now = DateTime.now();
+lib/features/map/map_tile_store.dart:51:  bool get isStale => DateTime.now().difference(fetchedAt) > mapTileMaxAge;
+lib/features/map/map_tile_store.dart:270:        'updatedAt': DateTime.now().millisecondsSinceEpoch,
+lib/features/map/map_tile_store.dart:384:            fetchedAt: DateTime.now(),
+lib/features/map/map_tile_store.dart:405:          fetchedAt: DateTime.now(),
+lib/features/map/warang_map.dart:274:    final days = DateTime.now().difference(fetchedAt).inDays;
+lib/features/maya/maya_companion.dart:212:        (choices.isEmpty ? lines : choices)[math.Random().nextInt(
+lib/features/settings/settings_screen.dart:115:                      now: DateTime.now(),
+test/capture_flow_test.dart:138:    final today = DateTime.now();
+test/data_layer_test.dart:60:      await database.tripsDao.softDelete(trip.id, DateTime.now());
+test/data_layer_test.dart:65:          deletedAt: Value(DateTime.now()),
+test/data_layer_test.dart:66:          updatedAt: Value(DateTime.now()),
+test/map_clusters_and_credit_test.dart:50:    fetchedAt: DateTime.now(),
+test/map_tile_store_test.dart:38:    final fetchedAt = DateTime.now().subtract(const Duration(days: 31));
+test/map_tile_store_test.dart:106:    final now = DateTime.now();
+test/migration_test.dart:390:            updatedAt: Value(DateTime.now()),
+test/photo_store_test.dart:127:            createdAt: DateTime.now(),
+test/photo_store_test.dart:128:            updatedAt: DateTime.now(),
+test/trips_flow_test.dart:87:    final now = DateTime.now();
+test/user_journey_test.dart:168:    final today = DateTime.now();

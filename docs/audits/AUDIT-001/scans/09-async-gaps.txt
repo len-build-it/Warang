@@ -1,0 +1,74 @@
+# Scan 09: Async methods using setState(, context., or ref. after an await
+# Command: python docs/audits/AUDIT-001/scripts/run_phase1_scans.py (scan_09_async_gaps)
+
+Total async methods with setState/context./ref. after await: 18
+=== lib/app/shell/app_shell.dart ===
+  method lines 48-56: Future<void> _capture() async {
+    first await: L49; mounted checks after await: [52]
+    L53: ref.read(selectedMomentProvider.notifier).clear();
+    L54: ref.read(shellTabProvider.notifier).select(ShellTab.map);
+=== lib/features/capture/capture_screen.dart ===
+  method lines 67-76: Future<void> _openCamera() async {
+    first await: L68; mounted checks after await: [69]
+    L68: final photo = await ref.read(cameraPickerProvider)();
+    L75: setState(() => _photo = photo);
+  method lines 78-90: Future<void> _getPosition() async {
+    first await: L79; mounted checks after await: [80]
+    L79: final position = await ref.read(locationReaderProvider)();
+    L81: setState(() {
+  method lines 92-106: Future<void> _lookupNearby(LocationFix position) async {
+    first await: L97; mounted checks after await: [102]
+    L103: setState(() {
+  method lines 108-123: Future<void> _pickOtherPlace() async {
+    first await: L111; mounted checks after await: [117]
+    L119: setState(() {
+  method lines 125-161: Future<void> _save() async {
+    first await: L131; mounted checks after await: [142, 149, 151]
+    L152: setState(() => _saving = false);
+=== lib/features/home_tab/trip_form_screen.dart ===
+  method lines 89-99: Future<void> _pickDates() async {
+    first await: L91; mounted checks after await: []
+    L98: if (picked != null) setState(() => _dates = picked);
+  method lines 113-149: Future<void> _save() async {
+    first await: L122; mounted checks after await: [139, 141]
+    L142: setState(() => _saving = false);
+=== lib/features/map/warang_map.dart ===
+  method lines 127-139: Future<void> _checkMarkedPlaceTile() async {
+    first await: L136; mounted checks after await: [137]
+    L138: setState(() => _markedPlaceUncached = !cached);
+  method lines 357-368: Future<void> _restoreCameraAsync() async {
+    first await: L358; mounted checks after await: [360]
+    L362: setState(() {
+  method lines 526-575: Future<void> _refreshLocation({required bool moveToUser}) async {
+    first await: L528; mounted checks after await: [531, 551, 568]
+    L569: setState(() => _position = position);
+=== lib/features/maya/maya_companion.dart ===
+  method lines 192-220: Future<void> _onTap() async {
+    first await: L205; mounted checks after await: [208]
+    L215: setState(() {
+=== lib/features/places/place_picker_sheet.dart ===
+  method lines 118-163: Future<void> _runQuery() async {
+    first await: L136; mounted checks after await: [137, 147, 158]
+    L138: setState(() {
+    L148: setState(() {
+    L156: setState(() => _loading = true);
+    L159: setState(() {
+=== lib/features/settings/settings_screen.dart ===
+  method lines 137-170: Future<void> _clearMapCache() async {
+    first await: L138; mounted checks after await: [157, 160]
+    L158: final store = ref.read(mapTileStoreProvider);
+    L161: setState(() {
+=== lib/features/travel_mode/moment_edit_sheet.dart ===
+  method lines 61-97: Future<void> _pickPlace() async {
+    first await: L66; mounted checks after await: [74]
+    L75: setState(() {
+  method lines 103-147: ]) async {
+    first await: L107; mounted checks after await: [137, 139]
+    L140: setState(() => _saving = false);
+=== lib/features/travel_mode/travel_mode_screen.dart ===
+  method lines 205-216: Future<void> _openMapPlaceSearch() async {
+    first await: L207; mounted checks after await: [213]
+    L214: setState(() => _markedPlace = picked.place);
+  method lines 218-229: Future<void> _searchDuringPlacement() async {
+    first await: L220; mounted checks after await: [226]
+    L227: setState(() => _pendingPlacementPlace = picked.place);

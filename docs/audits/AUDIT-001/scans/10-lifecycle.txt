@@ -1,0 +1,65 @@
+# Scan 10: Lifecycle-managed controllers, FocusNode, StreamSubscription, Timer, StreamController
+# Command: python docs/audits/AUDIT-001/scripts/run_phase1_scans.py (scan_10_lifecycle)
+
+=== lib/app/shell/dock.dart (file has dispose=True, cancel=False, close=False) ===
+  L  45 [AnimationController]: late final AnimationController _travel = AnimationController.unbounded(
+=== lib/app/shell/you_sheet.dart (file has dispose=True, cancel=False, close=False) ===
+  L 380 [TextEditingController]: late final _controller = TextEditingController(text: widget.initial);
+=== lib/app/theme/clay.dart (file has dispose=True, cancel=False, close=False) ===
+  L 668 [AnimationController]: late final AnimationController _press = AnimationController.unbounded(
+=== lib/app/theme/clay_components.dart (file has dispose=True, cancel=True, close=True) ===
+  L 198 [TextEditingController]: final TextEditingController? controller;
+  L 199 [FocusNode]: final FocusNode? focusNode;
+  L 229 [FocusNode]: FocusNode? _ownFocus;
+  L 230 [FocusNode]: FocusNode get _focus => widget.focusNode ?? (_ownFocus ??= FocusNode());
+  L 494 [AnimationController]: late final AnimationController _pop = AnimationController.unbounded(
+  L1347 [AnimationController]: late final AnimationController _pop = AnimationController.unbounded(
+  L1350 [Timer]: Timer? _timer;
+  L1365 [Timer]: _timer = Timer(widget.visibleFor, () {
+=== lib/app/theme/components.dart (file has dispose=True, cancel=False, close=True) ===
+  L 222 [AnimationController]: late final AnimationController _controller = AnimationController(
+=== lib/data/repository.dart (file has dispose=True, cancel=True, close=False) ===
+  L  34 [StreamSubscription]: StreamSubscription<ProfileRow?>? _profileSubscription;
+  L  35 [StreamSubscription]: StreamSubscription<List<TripRow>>? _tripsSubscription;
+  L  36 [StreamSubscription]: StreamSubscription<List<PlaceRow>>? _placesSubscription;
+  L  37 [StreamSubscription]: StreamSubscription<List<MomentRow>>? _momentsSubscription;
+=== lib/features/capture/capture_screen.dart (file has dispose=True, cancel=False, close=False) ===
+  L  40 [TextEditingController]: final _captionController = TextEditingController();
+  L  41 [AnimationController]: late final _shrink = AnimationController(
+=== lib/features/home_tab/trip_form_screen.dart (file has dispose=True, cancel=False, close=False) ===
+  L  50 [TextEditingController]: late final _title = TextEditingController(text: widget.trip?.title);
+  L  51 [TextEditingController]: late final _place = TextEditingController(text: widget.trip?.place);
+=== lib/features/map/warang_map.dart (file has dispose=True, cancel=True, close=True) ===
+  L  88 [AnimationController]: AnimationController? _moveAnim;
+  L  92 [Timer]: Timer? _rest;
+  L 183 [Timer]: _rest = Timer(const Duration(milliseconds: 180), () {
+  L 394 [AnimationController]: final controller = _moveAnim ??= AnimationController(
+  L 700 [AnimationController]: late final AnimationController _drop = AnimationController.unbounded(
+  L 703 [AnimationController]: late final AnimationController _splat = AnimationController(
+  L 707 [Timer]: Timer? _touchdown;
+  L 730 [Timer]: _touchdown = Timer(WarangMotion.pop.duration * .35, () {
+=== lib/features/maya/maya_companion.dart (file has dispose=True, cancel=True, close=False) ===
+  L 127 [AnimationController]: late final AnimationController _react = AnimationController(
+  L 131 [AnimationController]: late final AnimationController _drag = AnimationController.unbounded(
+  L 134 [AnimationController]: late final AnimationController _float = AnimationController(
+  L 147 [Timer]: Timer? _settle;
+  L 187 [Timer]: _settle = Timer(_react.duration! + hold, () {
+=== lib/features/onboarding/onboarding_screen.dart (file has dispose=True, cancel=False, close=False) ===
+  L  18 [TextEditingController]: final _nameController = TextEditingController();
+  L  19 [FocusNode]: final _nameFocus = FocusNode();
+=== lib/features/places/place_picker_sheet.dart (file has dispose=True, cancel=True, close=False) ===
+  L  82 [TextEditingController]: late final _controller = TextEditingController(
+  L  85 [FocusNode]: final _focus = FocusNode();
+  L  86 [Timer]: Timer? _debounce;
+  L 115 [Timer]: _debounce = Timer(const Duration(milliseconds: 150), _runQuery);
+=== lib/features/search/search_tab_screen.dart (file has dispose=True, cancel=True, close=False) ===
+  L  28 [TextEditingController]: final _controller = TextEditingController();
+  L  29 [FocusNode]: final _focus = FocusNode();
+  L 307 [AnimationController]: late final _controller = AnimationController(
+  L 311 [Timer]: Timer? _start;
+  L 321 [Timer]: _start = Timer(widget.delay, () {
+=== lib/features/travel_mode/moment_edit_sheet.dart (file has dispose=True, cancel=False, close=False) ===
+  L  40 [TextEditingController]: late final _caption = TextEditingController(text: widget.moment.caption);
+=== lib/features/travel_mode/travel_mode_screen.dart (file has dispose=True, cancel=True, close=False) ===
+  L  60 [Timer]: Timer? _creditTimer;
+  L  65 [Timer]: _creditTimer = Timer(const Duration(seconds: 5), () {

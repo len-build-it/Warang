@@ -1,0 +1,114 @@
+# Scan 21: Test quality scan (missing expect, delays/fixed pumps, skipped tests, clock-bound goldens)
+# Command: python docs/audits/AUDIT-001/scripts/run_phase1_scans.py (scan_21_tests)
+
+Test files scanned: 36
+
+=== TESTS WITHOUT DIRECT expect()/expectLater() CALL (12) ===
+test/icon_semantics_test.dart:112-173 testWidgets('every tappable icon on the main screens is labelled')
+test/icon_semantics_test.dart:175-188 testWidgets('capture screen icons are labelled')
+test/maya_test.dart:273-285 testWidgets('on first run, the shelf, News, Settings, and About')
+test/maya_test.dart:347-353 testWidgets('never on capture')
+tool/ux_screenshots_test.dart:281-285 testWidgets('onboarding $theme')
+tool/ux_screenshots_test.dart:287-292 testWidgets('travel empty $theme')
+tool/ux_screenshots_test.dart:294-367 testWidgets('filled flows $theme')
+tool/ux_screenshots_test.dart:382-393 testWidgets('capture $theme')
+tool/ux_screenshots_test.dart:395-442 testWidgets('categories $theme')
+tool/ux_screenshots_test.dart:444-497 testWidgets('places picker and capture chip $theme')
+tool/ux_screenshots_test.dart:499-562 testWidgets('map search, marker, filter, and placement search $theme')
+tool/ux_screenshots_test.dart:564-653 testWidgets('you stamps and stamp page $theme')
+
+=== Future.delayed / FIXED DURATION pump CALLS (90) ===
+test/capture_flow_test.dart:78: await tester.pump(const Duration(milliseconds: 100));
+test/capture_flow_test.dart:210: await tester.pump(const Duration(milliseconds: 100));
+test/capture_flow_test.dart:214: await tester.pump(const Duration(milliseconds: 400));
+test/capture_flow_test.dart:228: await tester.pump(const Duration(milliseconds: 400));
+test/clay_components_test.dart:83: await tester.pump(const Duration(milliseconds: 150));
+test/clay_components_test.dart:84: await tester.pump(const Duration(milliseconds: 150));
+test/clay_components_test.dart:311: await tester.pump(const Duration(milliseconds: 140));
+test/clay_components_test.dart:382: await tester.pump(const Duration(milliseconds: 500));
+test/clay_components_test.dart:386: await tester.pump(const Duration(seconds: 2));
+test/clay_components_test.dart:469: await tester.pump(const Duration(milliseconds: 200));
+test/icon_semantics_test.dart:79: await tester.pump(const Duration(milliseconds: 150));
+test/map_clusters_and_credit_test.dart:103: await tester.pump(const Duration(milliseconds: 150));
+test/map_clusters_and_credit_test.dart:332: await tester.pump(const Duration(seconds: 5));
+test/map_clusters_and_credit_test.dart:333: await tester.pump(const Duration(milliseconds: 200));
+test/map_navigation_test.dart:91: await tester.pump(const Duration(milliseconds: 100));
+test/map_pins_test.dart:122: await tester.pump(const Duration(milliseconds: 40));
+test/map_pins_test.dart:124: await tester.pump(const Duration(seconds: 1));
+test/map_pins_test.dart:135: await tester.pump(const Duration(milliseconds: 40));
+test/map_pins_test.dart:141: await tester.pump(const Duration(seconds: 1));
+test/map_pins_test.dart:149: await tester.pump(const Duration(seconds: 1));
+test/map_pins_test.dart:178: await tester.pump(const Duration(seconds: 1));
+test/map_pins_test.dart:183: await tester.pump(const Duration(milliseconds: 400));
+test/map_pins_test.dart:188: await tester.pump(const Duration(milliseconds: 50));
+test/map_pins_test.dart:194: await tester.pump(const Duration(seconds: 1));
+test/map_places_test.dart:96: await tester.pump(const Duration(milliseconds: 100));
+test/maya_test.dart:61: await tester.pump(const Duration(milliseconds: 50));
+test/maya_test.dart:70: await tester.pump(const Duration(milliseconds: 100));
+test/maya_test.dart:112: await tester.pump(const Duration(seconds: 3));
+test/maya_test.dart:122: await tester.pump(const Duration(seconds: 3));
+test/maya_test.dart:130: await tester.pump(const Duration(milliseconds: 50));
+test/maya_test.dart:133: await tester.pump(const Duration(seconds: 3));
+test/maya_test.dart:142: await tester.pump(const Duration(milliseconds: 700));
+test/maya_test.dart:160: await tester.pump(const Duration(milliseconds: 16));
+test/maya_test.dart:174: await tester.pump(const Duration(seconds: 3));
+test/maya_test.dart:182: await tester.pump(const Duration(seconds: 3));
+test/maya_test.dart:200: await tester.pump(const Duration(seconds: 3));
+test/maya_test.dart:270: await tester.pump(const Duration(seconds: 6));
+test/maya_test.dart:344: await tester.pump(const Duration(seconds: 11));
+test/maya_test.dart:449: await tester.pump(const Duration(seconds: 5));
+test/maya_test.dart:458: await tester.pump(const Duration(seconds: 5));
+test/moment_actions_test.dart:47: await tester.pump(const Duration(milliseconds: 150));
+test/moment_actions_test.dart:76: await tester.pump(const Duration(milliseconds: 100));
+test/phase_six_layout_test.dart:56: await tester.pump(const Duration(milliseconds: 200));
+test/places_flow_test.dart:89: await tester.pump(const Duration(milliseconds: 100));
+test/reduced_motion_test.dart:184: await tester.pump(const Duration(milliseconds: 200));
+test/reduced_motion_test.dart:187: await tester.pump(const Duration(seconds: 6));
+test/reduced_motion_test.dart:189: await tester.pump(const Duration(milliseconds: 16));
+test/reduced_motion_test.dart:190: await tester.pump(const Duration(milliseconds: 16));
+test/reduced_motion_test.dart:204: await tester.pump(const Duration(seconds: 11));
+test/shared_surfaces_test.dart:30: await tester.pump(const Duration(milliseconds: 100));
+test/shell_navigation_test.dart:67: await tester.pump(const Duration(milliseconds: 100));
+test/shell_navigation_test.dart:76: await tester.pump(const Duration(milliseconds: 150));
+test/shell_navigation_test.dart:207: await tester.pump(const Duration(milliseconds: 500));
+test/shell_navigation_test.dart:236: await tester.pump(const Duration(seconds: 11));
+test/stamps_test.dart:395: await tester.pump(const Duration(milliseconds: 80));
+test/stamps_test.dart:536: await tester.pump(const Duration(milliseconds: 100));
+test/stamps_test.dart:545: await tester.pump(const Duration(milliseconds: 100));
+test/stamps_test.dart:552: await tester.pump(const Duration(milliseconds: 100));
+test/stamps_test.dart:559: await tester.pump(const Duration(milliseconds: 100));
+test/tactile_memories_test.dart:76: await tester.pump(const Duration(milliseconds: 100));
+test/tactile_memories_test.dart:137: await tester.pump(const Duration(milliseconds: 100));
+test/tactile_memories_test.dart:159: await tester.pump(const Duration(milliseconds: 100));
+test/tactile_memories_test.dart:192: await tester.pump(const Duration(milliseconds: 100));
+test/tactile_memories_test.dart:216: await tester.pump(const Duration(milliseconds: 300));
+test/tactile_memories_test.dart:250: await tester.pump(const Duration(milliseconds: 100));
+test/trips_flow_test.dart:48: await tester.pump(const Duration(milliseconds: 150));
+test/trips_flow_test.dart:77: await tester.pump(const Duration(milliseconds: 100));
+test/trips_shelf_test.dart:49: await tester.pump(const Duration(milliseconds: 150));
+test/trips_shelf_test.dart:159: await tester.pump(const Duration(milliseconds: 100));
+test/trips_shelf_test.dart:192: await tester.pump(const Duration(milliseconds: 30));
+test/unavailable_actions_test.dart:80: await tester.pump(const Duration(milliseconds: 300));
+test/user_journey_test.dart:68: await tester.pump(const Duration(milliseconds: 150));
+test/utility_screens_test.dart:82: await Future.delayed(const Duration(milliseconds: 100));
+test/utility_screens_test.dart:115: await Future.delayed(const Duration(milliseconds: 100));
+test/utility_screens_test.dart:155: await tester.pump(const Duration(milliseconds: 16));
+test/utility_screens_test.dart:169: await tester.pump(const Duration(seconds: 1));
+test/utility_screens_test.dart:215: await Future.delayed(const Duration(milliseconds: 100));
+test/utility_screens_test.dart:236: await tester.pump(const Duration(milliseconds: 300));
+test/utility_screens_test.dart:240: await tester.pump(const Duration(milliseconds: 300));
+test/utility_screens_test.dart:246: await tester.pump(const Duration(milliseconds: 300));
+test/utility_screens_test.dart:250: await Future.delayed(const Duration(milliseconds: 150));
+test/utility_screens_test.dart:253: await tester.pump(const Duration(milliseconds: 200));
+test/utility_screens_test.dart:286: await tester.pump(const Duration(milliseconds: 100));
+test/utility_screens_test.dart:313: await tester.pump(const Duration(milliseconds: 100));
+test/utility_screens_test.dart:319: await tester.pump(const Duration(milliseconds: 200));
+test/utility_screens_test.dart:327: await tester.pump(const Duration(milliseconds: 100));
+test/utility_screens_test.dart:345: await tester.pump(const Duration(milliseconds: 400));
+test/utility_screens_test.dart:353: () => Future.delayed(const Duration(milliseconds: 50)),
+test/utility_screens_test.dart:361: await tester.pump(const Duration(milliseconds: 300));
+tool/ux_screenshots_test.dart:231: await tester.pump(const Duration(milliseconds: 300));
+
+=== SKIPPED TESTS (0) ===
+
+=== GOLDENS / SCREENSHOT TESTS USING DateTime.now() (0) ===

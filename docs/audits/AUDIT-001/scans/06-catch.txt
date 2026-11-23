@@ -1,0 +1,28 @@
+# Scan 06: Exception catch / error handlers in lib/
+# Command: git grep -nE "catch \(|on [A-Z][A-Za-z]+ catch|\.catchError\(|onError:" -- lib (excluding *.g.dart)
+
+Total matching lines: 23
+
+lib/app/device_providers.dart:65:    } catch (_) {
+lib/app/shell/you_sheet.dart:459:              .catchError((_) => null);
+lib/app/theme/tokens.dart:267:    onError: Colors.white,
+lib/data/files/photo_store.dart:209:    } catch (_) {
+lib/data/files/photo_store.dart:227:    } catch (_) {
+lib/data/places/place_book_installer.dart:97:      } catch (_) {
+lib/data/places/place_book_installer.dart:158:    } catch (error) {
+lib/data/repository.dart:114:    } catch (_) {
+lib/data/repository.dart:361:      } catch (_) {
+lib/features/capture/capture_screen.dart:150:    } catch (_) {
+lib/features/home_tab/trip_form_screen.dart:140:    } catch (_) {
+lib/features/home_tab/trip_photo.dart:46:    } catch (_) {
+lib/features/map/map_tile_store.dart:135:    } catch (_) {
+lib/features/map/map_tile_store.dart:167:    } catch (_) {
+lib/features/map/map_tile_store.dart:221:    } catch (_) {
+lib/features/map/map_tile_store.dart:235:    } catch (_) {}
+lib/features/map/map_tile_store.dart:254:    } catch (_) {
+lib/features/map/map_tile_store.dart:272:    } catch (_) {}
+lib/features/map/map_tile_store.dart:342:    } catch (_) {
+lib/features/map/map_tile_store.dart:356:    } catch (_) {
+lib/features/map/warang_map.dart:571:    } catch (_) {
+lib/features/travel_mode/moment_edit_sheet.dart:138:    } catch (_) {
+lib/features/travel_mode/travel_mode_screen.dart:1102:    } catch (_) {

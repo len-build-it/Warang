@@ -1,9 +1,9 @@
 # Implementation Plan: AUDIT-001 code quality audit report
 
 Created: 2026-11-24T09:30:00+08:00
-Updated: 2026-11-24T07:13:00+08:00
+Updated: 2026-11-24T07:19:00+08:00
 Revision: 1
-Status: In progress (Phase 0 complete)
+Status: In progress (Phase 1 complete)
 Feature spec and revision: None; this plan holds its own requirements (AUD-REQ-001 to AUD-REQ-010) because it produces a report and changes no app behavior
 Approved baseline and architecture revisions: `docs/IMPLEMENTATION_PLAN.md` at `dc407c5`, FEAT-001 to FEAT-004 revision 1 as listed in `docs/SPEC_INDEX.md`
 Len's chat approval: 2026-11-24T07:09:41+08:00 and 2026-11-24T07:10:47+08:00 chat: "read and execute:  docs/audits/AUDIT-001-code-quality-report.md." clarified as "docs/plans/AUDIT-001-implementation.md"
@@ -156,7 +156,7 @@ State: Complete
 ## Phase 1: Automated scans
 
 Requirements: AUD-REQ-002, AUD-REQ-004
-State: Awaiting approval
+State: Complete
 
 Every scan below writes one file under `docs/audits/AUDIT-001/scans/`.
 Each hit becomes a candidate row in the evidence log with a temporary ID `C-NNN`, the scan file, and the `path:line`.
@@ -164,7 +164,7 @@ Do not judge candidates in this phase; Phase 3 does that.
 
 ### Tasks
 
-- [ ] Strict lint pass in a throwaway worktree, so the real `analysis_options.yaml` stays untouched.
+- [x] Strict lint pass in a throwaway worktree, so the real `analysis_options.yaml` stays untouched.
       Run `git worktree add --detach "$env:TEMP\warang-audit\wt" HEAD`.
       In the worktree, replace `analysis_options.yaml` with the current file plus these rules under `linter: rules:`:
       `unreachable_from_main`, `discarded_futures`, `cancel_subscriptions`, `close_sinks`, `avoid_dynamic_calls`, `only_throw_errors`, `avoid_catches_without_on_clauses`, `empty_catches`, `throw_in_finally`, `control_flow_in_finally`, `unnecessary_statements`, `unnecessary_lambdas`, `unnecessary_await_in_return`, `avoid_slow_async_io`, `no_runtimeType_toString`, `prefer_final_fields`, `unnecessary_null_checks`, `avoid_redundant_argument_values`, `use_if_null_to_convert_nulls_to_bools`, `literal_only_boolean_expressions`.
@@ -172,15 +172,15 @@ Do not judge candidates in this phase; Phase 3 does that.
       If the analyzer rejects a rule name, delete that rule, rerun, and list the dropped rule in the scan file.
       Run `dart fix --dry-run` in the worktree and save it as `02-dart-fix.txt`.
       Remove the worktree with `git worktree remove --force "$env:TEMP\warang-audit\wt"` and confirm `git worktree list` shows only the main tree.
-- [ ] Unused dependencies: for each direct dependency in `pubspec.yaml`, run `git grep -n "package:<name>/" -- lib test tool` and save the counts as `03-dependency-use.txt`.
+- [x] Unused dependencies: for each direct dependency in `pubspec.yaml`, run `git grep -n "package:<name>/" -- lib test tool` and save the counts as `03-dependency-use.txt`.
       A dependency with zero imports, or imports only in tests while listed under `dependencies`, is a candidate.
       Packages used only through Flutter plugin registration, such as `sqlite3_flutter_libs`, need a note instead of a zero count.
-- [ ] Unused assets: for each asset in `pubspec.yaml`, search `lib`, `test`, and `tool` for its path and its file name, and save as `04-asset-use.txt`.
+- [x] Unused assets: for each asset in `pubspec.yaml`, search `lib`, `test`, and `tool` for its path and its file name, and save as `04-asset-use.txt`.
       Also list tracked files under `assets/` and `design/` that `pubspec.yaml` does not declare and no code reads.
-- [ ] Unused public code: write `public_symbols.py` that lists every top-level and class-level public declaration in hand-written `lib/` files, then counts word-boundary references in `lib`, `test`, and `tool` outside the declaring line.
+- [x] Unused public code: write `public_symbols.py` that lists every top-level and class-level public declaration in hand-written `lib/` files, then counts word-boundary references in `lib`, `test`, and `tool` outside the declaring line.
       Save symbols with zero outside references, and symbols referenced only from tests, as `05-unused-symbols.txt`.
       Treat the result as candidates only; Dart overrides, `build` methods, Drift table columns, and Riverpod providers read by name can look unused.
-- [ ] Pattern scans, one file each, using `git grep -nE` over `lib` (and `test` where named):
+- [x] Pattern scans, one file each, using `git grep -nE` over `lib` (and `test` where named):
       `06-catch.txt`: `catch \(|on [A-Z][A-Za-z]+ catch|\.catchError\(|onError:`.
       `07-null-and-late.txt`: `[A-Za-z0-9_\)\]]!(\.|\)|;|,| )` and `\blate\b`, with a per-file count.
       `08-dynamic-and-casts.txt`: `\bdynamic\b|\bas [A-Z]|as Map|as List`.
@@ -192,27 +192,27 @@ Do not judge candidates in this phase; Phase 3 does that.
       `14-debug-and-markers.txt`: `print\(|debugPrint\(|kDebugMode|assert\(|TODO|FIXME|HACK|XXX|// ignore|ignore_for_file`, over `lib`, `test`, and `tool`.
       `15-hardcoded-style.txt`: `Color\(0x|Colors\.|EdgeInsets\.(all|only|symmetric)\([0-9]|Duration\((milliseconds|seconds): [0-9]|fontSize: [0-9]` outside `lib/app/theme/`.
       `16-time-and-random.txt`: `DateTime\.now\(\)|Random\(` with file, to find code and tests that depend on the clock.
-- [ ] Size and complexity: write `complexity.py` that reports, for each hand-written `lib/` file, its line count, and each function or `build` method longer than 60 lines by brace matching.
+- [x] Size and complexity: write `complexity.py` that reports, for each hand-written `lib/` file, its line count, and each function or `build` method longer than 60 lines by brace matching.
       Save as `17-complexity.txt`, and mark the brace matching as approximate in the file header.
-- [ ] Duplication: write `duplicates.py` that strips whitespace and comments, hashes every window of 8 consecutive non-empty lines in hand-written `lib/` files, and reports windows that appear in two or more places.
+- [x] Duplication: write `duplicates.py` that strips whitespace and comments, hashes every window of 8 consecutive non-empty lines in hand-written `lib/` files, and reports windows that appear in two or more places.
       Merge overlapping windows into one block per pair of locations, and save as `18-duplicates.txt`.
-- [ ] Android and build config: copy the relevant lines of `android/app/src/main/AndroidManifest.xml`, the debug and profile manifests, and `android/app/build.gradle.kts` into `19-android.txt`.
+- [x] Android and build config: copy the relevant lines of `android/app/src/main/AndroidManifest.xml`, the debug and profile manifests, and `android/app/build.gradle.kts` into `19-android.txt`.
       Note `android:allowBackup`, `android:usesCleartextTraffic`, `android:exported`, every `uses-permission`, `minSdk`, `targetSdk`, the release `signingConfig`, `minifyEnabled`, and any hard-coded secret or keystore path.
-- [ ] Tooling: read `tool/place_book/build_place_book.py`, `schema.sql`, `requirements.txt`, and both `scripts/build-and-archive.*` files.
+- [x] Tooling: read `tool/place_book/build_place_book.py`, `schema.sql`, `requirements.txt`, and both `scripts/build-and-archive.*` files.
       Save candidate lines in `20-tooling.txt`, covering unpinned versions, downloads without checksum checks, unchecked subprocess calls, and paths built from input.
-- [ ] Tests: in `test/` and `tool/ux_screenshots_test.dart`, list tests with no `expect` call, tests that call `Future.delayed` or `pump` with a fixed long duration, skipped tests, and goldens tied to the clock, in `21-tests.txt`.
-- [ ] Record each candidate as a `C-NNN` row in the evidence log with the scan file and location.
+- [x] Tests: in `test/` and `tool/ux_screenshots_test.dart`, list tests with no `expect` call, tests that call `Future.delayed` or `pump` with a fixed long duration, skipped tests, and goldens tied to the clock, in `21-tests.txt`.
+- [x] Record each candidate as a `C-NNN` row in the evidence log with the scan file and location.
 
 ### Verification
 
-- [ ] Gates 1 to 4 pass; `git worktree list` shows one tree.
-- [ ] Each scan file from `01` to `21` exists and starts with the exact command or script that produced it.
-- [ ] The evidence log states the total candidate count.
+- [x] Gates 1 to 4 pass; `git worktree list` shows one tree.
+- [x] Each scan file from `01` to `21` exists and starts with the exact command or script that produced it.
+- [x] The evidence log states the total candidate count.
 
 ### Review and checkpoint
 
-- [ ] Stage `docs/audits/AUDIT-001/`, `docs/evidence/AUDIT-001-verification.md`, and `docs/plans/AUDIT-001-implementation.md` only.
-- [ ] Commit `docs(audit): AUDIT-001 phase 1 - automated scans`, and confirm the hash.
+- [x] Stage `docs/audits/AUDIT-001/`, `docs/evidence/AUDIT-001-verification.md`, and `docs/plans/AUDIT-001-implementation.md` only.
+- [x] Commit `docs(audit): AUDIT-001 phase 1 - automated scans`, and confirm the hash.
 
 ## Phase 2: Manual review by area
 

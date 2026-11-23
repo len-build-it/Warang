@@ -1,0 +1,72 @@
+# Scan 07: Null assertion (!) and late declarations in lib/
+# Command: git grep -nE "[A-Za-z0-9_\)\]]!(\.|\)|;|,| )|\blate\b" -- lib (excluding *.g.dart)
+
+=== PER-FILE COUNTS ===
+   6  lib/app/theme/clay.dart
+   5  lib/features/home_tab/trip_form_screen.dart
+   5  lib/features/map/warang_map.dart
+   4  lib/data/repository.dart
+   4  lib/features/search/search_tab_screen.dart
+   4  lib/features/travel_mode/moment_edit_sheet.dart
+   3  lib/features/maya/maya_companion.dart
+   2  lib/app/shell/dock.dart
+   2  lib/app/shell/you_sheet.dart
+   2  lib/app/theme/clay_components.dart
+   2  lib/features/settings/settings_screen.dart
+   2  lib/features/travel_mode/travel_mode_screen.dart
+   1  lib/app/shell/app_shell.dart
+   1  lib/app/theme/components.dart
+   1  lib/features/capture/capture_screen.dart
+   1  lib/features/home_tab/trip_photo.dart
+   1  lib/features/news_tab/news_tab_screen.dart
+   1  lib/features/places/place_picker_sheet.dart
+
+Total matching lines: 47
+
+lib/app/shell/app_shell.dart:39:  late final _tabs = [
+lib/app/shell/dock.dart:45:  late final AnimationController _travel = AnimationController.unbounded(
+lib/app/shell/dock.dart:49:  late int _from = widget.selectedIndex;
+lib/app/shell/you_sheet.dart:106:  late final Future<Map<String, List<String>>> _titlesFuture =
+lib/app/shell/you_sheet.dart:380:  late final _controller = TextEditingController(text: widget.initial);
+lib/app/theme/clay.dart:61:    final light = _light[depth]!;
+lib/app/theme/clay.dart:63:    final dark = _dark[depth]!;
+lib/app/theme/clay.dart:396:  late final RRect rrect;
+lib/app/theme/clay.dart:397:  late final Path highlight;
+lib/app/theme/clay.dart:398:  late final Path? shade;
+lib/app/theme/clay.dart:668:  late final AnimationController _press = AnimationController.unbounded(
+lib/app/theme/clay_components.dart:494:  late final AnimationController _pop = AnimationController.unbounded(
+lib/app/theme/clay_components.dart:1347:  late final AnimationController _pop = AnimationController.unbounded(
+lib/app/theme/components.dart:222:  late final AnimationController _controller = AnimationController(
+lib/data/repository.dart:29:  late Profile _profile;
+lib/data/repository.dart:216:    late final String placeId;
+lib/data/repository.dart:225:    return _placesById[placeId]!;
+lib/data/repository.dart:237:    late final String placeId;
+lib/features/capture/capture_screen.dart:41:  late final _shrink = AnimationController(
+lib/features/home_tab/trip_form_screen.dart:50:  late final _title = TextEditingController(text: widget.trip?.title);
+lib/features/home_tab/trip_form_screen.dart:51:  late final _place = TextEditingController(text: widget.trip?.place);
+lib/features/home_tab/trip_form_screen.dart:52:  late DateTimeRange? _dates = _initialDates();
+lib/features/home_tab/trip_form_screen.dart:53:  late String _color = widget.trip == null
+lib/features/home_tab/trip_form_screen.dart:369:          label: tripColorNames[key]!,
+lib/features/home_tab/trip_photo.dart:34:  late Future<File?> _file = _resolve();
+lib/features/map/warang_map.dart:85:  late final MapTileStore _tileStore = widget.tileStore ?? MapTileStore();
+lib/features/map/warang_map.dart:86:  late final PhotoStore _photoStore = widget.photoStore ?? PhotoStore();
+lib/features/map/warang_map.dart:115:      _leaving[removedSelected] = before[removedSelected]!;
+lib/features/map/warang_map.dart:700:  late final AnimationController _drop = AnimationController.unbounded(
+lib/features/map/warang_map.dart:703:  late final AnimationController _splat = AnimationController(
+lib/features/maya/maya_companion.dart:127:  late final AnimationController _react = AnimationController(
+lib/features/maya/maya_companion.dart:131:  late final AnimationController _drag = AnimationController.unbounded(
+lib/features/maya/maya_companion.dart:134:  late final AnimationController _float = AnimationController(
+lib/features/news_tab/news_tab_screen.dart:59:  late Future<List<NewsListEntry>> _entries = widget.entries ?? _loadEntries();
+lib/features/places/place_picker_sheet.dart:82:  late final _controller = TextEditingController(
+lib/features/search/search_tab_screen.dart:126:  late Future<List<Moment>> _results;
+lib/features/search/search_tab_screen.dart:127:  late String _query;
+lib/features/search/search_tab_screen.dart:128:  late int _momentCount;
+lib/features/search/search_tab_screen.dart:307:  late final _controller = AnimationController(
+lib/features/settings/settings_screen.dart:23:  late Future<int> _photoBytes;
+lib/features/settings/settings_screen.dart:24:  late Future<int> _cacheBytes;
+lib/features/travel_mode/moment_edit_sheet.dart:40:  late final _caption = TextEditingController(text: widget.moment.caption);
+lib/features/travel_mode/moment_edit_sheet.dart:41:  late String _tripId = widget.moment.tripId;
+lib/features/travel_mode/moment_edit_sheet.dart:42:  late String? _placeName = widget.moment.placeLabel;
+lib/features/travel_mode/moment_edit_sheet.dart:43:  late String? _categoryKey = widget.moment.placeCategory;
+lib/features/travel_mode/travel_mode_screen.dart:579:  late Future<File?> _file = _resolve();
+lib/features/travel_mode/travel_mode_screen.dart:1095:  late Future<File?> _file = _resolve();

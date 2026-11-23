@@ -1,0 +1,24 @@
+# Scan 08: dynamic types and explicit casts in lib/
+# Command: git grep -nE "\bdynamic\b|\bas [A-Z]|as Map|as List" -- lib (excluding *.g.dart)
+
+Total matching lines: 19
+
+lib/core/stamps.dart:33:  final decoded = jsonDecode(rawJson) as Map<String, dynamic>;
+lib/core/stamps.dart:36:      entry.key: (entry.value as List<dynamic>).cast<String>(),
+lib/data/repository.dart:345:        : (jsonDecode(raw) as List<dynamic>).cast<String>();
+lib/features/map/map_tile_store.dart:160:        layerId: row['layerId']! as String,
+lib/features/map/map_tile_store.dart:161:        bytes: Uint8List.fromList((row['bytes']! as List<int>)),
+lib/features/map/map_tile_store.dart:165:        etag: row['etag'] as String?,
+lib/features/maya/maya_companion.dart:74:        final decoded = jsonDecode(raw) as Map<String, dynamic>;
+lib/features/maya/maya_companion.dart:77:            entry.key: (entry.value as List<dynamic>).cast<String>(),
+lib/features/news_tab/news_tab_screen.dart:30:  factory NewsArticle.fromJson(Map<String, dynamic> json) => NewsArticle(
+lib/features/news_tab/news_tab_screen.dart:31:    title: json['title'] as String,
+lib/features/news_tab/news_tab_screen.dart:32:    body: json['body'] as String,
+lib/features/news_tab/news_tab_screen.dart:33:    category: json['category'] as String? ?? 'News',
+lib/features/news_tab/news_tab_screen.dart:34:    icon: _iconFor(json['icon'] as String?),
+lib/features/news_tab/news_tab_screen.dart:35:    date: DateTime.parse(json['date'] as String),
+lib/features/news_tab/news_tab_screen.dart:63:    final decoded = jsonDecode(raw) as List<dynamic>;
+lib/features/news_tab/news_tab_screen.dart:65:        .whereType<Map<String, dynamic>>()
+lib/features/travel_mode/travel_mode_screen.dart:255:      final mapBox = _mapKey.currentContext?.findRenderObject() as RenderBox?;
+lib/features/travel_mode/travel_mode_screen.dart:256:      final card = _cardKey.currentContext?.findRenderObject() as RenderBox?;
+lib/features/travel_mode/travel_mode_screen.dart:796:/// A control on the map, as S2 draws recenter: a 40 `surface` clay circle

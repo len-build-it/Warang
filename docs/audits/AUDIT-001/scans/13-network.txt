@@ -1,0 +1,12 @@
+# Scan 13: Network URLs, HTTP clients, and TileLayer in lib/
+# Command: git grep -nE "Uri\.parse|https?://|userAgentPackageName|TileLayer|NetworkTileProvider|HttpClient" -- lib (excluding *.g.dart)
+
+Total matching lines: 7
+
+lib/features/map/map_tile_store.dart:314:  final HttpClient? client;
+lib/features/map/map_tile_store.dart:318:  ImageProvider getImage(TileCoordinates coordinates, TileLayer options) {
+lib/features/map/map_tile_store.dart:368:    final httpClient = client ?? HttpClient();
+lib/features/map/map_tile_store.dart:370:      final request = await httpClient.getUrl(Uri.parse(url));
+lib/features/map/warang_map.dart:194:              child: TileLayer(
+lib/features/map/warang_map.dart:195:                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+lib/features/map/warang_map.dart:196:                userAgentPackageName: 'ph.warang.app',

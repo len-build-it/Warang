@@ -1,0 +1,51 @@
+# Scan 15: Hardcoded Color/Colors/EdgeInsets/Duration/fontSize outside lib/app/theme/
+# Command: git grep -nE "Color\(0x|Colors\.|EdgeInsets\.(all|only|symmetric)\([0-9]|Duration\((milliseconds|seconds): [0-9]|fontSize: [0-9]" -- lib (excluding *.g.dart, lib/app/theme/)
+
+=== PER-FILE COUNTS ===
+   4  lib/core/place_categories.dart
+   4  lib/features/capture/capture_screen.dart
+   4  lib/features/travel_mode/travel_mode_screen.dart
+   3  lib/features/map/warang_map.dart
+   3  lib/features/maya/maya_companion.dart
+   2  lib/app/shell/dock.dart
+   2  lib/features/onboarding/onboarding_screen.dart
+   2  lib/features/settings/settings_screen.dart
+   1  lib/app/device_providers.dart
+   1  lib/app/shell/you_sheet.dart
+   1  lib/features/home_tab/home_tab_screen.dart
+   1  lib/features/news_tab/news_tab_screen.dart
+   1  lib/features/places/place_picker_sheet.dart
+   1  lib/features/search/search_tab_screen.dart
+
+Total matching lines: 30
+
+lib/app/device_providers.dart:57:          timeLimit: Duration(seconds: 3),
+lib/app/shell/dock.dart:313:                          : Colors.transparent,
+lib/app/shell/dock.dart:338:        padding: const EdgeInsets.all(12),
+lib/app/shell/you_sheet.dart:41:          padding: const EdgeInsets.all(3),
+lib/core/place_categories.dart:32:        ? WarangColors.darkSurfaceRaised
+lib/core/place_categories.dart:33:        : WarangColors.lightGround;
+lib/core/place_categories.dart:40:        ? WarangColors.darkInk
+lib/core/place_categories.dart:41:        : WarangColors.lightInk;
+lib/features/capture/capture_screen.dart:43:    duration: const Duration(milliseconds: 320),
+lib/features/capture/capture_screen.dart:157:        duration: const Duration(seconds: 8),
+lib/features/capture/capture_screen.dart:223:        statusBarColor: Colors.transparent,
+lib/features/capture/capture_screen.dart:226:        systemNavigationBarColor: Colors.transparent,
+lib/features/home_tab/home_tab_screen.dart:335:          padding: const EdgeInsets.all(14),
+lib/features/map/warang_map.dart:183:                _rest = Timer(const Duration(milliseconds: 180), () {
+lib/features/map/warang_map.dart:705:    duration: const Duration(milliseconds: 300),
+lib/features/map/warang_map.dart:829:            : const Duration(milliseconds: 220),
+lib/features/maya/maya_companion.dart:129:    duration: const Duration(milliseconds: 520),
+lib/features/maya/maya_companion.dart:136:    duration: const Duration(milliseconds: 2400),
+lib/features/maya/maya_companion.dart:200:      _play(MayaPose.dizzy, hold: const Duration(milliseconds: 400));
+lib/features/news_tab/news_tab_screen.dart:91:              color: WarangColors.accentText(Theme.of(context).brightness),
+lib/features/onboarding/onboarding_screen.dart:52:        statusBarColor: Colors.transparent,
+lib/features/onboarding/onboarding_screen.dart:55:        systemNavigationBarColor: Colors.transparent,
+lib/features/places/place_picker_sheet.dart:115:    _debounce = Timer(const Duration(milliseconds: 150), _runQuery);
+lib/features/search/search_tab_screen.dart:196:            delay: Duration(milliseconds: 30 * index.clamp(0, 10)),
+lib/features/settings/settings_screen.dart:168:      duration: const Duration(seconds: 2),
+lib/features/settings/settings_screen.dart:246:          padding: const EdgeInsets.all(14),
+lib/features/travel_mode/travel_mode_screen.dart:65:    _creditTimer = Timer(const Duration(seconds: 5), () {
+lib/features/travel_mode/travel_mode_screen.dart:146:      duration: const Duration(seconds: 6),
+lib/features/travel_mode/travel_mode_screen.dart:333:        statusBarColor: Colors.transparent,
+lib/features/travel_mode/travel_mode_screen.dart:340:        systemNavigationBarColor: Colors.transparent,

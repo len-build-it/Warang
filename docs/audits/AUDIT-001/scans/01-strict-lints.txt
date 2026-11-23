@@ -1,0 +1,260 @@
+﻿# Scan 01: Strict lints in detached worktree at HEAD (7d6703f)
+# Command: flutter analyze --no-fatal-infos --no-fatal-warnings (with 20 extra lint rules in worktree analysis_options.yaml)
+# Dropped rules: none (use_if_null_to_convert_nulls_to_bools emitted a deprecated_lint warning in Dart 3.12.2 but still executed)
+
+Resolving dependencies...
+Downloading packages...
+  _fe_analyzer_shared 99.0.0 (111.0.0 available)
+  analyzer 12.1.0 (14.7.0 available)
+  archive 4.1.0 (4.7.1 available)
+  build 4.0.7 (5.0.0 available)
+  build_config 1.3.2 (1.4.0 available)
+  build_daemon 4.1.5 (4.1.7 available)
+  build_runner 2.15.1 (2.17.1 available)
+  built_collection 5.1.1 (6.0.0 available)
+  built_value 8.12.7 (8.13.0 available)
+  cli_util 0.4.2 (0.6.1 available)
+  clock 1.1.2 (1.1.3 available)
+  code_assets 1.2.1 (2.2.0 available)
+  coverage 1.15.1 (1.16.1 available)
+  cross_file 0.3.5+4 (0.4.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  dart_style 3.1.8 (3.1.14 available)
+  dbus 0.7.15 (0.8.1 available)
+  drift 2.34.3 (2.35.4 available)
+  drift_dev 2.34.0 (2.35.3 available)
+  file_selector_linux 0.9.4 (0.9.4+1 available)
+  file_selector_macos 0.9.5 (0.9.5+2 available)
+  file_selector_windows 0.9.3+5 (0.9.3+6 available)
+  flutter_map 8.3.1 (8.3.2 available)
+  flutter_riverpod 3.4.2 (3.5.0 available)
+  frontend_server_client 4.0.0 (4.2.0 available)
+  geolocator 14.0.3 (14.1.2 available)
+  geolocator_android 5.0.3 (5.2.1 available)
+  geolocator_apple 2.3.14 (2.4.3 available)
+  geolocator_platform_interface 4.3.0 (4.4.1 available)
+  glob 2.1.3 (2.2.0 available)
+  gsettings 0.2.8 (0.2.9 available)
+  hooks 2.0.2 (2.2.0 available)
+  http_multi_server 3.2.2 (3.2.3 available)
+  image 4.9.2 (4.13.1 available)
+  image_picker 1.2.3 (1.2.4 available)
+  image_picker_android 0.8.13+19 (0.8.13+25 available)
+  image_picker_ios 0.8.13+6 (0.8.13+16 available)
+  image_picker_platform_interface 2.11.1 (2.11.2 available)
+  io 1.0.5 (1.1.0 available)
+  jni 1.0.3 (1.2.1 available)
+  jni_flutter 1.0.2 (1.1.0 available)
+  latlong2 0.9.1 (0.10.1 available)
+  matcher 0.12.19 (0.12.20 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.0 (1.19.0 available)
+  mime 2.0.0 (2.1.0 available)
+  native_toolchain_c 0.19.2 (0.19.6 available)
+  objective_c 9.5.0 (9.6.4 available)
+  package_config 2.2.0 (3.0.0 available)
+  package_info_plus 10.2.1 (10.2.2 available)
+  petitparser 7.0.2 (7.1.0 available)
+  platform 3.1.6 (3.2.0 available)
+  pool 1.5.2 (1.5.3 available)
+  posix 6.5.2 (6.5.4 available)
+  pub_semver 2.2.0 (2.2.1 available)
+  pubspec_parse 1.5.0 (1.7.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  riverpod 3.4.2 (3.5.0 available)
+  shelf 1.4.2 (1.4.3 available)
+  shelf_static 1.1.3 (1.2.0 available)
+  source_gen 4.2.4 (4.3.1 available)
+  sqflite 2.4.3 (2.4.6 available)
+  sqflite_android 2.4.3 (2.4.6 available)
+  sqflite_common 2.5.11 (2.5.17 available)
+  sqflite_common_ffi 2.4.2+1 (2.4.7 available)
+  sqflite_darwin 2.4.3+1 (2.4.6 available)
+  sqflite_platform_interface 2.4.1 (2.4.4 available)
+  sqlite3 3.5.2 (3.9.2 available)
+  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
+  sqlparser 0.44.5 (0.45.1 available)
+  stack_trace 1.12.1 (1.12.2 available)
+  stream_transform 2.1.1 (2.1.2 available)
+  synchronized 3.4.1+2 (3.6.1+1 available)
+  test 1.31.0 (1.33.0 available)
+  test_api 0.7.11 (0.7.15 available)
+  test_core 0.6.17 (0.6.21 available)
+  vector_math 2.2.0 (2.4.4 available)
+  vm_service 15.3.0 (15.4.0 available)
+  web 1.1.1 (1.1.2 available)
+  xml 7.0.1 (7.1.0 available)
+  yaml 3.1.3 (3.1.4 available)
+Got dependencies!
+81 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Analyzing wt...                                                 
+
+warning - The lint rule 'use_if_null_to_convert_nulls_to_bools' is deprecated and shouldn't be enabled. Try removing 'use_if_null_to_convert_nulls_to_bools' - analysis_options.yaml:32:5 - deprecated_lint
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\app\app.dart:22:16 - avoid_redundant_argument_values
+   info - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch' - lib\app\device_providers.dart:65:7 - avoid_catches_without_on_clauses
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\app\shell\dock.dart:60:15 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\app\shell\dock.dart:195:63 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\app\shell\dock.dart:296:53 - discarded_futures
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\app\shell\you_sheet.dart:242:22 - avoid_redundant_argument_values
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - lib\app\shell\you_sheet.dart:458:50 - avoid_slow_async_io
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\app\shell\you_sheet.dart:509:27 - avoid_redundant_argument_values
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\app\theme\clay.dart:682:19 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\app\theme\clay.dart:684:14 - discarded_futures
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\app\theme\clay.dart:684:63 - avoid_redundant_argument_values
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\app\theme\clay.dart:686:14 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\app\theme\clay.dart:696:14 - discarded_futures
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\app\theme\clay.dart:696:63 - avoid_redundant_argument_values
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\app\theme\clay.dart:698:14 - discarded_futures
+   info - Unnecessary use of a null check ('!'). Try removing the null check - lib\app\theme\clay.dart:746:47 - unnecessary_null_checks
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\app\theme\clay_components.dart:505:12 - discarded_futures
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\app\theme\clay_components.dart:898:14 - avoid_redundant_argument_values
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\app\theme\clay_components.dart:1175:40 - discarded_futures
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\app\theme\clay_components.dart:1217:38 - avoid_redundant_argument_values
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\app\theme\clay_components.dart:1362:12 - discarded_futures
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\app\theme\clay_components.dart:1390:14 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\app\theme\clay_components.dart:1501:18 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\app\theme\components.dart:159:16 - avoid_redundant_argument_values
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\app\theme\components.dart:234:19 - discarded_futures
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\app\theme\components.dart:504:12 - avoid_redundant_argument_values
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - lib\data\files\photo_store.dart:106:16 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - lib\data\files\photo_store.dart:131:17 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - lib\data\files\photo_store.dart:132:17 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - lib\data\files\photo_store.dart:156:15 - avoid_slow_async_io
+   info - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch' - lib\data\files\photo_store.dart:227:7 - avoid_catches_without_on_clauses
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - lib\data\files\photo_store.dart:263:15 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - lib\data\places\place_book_installer.dart:55:15 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - lib\data\places\place_book_installer.dart:62:60 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - lib\data\places\place_book_installer.dart:74:15 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - lib\data\places\place_book_installer.dart:78:15 - avoid_slow_async_io
+   info - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch' - lib\data\places\place_book_installer.dart:97:9 - avoid_catches_without_on_clauses
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\data\places\place_book_installer.dart:140:14 - discarded_futures
+   info - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch' - lib\data\places\place_book_installer.dart:158:7 - avoid_catches_without_on_clauses
+   info - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch' - lib\data\repository.dart:361:9 - avoid_catches_without_on_clauses
+   info - Use an if-null operator to convert a 'null' to a 'bool'. Try using an if-null operator - lib\data\repository.dart:414:22 - use_if_null_to_convert_nulls_to_bools
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\features\capture\capture_screen.dart:59:7 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\features\capture\capture_screen.dart:63:7 - discarded_futures
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\features\capture\capture_screen.dart:115:28 - avoid_redundant_argument_values
+   info - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch' - lib\features\capture\capture_screen.dart:150:7 - avoid_catches_without_on_clauses
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\features\capture\capture_screen.dart:194:9 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\features\capture\capture_screen.dart:354:54 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\features\home_tab\trip_detail_screen.dart:36:56 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\features\home_tab\trip_detail_screen.dart:86:32 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\features\home_tab\trip_detail_screen.dart:95:17 - discarded_futures
+   info - Use an if-null operator to convert a 'null' to a 'bool'. Try using an if-null operator - lib\features\home_tab\trip_detail_screen.dart:127:9 - use_if_null_to_convert_nulls_to_bools
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\features\home_tab\trip_detail_screen.dart:339:61 - avoid_redundant_argument_values
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\features\home_tab\trip_form_screen.dart:68:52 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\features\home_tab\trip_form_screen.dart:107:7 - discarded_futures
+   info - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch' - lib\features\home_tab\trip_form_screen.dart:140:7 - avoid_catches_without_on_clauses
+   info - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch' - lib\features\home_tab\trip_photo.dart:46:7 - avoid_catches_without_on_clauses
+   info - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch' - lib\features\map\map_tile_store.dart:135:7 - avoid_catches_without_on_clauses
+   info - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch' - lib\features\map\map_tile_store.dart:167:7 - avoid_catches_without_on_clauses
+   info - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch' - lib\features\map\map_tile_store.dart:221:7 - avoid_catches_without_on_clauses
+   info - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch' - lib\features\map\map_tile_store.dart:235:7 - avoid_catches_without_on_clauses
+   info - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch' - lib\features\map\map_tile_store.dart:254:7 - avoid_catches_without_on_clauses
+   info - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch' - lib\features\map\map_tile_store.dart:272:7 - avoid_catches_without_on_clauses
+   info - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch' - lib\features\map\map_tile_store.dart:342:7 - avoid_catches_without_on_clauses
+   info - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch' - lib\features\map\map_tile_store.dart:356:7 - avoid_catches_without_on_clauses
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\features\map\warang_map.dart:123:7 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\features\map\warang_map.dart:145:7 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\features\map\warang_map.dart:153:46 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\features\map\warang_map.dart:414:26 - discarded_futures
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\features\map\warang_map.dart:440:56 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\features\map\warang_map.dart:479:22 - avoid_redundant_argument_values
+   info - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch' - lib\features\map\warang_map.dart:571:7 - avoid_catches_without_on_clauses
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - lib\features\map\warang_map.dart:682:20 - avoid_slow_async_io
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\features\map\warang_map.dart:722:61 - avoid_redundant_argument_values
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\features\map\warang_map.dart:723:12 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\features\map\warang_map.dart:728:10 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\features\map\warang_map.dart:732:26 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\features\map\warang_map.dart:733:14 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\features\maya\maya_companion.dart:158:39 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\features\maya\maya_companion.dart:185:14 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\features\maya\maya_companion.dart:223:28 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\features\maya\maya_companion.dart:234:29 - discarded_futures
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\features\maya\maya_companion.dart:257:60 - discarded_futures
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\features\maya\maya_companion.dart:390:24 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\features\news_tab\news_tab_screen.dart:160:16 - avoid_redundant_argument_values
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\features\places\place_picker_sheet.dart:99:7 - discarded_futures
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\features\places\place_picker_sheet.dart:136:66 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\features\places\place_picker_sheet.dart:157:70 - avoid_redundant_argument_values
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\features\places\place_picker_sheet.dart:177:9 - discarded_futures
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\features\places\place_picker_sheet.dart:469:28 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\features\search\search_tab_screen.dart:279:65 - avoid_redundant_argument_values
+   info - 'Future'-returning calls in a non-'async' function. Try converting the enclosing function to be 'async' and then 'await' the future, or wrap the expression in 'unawaited' - lib\features\search\search_tab_screen.dart:322:32 - discarded_futures
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\features\stamps\stamp_page_sheet.dart:90:22 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\features\stamps\stamp_page_sheet.dart:150:56 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\features\travel_mode\moment_edit_sheet.dart:69:23 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\features\travel_mode\moment_edit_sheet.dart:71:28 - avoid_redundant_argument_values
+   info - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch' - lib\features\travel_mode\moment_edit_sheet.dart:138:7 - avoid_catches_without_on_clauses
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\features\travel_mode\moment_edit_sheet.dart:208:66 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\features\travel_mode\travel_mode_screen.dart:131:15 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\features\travel_mode\travel_mode_screen.dart:215:66 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\features\travel_mode\travel_mode_screen.dart:228:66 - avoid_redundant_argument_values
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - lib\features\travel_mode\travel_mode_screen.dart:585:18 - avoid_slow_async_io
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\features\travel_mode\travel_mode_screen.dart:663:28 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - lib\features\travel_mode\travel_mode_screen.dart:1016:29 - avoid_redundant_argument_values
+   info - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch' - lib\features\travel_mode\travel_mode_screen.dart:1102:7 - avoid_catches_without_on_clauses
+   info - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch' - test\capture_flow_test.dart:60:7 - avoid_catches_without_on_clauses
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - test\core_rules_test.dart:30:34 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - test\data_layer_test.dart:226:27 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - test\data_layer_test.dart:231:58 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - test\data_layer_test.dart:242:32 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - test\data_layer_test.dart:268:25 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - test\data_layer_test.dart:363:43 - avoid_redundant_argument_values
+   info - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch' - test\icon_semantics_test.dart:71:7 - avoid_catches_without_on_clauses
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - test\icon_semantics_test.dart:261:43 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - test\icon_semantics_test.dart:268:43 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - test\map_clusters_and_credit_test.dart:255:51 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - test\map_navigation_test.dart:198:48 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - test\map_pins_test.dart:32:39 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - test\maya_test.dart:231:38 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - test\maya_test.dart:241:38 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - test\migration_test.dart:118:40 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - test\migration_test.dart:119:41 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - test\migration_test.dart:120:41 - avoid_redundant_argument_values
+   info - Closure should be a tearoff. Try using a tearoff rather than a closure - test\migration_test.dart:217:12 - unnecessary_lambdas
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - test\migration_test.dart:237:21 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - test\migration_test.dart:295:19 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - test\migration_test.dart:327:17 - avoid_slow_async_io
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - test\moment_actions_test.dart:198:39 - avoid_redundant_argument_values
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - test\photo_store_test.dart:22:15 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - test\photo_store_test.dart:83:19 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - test\photo_store_test.dart:136:22 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - test\photo_store_test.dart:138:17 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - test\photo_store_test.dart:142:17 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - test\photo_store_test.dart:146:17 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - test\place_book_test.dart:55:19 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - test\place_book_test.dart:150:21 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - test\place_book_test.dart:212:21 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - test\place_book_test.dart:240:22 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - test\place_book_test.dart:242:22 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - test\place_book_test.dart:243:22 - avoid_slow_async_io
+   info - Use of an async 'dart:io' method. Try using the synchronous version of the method - test\place_book_test.dart:262:19 - avoid_slow_async_io
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - test\reduced_motion_test.dart:110:39 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - test\reduced_motion_test.dart:117:39 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - test\reduced_motion_test.dart:140:25 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - test\reduced_motion_test.dart:141:30 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - test\stamps_test.dart:45:34 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - test\stamps_test.dart:46:34 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - test\stamps_test.dart:75:15 - avoid_redundant_argument_values
+   info - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch' - test\tactile_memories_test.dart:46:7 - avoid_catches_without_on_clauses
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - test\tactile_memories_test.dart:118:29 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - test\tactile_memories_test.dart:230:37 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - test\trips_flow_test.dart:182:27 - avoid_redundant_argument_values
+   info - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch' - test\user_journey_test.dart:60:7 - avoid_catches_without_on_clauses
+   info - Catch clause should use 'on' to specify the type of exception being caught. Try adding an 'on' clause before the 'catch' - test\utility_screens_test.dart:51:7 - avoid_catches_without_on_clauses
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - tool\ux_screenshots_test.dart:460:37 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - tool\ux_screenshots_test.dart:579:25 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - tool\ux_screenshots_test.dart:603:21 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - tool\ux_screenshots_test.dart:614:21 - avoid_redundant_argument_values
+   info - The value of the argument is redundant because it matches the default value. Try removing the argument - tool\ux_screenshots_test.dart:641:49 - avoid_redundant_argument_values
+
+flutter : 159 issues found. (ran in 5.8s)
+At line:44 char:15
++ ... nalyzeOut = flutter analyze --no-fatal-infos --no-fatal-warnings 2>&1 ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (159 issues found. (ran in 5.8s):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+

@@ -1,0 +1,93 @@
+﻿# Scan 17: File line counts and functions/methods > 60 lines in hand-written lib/ files
+# Command: python docs/audits/AUDIT-001/scripts/complexity.py
+# Note: Brace matching for function/method lengths is approximate.
+
+=== FILE LINE COUNTS (DESCENDING) ===
+  1516 lib/app/theme/clay_components.dart [>400]
+  1169 lib/features/travel_mode/travel_mode_screen.dart [>400]
+   943 lib/features/map/warang_map.dart [>400]
+   791 lib/data/repository.dart [>400]
+   750 lib/app/theme/clay.dart [>400]
+   597 lib/features/places/place_picker_sheet.dart [>400]
+   581 lib/app/theme/components.dart [>400]
+   528 lib/app/shell/you_sheet.dart [>400]
+   471 lib/features/map/map_tile_store.dart [>400]
+   465 lib/features/capture/capture_screen.dart [>400]
+   462 lib/features/home_tab/home_tab_screen.dart [>400]
+   403 lib/features/maya/maya_companion.dart [>400]
+   376 lib/features/home_tab/trip_form_screen.dart [>300]
+   362 lib/app/shell/dock.dart [>300]
+   360 lib/data/db/daos.dart [>300]
+   348 lib/features/search/search_tab_screen.dart [>300]
+   345 lib/features/home_tab/trip_detail_screen.dart [>300]
+   345 lib/app/theme/tokens.dart [>300]
+   344 lib/data/db/database.dart [>300]
+   311 lib/features/travel_mode/moment_edit_sheet.dart [>300]
+   294 lib/data/places/place_book.dart
+   283 lib/features/settings/settings_screen.dart
+   267 lib/data/files/photo_store.dart
+   247 lib/features/news_tab/news_tab_screen.dart
+   201 lib/core/stamps.dart
+   187 lib/app/theme/warang_icons.dart
+   182 lib/features/stamps/stamp_page_sheet.dart
+   174 lib/core/place_categories.dart
+   163 lib/data/places/place_book_installer.dart
+   157 lib/app/shell/app_shell.dart
+   148 lib/app/theme/palette.dart
+   138 lib/features/onboarding/onboarding_screen.dart
+   135 lib/core/models.dart
+   110 lib/app/theme/typography.dart
+   109 lib/data/db/tables.dart
+   102 lib/app/app_state.dart
+   100 lib/features/home_tab/trip_photo.dart
+    93 lib/features/settings/about_screen.dart
+    82 lib/app/theme/motion.dart
+    70 lib/app/device_providers.dart
+    64 lib/core/milestones.dart
+    60 lib/core/trip_rules.dart
+    52 lib/core/memory_stats.dart
+    47 lib/core/formatting.dart
+    41 lib/main.dart
+    41 lib/app/app.dart
+    34 lib/features/stamps/stamp_titles.dart
+    28 lib/data/places/fts_query.dart
+     4 lib/core/ids.dart
+
+=== FUNCTIONS / METHODS > 60 LINES (APPROXIMATE BRACE MATCHING) ===
+ 264 lines  lib/features/travel_mode/travel_mode_screen.dart:276-539  _content()
+ 226 lines  lib/features/capture/capture_screen.dart:188-413  build()
+ 164 lines  lib/app/shell/you_sheet.dart:110-273  build()
+ 163 lines  lib/features/home_tab/trip_detail_screen.dart:134-296  build()
+ 161 lines  lib/features/travel_mode/moment_edit_sheet.dart:150-310  build()
+ 136 lines  lib/features/travel_mode/travel_mode_screen.dart:939-1074  build()
+ 130 lines  lib/app/theme/clay_components.dart:517-646  build()
+ 116 lines  lib/app/theme/clay_components.dart:262-377  build()
+ 115 lines  lib/app/shell/dock.dart:78-192  build()
+ 114 lines  lib/features/map/warang_map.dart:158-271  build()
+ 106 lines  lib/features/home_tab/home_tab_screen.dart:45-150  build()
+ 103 lines  lib/data/db/database.dart:218-320  _createSearchIndex()
+ 102 lines  lib/features/settings/settings_screen.dart:34-135  build()
+ 102 lines  lib/features/onboarding/onboarding_screen.dart:36-137  build()
+  94 lines  lib/app/theme/tokens.dart:252-345  e()
+  93 lines  lib/features/home_tab/trip_form_screen.dart:188-280  build()
+  89 lines  lib/app/theme/clay_components.dart:1160-1248  build()
+  84 lines  lib/app/theme/components.dart:345-428  build()
+  83 lines  lib/app/shell/dock.dart:279-361  build()
+  78 lines  lib/features/settings/about_screen.dart:15-92  build()
+  77 lines  lib/features/stamps/stamp_page_sheet.dart:44-120  build()
+  75 lines  lib/features/maya/maya_companion.dart:270-344  build()
+  75 lines  lib/features/map/warang_map.dart:417-491  r()
+  75 lines  lib/data/repository.dart:555-629  upsertImportedTrip()
+  74 lines  lib/app/theme/clay_components.dart:90-163  build()
+  74 lines  lib/app/theme/clay.dart:436-509  paint()
+  69 lines  lib/features/search/search_tab_screen.dart:223-291  build()
+  69 lines  lib/features/home_tab/home_tab_screen.dart:313-381  build()
+  65 lines  lib/features/search/search_tab_screen.dart:39-103  build()
+  65 lines  lib/app/theme/clay_components.dart:887-951  build()
+  64 lines  lib/app/theme/clay_components.dart:990-1053  build()
+  64 lines  lib/app/shell/app_shell.dart:91-154  build()
+  62 lines  lib/features/news_tab/news_tab_screen.dart:79-140  build()
+  61 lines  lib/data/files/photo_store.dart:118-178  sweepOrphans()
+
+Total files > 400 lines: 12
+Total functions/methods > 60 lines: 34

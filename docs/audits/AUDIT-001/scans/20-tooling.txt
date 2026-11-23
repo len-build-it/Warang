@@ -1,0 +1,75 @@
+# Scan 20: Tooling scripts (tool/place_book/* and scripts/build-and-archive.*)
+# Command: python docs/audits/AUDIT-001/scripts/run_phase1_scans.py (scan_20_tooling)
+
+=== TOOLING CANDIDATE OBSERVATIONS ===
+- tool/place_book/requirements.txt:1 -> osmium==4.3.2 (pinned).
+- tool/place_book/README.md:26 -> curl download of philippines-latest.osm.pbf has no checksum verification.
+- tool/place_book/build_place_book.py:325 -> broad `except Exception: return` silently skips malformed OSM areas.
+- tool/place_book/build_place_book.py:422-423 -> `out_path.unlink()` deletes existing output SQLite before rebuilding (non-atomic).
+- tool/place_book/build_place_book.py:427 -> fragile exact-whitespace string replacement for `--drop-fts-prefix`.
+- tool/place_book/build_place_book.py:410-419 -> hardcoded diagnostic print statements run on every build.
+- scripts/build-and-archive.sh:50-88 -> does not fail if 0 release APKs are found; builds JSON via unescaped heredoc (lines 91-100); grep/awk pubspec parser breaks on inline comments; neither script verifies release signing.
+- scripts/build-and-archive.ps1:63-64 -> git stderr suppressed without checking exit code.
+
+=== tool/place_book/requirements.txt (tracked) ===
+Line count: 1
+
+=== tool/place_book/schema.sql (tracked) ===
+Line count: 29
+  L  2:   key TEXT PRIMARY KEY,
+  L  7:   id INTEGER PRIMARY KEY,
+
+=== tool/place_book/README.md (tracked) ===
+Line count: 46
+  L  8: - **Download URL:** `https://download.geofabrik.de/asia/philippines-latest.osm.pbf`
+  L 14: Create a local virtual environment (ignored by Git via `.gitignore`) and install the pinned dependency:
+  L 23: Download the latest Philippines extract (also ignored by Git via `*.osm.pbf`):
+  L 26: curl -fSL -o tool/place_book/philippines-latest.osm.pbf https://download.geofabrik.de/asia/philippines-latest.osm.pbf
+
+=== tool/place_book/build_place_book.py (tracked) ===
+Line count: 511
+  L 38:         key = rule["key"]
+  L 39:         raw = tags.get(key)
+  L 55:         if drop_village_suburb and category == "town" and key == "place":
+  L 72:     for key in ("name:en", "name:tl", "alt_name", "old_name"):
+  L 73:         raw = tags.get(key)
+  L152:     main = max(outers, key=ring_area_abs)
+  L227:         ordered = sorted(polygons, key=lambda p: (p.area, p.name))
+  L325:         except Exception:
+  L423:         out_path.unlink()
+  L427:         schema_sql = schema_sql.replace(",\n  prefix = '2 3'", "")
+  L433:         for osm_ref in sorted(collector.places.keys()):
+  L466:             key=lambda kv: kv[0],
+  L468:         conn.executemany("INSERT INTO meta (key, value) VALUES (?, ?)", meta_rows)
+
+=== scripts/build-and-archive.ps1 (untracked) ===
+Line count: 190
+  L  4:     git metadata, timestamps, and SHA-256 integrity checksums.
+  L  8:     2. Collects current Git commit SHA and branch.
+  L  9:     3. Runs `flutter build apk --release` (or with `--split-per-abi` if specified).
+  L 19:     If specified, skips `flutter build` and archives whatever is currently in the build outputs folder.
+  L 59: # 2. Get Git metadata
+  L 63:     $gitHash = (git -C $ProjectRoot rev-parse --short HEAD 2>$null).Trim()
+  L 64:     $gitBranch = (git -C $ProjectRoot rev-parse --abbrev-ref HEAD 2>$null).Trim()
+  L 66:     Write-Warning "Could not retrieve git metadata."
+  L 76: Write-Host " Git Branch : $gitBranch" -ForegroundColor Yellow
+  L 77: Write-Host " Git Commit : $gitHash" -ForegroundColor Yellow
+  L 92:         Write-Host "`n==> Running: flutter build apk --release --split-per-abi" -ForegroundColor Cyan
+  L 93:         flutter build apk --release --split-per-abi
+  L 95:         Write-Host "`n==> Running: flutter build apk --release" -ForegroundColor Cyan
+  L 96:         flutter build apk --release
+  L 98:     if ($LASTEXITCODE -ne 0) {
+  L 99:         Write-Error "Flutter build failed with exit code $LASTEXITCODE"
+
+=== scripts/build-and-archive.sh (untracked) ===
+Line count: 107
+  L 18: # 2. Get Git metadata
+  L 19: GIT_HASH=$(git -C "${PROJECT_ROOT}" rev-parse --short HEAD 2>/dev/null || echo "nogit")
+  L 20: GIT_BRANCH=$(git -C "${PROJECT_ROOT}" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
+  L 26: echo " Git Branch : ${GIT_BRANCH}"
+  L 27: echo " Git Commit : ${GIT_HASH}"
+  L 42:     echo -e "\n==> Running: flutter build apk --release --split-per-abi"
+  L 43:     (cd "${PROJECT_ROOT}" && flutter build apk --release --split-per-abi)
+  L 45:     echo -e "\n==> Running: flutter build apk --release"
+  L 46:     (cd "${PROJECT_ROOT}" && flutter build apk --release)
+

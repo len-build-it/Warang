@@ -1,0 +1,58 @@
+# Scan 11: Raw SQL, FTS5 MATCH/LIKE, and SQL string interpolation in lib/
+# Command: git grep -nE "customSelect|customStatement|customUpdate|rawQuery|rawInsert|rawDelete|execute\(|MATCH|LIKE" -- lib (excluding *.g.dart) + interpolation scan
+
+Total SQL/FTS call hits: 47
+
+lib/data/db/daos.dart:160:    final rows = await customSelect(
+lib/data/db/daos.dart:256:    final rows = await customSelect(
+lib/data/db/daos.dart:339:    final rows = await customSelect(
+lib/data/db/daos.dart:344:         WHERE warang_search MATCH ?
+lib/data/db/database.dart:77:          final momentCols = await customSelect(
+lib/data/db/database.dart:85:            final labelRows = await customSelect('''
+lib/data/db/database.dart:105:                await customStatement(
+lib/data/db/database.dart:118:            await customStatement(
+lib/data/db/database.dart:123:            await customStatement(
+lib/data/db/database.dart:139:      await customStatement('PRAGMA foreign_keys = ON');
+lib/data/db/database.dart:189:    final rows = await customSelect(
+lib/data/db/database.dart:195:      await customStatement('UPDATE trips SET color_key = ? WHERE id = ?', [
+lib/data/db/database.dart:203:    await customStatement('''
+lib/data/db/database.dart:211:    await customStatement('DROP TRIGGER IF EXISTS moments_search_ai');
+lib/data/db/database.dart:212:    await customStatement('DROP TRIGGER IF EXISTS moments_search_au');
+lib/data/db/database.dart:213:    await customStatement('DROP TRIGGER IF EXISTS moments_search_ad');
+lib/data/db/database.dart:214:    await customStatement('DROP TRIGGER IF EXISTS places_search_au');
+lib/data/db/database.dart:215:    await customStatement('DROP TRIGGER IF EXISTS places_search_ad');
+lib/data/db/database.dart:219:    await customStatement('''
+lib/data/db/database.dart:232:    await customStatement('''
+lib/data/db/database.dart:238:    await customStatement('''
+lib/data/db/database.dart:245:    await customStatement('''
+lib/data/db/database.dart:250:    await customStatement('''
+lib/data/db/database.dart:266:    await customStatement('''
+lib/data/db/database.dart:283:    await customStatement('''
+lib/data/db/database.dart:288:    await customStatement('''
+lib/data/db/database.dart:309:    await customStatement('''
+lib/data/db/database.dart:323:    await customStatement('DELETE FROM warang_search');
+lib/data/db/database.dart:324:    await customStatement('''
+lib/data/db/database.dart:329:    await customStatement('''
+lib/data/places/fts_query.dart:1:/// Builds a safe SQLite FTS5 `MATCH` expression from raw user input.
+lib/data/places/place_book.dart:99:      await db.customStatement(statement);
+lib/data/places/place_book.dart:128:    await db.customStatement(
+lib/data/places/place_book.dart:140:    await _db.customStatement('PRAGMA query_only = ON');
+lib/data/places/place_book.dart:146:    final rows = await _db.customSelect('SELECT key, value FROM meta').get();
+lib/data/places/place_book.dart:156:        .customSelect(
+lib/data/places/place_book.dart:181:          .customSelect(
+lib/data/places/place_book.dart:186:               WHERE places_fts MATCH ?
+lib/data/places/place_book.dart:204:          .customSelect(
+lib/data/places/place_book.dart:209:               WHERE places_fts MATCH ?
+lib/data/places/place_book.dart:237:        .customSelect(
+lib/features/map/map_tile_store.dart:80:          await db.execute('''
+lib/features/map/map_tile_store.dart:92:          await db.execute(
+lib/features/map/map_tile_store.dart:95:          await db.execute('''
+lib/features/map/map_tile_store.dart:103:          await db.execute('''
+lib/features/map/map_tile_store.dart:189:    final rows = await db.rawQuery(
+lib/features/map/map_tile_store.dart:200:    final rows = await (await _db).rawQuery(
+
+=== STRING INTERPOLATION / CONCATENATION IN SQL FILES ===
+lib/data/db/database.dart:258: SELECT trim(p.name || ' ' || $_categoryNameCaseSql)
+lib/data/db/database.dart:275: SELECT trim(p.name || ' ' || $_categoryNameCaseSql)
+lib/data/db/database.dart:300: SELECT $_categoryNameCaseSql FROM places p WHERE p.id = new.id
+lib/data/db/database.dart:336: SELECT trim(p.name || ' ' || $_categoryNameCaseSql)

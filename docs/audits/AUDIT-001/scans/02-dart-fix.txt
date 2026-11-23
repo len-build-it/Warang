@@ -1,0 +1,109 @@
+﻿# Scan 02: dart fix --dry-run in detached worktree at HEAD (7d6703f)
+# Command: dart fix --dry-run
+
+Computing fixes in wt (dry run)...
+
+74 proposed fixes in 30 files.
+
+lib\app\app.dart
+  avoid_redundant_argument_values - 1 fix
+
+lib\app\shell\you_sheet.dart
+  avoid_redundant_argument_values - 2 fixes
+
+lib\app\theme\clay.dart
+  avoid_redundant_argument_values - 2 fixes
+  unnecessary_null_checks - 1 fix
+
+lib\app\theme\clay_components.dart
+  avoid_redundant_argument_values - 4 fixes
+
+lib\app\theme\components.dart
+  avoid_redundant_argument_values - 2 fixes
+
+lib\data\repository.dart
+  use_if_null_to_convert_nulls_to_bools - 1 fix
+
+lib\features\capture\capture_screen.dart
+  avoid_redundant_argument_values - 1 fix
+
+lib\features\home_tab\trip_detail_screen.dart
+  avoid_redundant_argument_values - 1 fix
+  use_if_null_to_convert_nulls_to_bools - 1 fix
+
+lib\features\map\warang_map.dart
+  avoid_redundant_argument_values - 3 fixes
+
+lib\features\maya\maya_companion.dart
+  avoid_redundant_argument_values - 1 fix
+
+lib\features\news_tab\news_tab_screen.dart
+  avoid_redundant_argument_values - 1 fix
+
+lib\features\places\place_picker_sheet.dart
+  avoid_redundant_argument_values - 3 fixes
+
+lib\features\search\search_tab_screen.dart
+  avoid_redundant_argument_values - 1 fix
+
+lib\features\stamps\stamp_page_sheet.dart
+  avoid_redundant_argument_values - 2 fixes
+
+lib\features\travel_mode\moment_edit_sheet.dart
+  avoid_redundant_argument_values - 3 fixes
+
+lib\features\travel_mode\travel_mode_screen.dart
+  avoid_redundant_argument_values - 5 fixes
+
+test\core_rules_test.dart
+  avoid_redundant_argument_values - 1 fix
+
+test\data_layer_test.dart
+  avoid_redundant_argument_values - 6 fixes
+
+test\icon_semantics_test.dart
+  avoid_redundant_argument_values - 2 fixes
+
+test\map_clusters_and_credit_test.dart
+  avoid_redundant_argument_values - 1 fix
+
+test\map_navigation_test.dart
+  avoid_redundant_argument_values - 1 fix
+
+test\map_pins_test.dart
+  avoid_redundant_argument_values - 1 fix
+
+test\maya_test.dart
+  avoid_redundant_argument_values - 4 fixes
+
+test\migration_test.dart
+  avoid_redundant_argument_values - 3 fixes
+  unnecessary_lambdas - 1 fix
+
+test\moment_actions_test.dart
+  avoid_redundant_argument_values - 1 fix
+
+test\reduced_motion_test.dart
+  avoid_redundant_argument_values - 4 fixes
+
+test\stamps_test.dart
+  avoid_redundant_argument_values - 5 fixes
+
+test\tactile_memories_test.dart
+  avoid_redundant_argument_values - 3 fixes
+
+test\trips_flow_test.dart
+  avoid_redundant_argument_values - 1 fix
+
+tool\ux_screenshots_test.dart
+  avoid_redundant_argument_values - 5 fixes
+
+To fix an individual diagnostic, run one of:
+  dart fix --apply --code=avoid_redundant_argument_values 
+  dart fix --apply --code=unnecessary_lambdas 
+  dart fix --apply --code=unnecessary_null_checks 
+  dart fix --apply --code=use_if_null_to_convert_nulls_to_bools 
+
+To fix all diagnostics, run:
+  dart fix --apply 
+

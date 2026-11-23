@@ -1,0 +1,39 @@
+# Scan 12: File and directory operations in lib/
+# Command: git grep -nE "File\(|Directory\(|\.delete\(|\.rename\(|\.copy\(|writeAsBytes|readAsBytes|getApplicationDocumentsDirectory|getTemporaryDirectory|path\.join|p\.join" -- lib (excluding *.g.dart)
+
+Total matching lines: 34
+
+lib/app/shell/you_sheet.dart:352:  if (picked != null) await repository.setAvatar(File(picked.path));
+lib/data/files/photo_store.dart:46:      documentsDirectory ?? await getApplicationDocumentsDirectory();
+lib/data/files/photo_store.dart:49:    return _storeDecoded(await source.readAsBytes(), now: now);
+lib/data/files/photo_store.dart:55:    final decoded = _decode(await source.readAsBytes());
+lib/data/files/photo_store.dart:65:    await destination.writeAsBytes(bytes, flush: true);
+lib/data/files/photo_store.dart:72:    final file = File(p.join(root.path, normalizedRelative));
+lib/data/files/photo_store.dart:105:    final directory = Directory(p.join(root.path, 'warang', 'photos'));
+lib/data/files/photo_store.dart:153:    final photosRoot = Directory(
+lib/data/files/photo_store.dart:154:      p.join((await _root).path, 'warang', 'photos'),
+lib/data/files/photo_store.dart:167:          await entity.delete();
+lib/data/files/photo_store.dart:207:      await destination.writeAsBytes(fullBytes, flush: true);
+lib/data/files/photo_store.dart:208:      await thumbDestination.writeAsBytes(thumbBytes, flush: true);
+lib/data/files/photo_store.dart:263:    if (await file.exists()) await file.delete();
+lib/data/places/place_book.dart:80:  factory PlaceBook.openFile(File file) {
+lib/data/places/place_book_installer.dart:50:    final dir = await _supportDirectory();
+lib/data/places/place_book_installer.dart:52:    final target = File(p.join(dir.path, spec.fileName));
+lib/data/places/place_book_installer.dart:53:    final tmp = File('${target.path}.tmp');
+lib/data/places/place_book_installer.dart:75:      await tmp.delete();
+lib/data/places/place_book_installer.dart:77:    await tmp.writeAsBytes(bytes, flush: true);
+lib/data/places/place_book_installer.dart:79:      await target.delete();
+lib/data/places/place_book_installer.dart:81:    await tmp.rename(target.path);
+lib/data/places/place_book_installer.dart:96:        await entity.delete();
+lib/data/places/place_book_installer.dart:155:      final book = PlaceBook.openFile(file);
+lib/features/capture/capture_screen.dart:134:            photo: File(photo.path),
+lib/features/capture/capture_screen.dart:212:              File(_photo!.path),
+lib/features/map/map_tile_store.dart:75:          p.join(await sqflite.getDatabasesPath(), 'warang_map_tiles.sqlite');
+lib/features/map/map_tile_store.dart:194:      await db.delete('tiles', where: 'rowid = ?', whereArgs: [row['rowid']]);
+lib/features/map/map_tile_store.dart:206:  Future<void> clear() async => (await _db).delete('tiles');
+lib/features/map/warang_map.dart:611:          future: _photoFile(moment),
+lib/features/map/warang_map.dart:667:        future: _photoFile(moment),
+lib/features/map/warang_map.dart:677:  Future<File?> _photoFile(Moment moment) {
+lib/main.dart:19:  final documents = await getApplicationDocumentsDirectory();
+lib/main.dart:20:  final databaseDirectory = Directory(p.join(documents.path, 'warang'));
+lib/main.dart:23:    File(p.join(databaseDirectory.path, 'warang.sqlite')),

@@ -1,0 +1,13 @@
+# Scan 14: Debug calls, assertions, TODO/FIXME/HACK/XXX, analyzer ignores in lib, test, tool
+# Command: git grep -nE "print\(|debugPrint\(|kDebugMode|assert\(|TODO|FIXME|HACK|XXX|// ignore|ignore_for_file" -- lib test tool (excluding *.g.dart)
+
+Total matching lines: 8
+
+lib/app/shell/dock.dart:26:  }) : assert(items.length == 4);
+lib/app/theme/clay_components.dart:1486:    : assert(size == 32 || size == 40, 'CategoryDisc size must be 32 or 40');
+test/place_book_test.dart:194:        debugPrint(
+test/stamps_test.dart:230:      // ignore: avoid_print
+test/stamps_test.dart:231:      print(
+tool/place_book/build_place_book.py:415:        print(
+tool/place_book/build_place_book.py:475:    print(
+tool/place_book/build_place_book.py:494:        print(f"Input PBF not found: {args.pbf}", file=sys.stderr)

@@ -1,0 +1,24 @@
+# Scan 03: Direct dependency usage across lib, test, tool
+# Command: for each dep in pubspec.yaml: git grep -n "package:<name>/" -- lib test tool (via docs/audits/AUDIT-001/scripts/run_phase1_scans.py)
+
+=== dependencies ===
+drift                    lib=  7  test/tool=  3
+flutter_riverpod         lib= 15  test/tool= 20
+flutter_map              lib=  2  test/tool=  2
+geolocator               lib=  2  test/tool=  1
+image                    lib=  1  test/tool=  7
+image_picker             lib=  3  test/tool=  9
+intl                     lib=  1  test/tool=  2
+latlong2                 lib=  8  test/tool=  4
+path                     lib=  4  test/tool= 10
+path_provider            lib=  3  test/tool=  0
+sqflite                  lib=  1  test/tool= 20
+sqlite3_flutter_libs     lib=  0  test/tool=  0  [plugin-registered native SQLite library (no Dart import needed; note 0.6.0+eol in pub outdated)]
+uuid                     lib=  1  test/tool=  0
+
+=== dev_dependencies ===
+build_runner             lib=  0  test/tool=  0  [CLI codegen runner]
+drift_dev                lib=  0  test/tool=  0  [Drift build_runner codegen]
+flutter_launcher_icons   lib=  0  test/tool=  0  [CLI launcher icon generator configured in pubspec.yaml]
+flutter_lints            lib=  0  test/tool=  0  [included in analysis_options.yaml]
+sqflite_common_ffi       lib=  0  test/tool= 22
