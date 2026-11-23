@@ -1,8 +1,8 @@
 # Current handoff
 
 Created: 2026-10-16T22:55:00+08:00
-Updated: 2026-11-23T23:09:00+08:00
-State: FEAT-004 Phase 2 complete, Phase 3 next; FEAT-003 Phases 1-10 complete, physical-device checks and D-2 art pending; FEAT-001 and FEAT-002 physical-device checks pending
+Updated: 2026-11-23T23:22:00+08:00
+State: FEAT-004 Phase 3 complete, Phase 4 next; FEAT-003 Phases 1-10 complete, physical-device checks and D-2 art pending; FEAT-001 and FEAT-002 physical-device checks pending
 Feature: FEAT-004 places, place search, and category stamps (spec and plan revision 1, approved); FEAT-003 clay keepsake redesign (spec and plan revision 1)
 
 ## Read first
@@ -57,7 +57,7 @@ FEAT-003 Phase 7 complete in the commit `docs(plan): FEAT-003 phase 7 - trip col
 FEAT-003 Phase 8 complete in the commit `docs(plan): FEAT-003 phase 8 - search, news, and settings`.
 FEAT-003 Phase 9 complete in the commit `docs(plan): FEAT-003 phase 9 - interactive maya`.
 FEAT-003 Phase 10 complete in the commit `docs(plan): FEAT-003 phase 10 - polish and documents`.
-FEAT-004 spec and plan committed at `e4539d6`; visual baseline committed at `c22ec04`; Phase 0 complete in `docs(plan): FEAT-004 phase 0 - documents and baseline` (`feabe48`); Phase 1 complete in `docs(plan): FEAT-004 phase 1 - place book builder` (`1dec458`); Phase 2 complete in `docs(plan): FEAT-004 phase 2 - place book in the app` (275 tests passing, 3-letter bundled search avg `4.97 ms`).
+FEAT-004 spec and plan committed at `e4539d6`; visual baseline committed at `c22ec04`; Phase 0 complete in `docs(plan): FEAT-004 phase 0 - documents and baseline` (`feabe48`); Phase 1 complete in `docs(plan): FEAT-004 phase 1 - place book builder` (`1dec458`); Phase 2 complete in `docs(plan): FEAT-004 phase 2 - place book in the app` (`6683783`); Phase 3 complete in `docs(plan): FEAT-004 phase 3 - places table and migration` (279 tests passing, schema 3 migration verified from v1 and v2).
 Preserve the existing untracked paths: `.agents/skills/*`, `.agents/templates/`, `.claude/`, `CLAUDE.md`, `releases/`, and `scripts/`.
 
 ## Checks and evidence
@@ -77,7 +77,7 @@ FEAT-001 evidence: [docs/evidence/FEAT-001-verification.md](docs/evidence/FEAT-0
 
 ## Next action
 
-00. **FEAT-004:** Phase 2 complete (`docs(plan): FEAT-004 phase 2 - place book in the app`). Run Phase 3 (places table and migration) through Phase 8 continuously, stopping after Phase 6 for Len's visual review.
+00. **FEAT-004:** Phase 3 complete (`docs(plan): FEAT-004 phase 3 - places table and migration`). Run Phase 4 (categories and glyphs) through Phase 8 continuously, stopping after Phase 6 for Len's visual review.
 0. **FEAT-003:** implemented through Phase 10. Waiting on Len for physical-device checks (REQ-023 steps are in the evidence log) and the layered maya art (D-2).
 1. **Claude UI screenshot capture (requested 2026-11-21):** capture fresh UI screenshots from the current codebase (`ba0c56a`) using [tool/ux_screenshots_test.dart](tool/ux_screenshots_test.dart).
    - Working directory: `C:\Users\User\Desktop\PersonalProjects\04-FUN-STUFF\WARANG\Warang` (inner repo root, not the outer `WARANG/` folder).

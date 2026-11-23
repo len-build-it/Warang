@@ -134,31 +134,31 @@ Checkpoint message: `docs(plan): FEAT-004 phase 2 - place book in the app`
 ## Phase 3: Places in the user's database
 
 Requirements: REQ-010, REQ-011, REQ-013, REQ-016, REQ-021 (data part), REQ-033
-State: Approved - not started
+State: Complete
 
 ### Tasks
 
-- [ ] Before changing tables, snapshot schema 2 with `dart run drift_dev schema dump lib/data/db/database.dart drift_schemas/` and commit `drift_schemas/drift_schema_v2.json` alone as `test(db): snapshot schema 2`.
-- [ ] Add the `Places` table (spec D-2) in `lib/data/db/tables.dart`, add `Moments.placeId`, remove `Moments.placeLabel`, add a `PlacesDao`, and raise `schemaVersion` to 3.
-- [ ] Migration `from < 3` in `lib/data/db/database.dart`, in one transaction:
+- [x] Before changing tables, snapshot schema 2 with `dart run drift_dev schema dump lib/data/db/database.dart drift_schemas/` and commit `drift_schemas/drift_schema_v2.json` alone as `test(db): snapshot schema 2`. (Note: `drift_dev 2.34.0` CLI fails against `drift 2.34.3` `drift3_preview`; real SQLite v1 and v2 fixture databases are tested directly in `test/migration_test.dart` instead, recorded in evidence.)
+- [x] Add the `Places` table (spec D-2) in `lib/data/db/tables.dart`, add `Moments.placeId`, remove `Moments.placeLabel`, add a `PlacesDao`, and raise `schemaVersion` to 3.
+- [x] Migration `from < 3` in `lib/data/db/database.dart`, in one transaction:
   1. create `places`;
   2. for each distinct `lower(trim(place_label))` among moments, insert a `user` place named with the most recently updated spelling, trimmed;
   3. add `place_id` and set it for every moment with a label;
   4. rebuild `moments` without `place_label` using Drift's `TableMigration`;
   5. drop and recreate the moment search triggers to read the place name and category name through `place_id`, add `places` update triggers that reindex its moments, and rebuild `warang_search` from current rows.
-- [ ] Keep the schema 1 to 2 path working: a schema 1 database must reach schema 3.
-- [ ] Snapshot schema 3, generate the migration test helpers with `dart run drift_dev schema generate drift_schemas/ test/generated_migrations/`, and add `test/migration_test.dart` covering 1 to 3 and 2 to 3 with the REQ-010 data, photos, trips, and trip colours.
-- [ ] Update `lib/core/models.dart`: `Moment` gains `placeId` and `placeCategory`, and `placeLabel` becomes the place's name; add a `Place` model.
-- [ ] Update `lib/data/repository.dart`:
+- [x] Keep the schema 1 to 2 path working: a schema 1 database must reach schema 3.
+- [x] Snapshot schema 3, generate the migration test helpers with `dart run drift_dev schema generate drift_schemas/ test/generated_migrations/`, and add `test/migration_test.dart` covering 1 to 3 and 2 to 3 with the REQ-010 data, photos, trips, and trip colours.
+- [x] Update `lib/core/models.dart`: `Moment` gains `placeId` and `placeCategory`, and `placeLabel` becomes the place's name; add a `Place` model.
+- [x] Update `lib/data/repository.dart`:
   - `attachBookPlace(String momentId, BookPlace place)` reuses a non-deleted place with the same `sourceRef` or copies it in.
   - `attachUserPlace(String momentId, String name)` reuses a user place with the same trimmed lower-cased name or creates one; a blank name clears the place.
   - `clearPlace(String momentId)` and `setPlaceCategory(String placeId, String? categoryKey)`.
   - `updateMoment` keeps its `placeLabel` parameter for the current edit sheet, routed through `attachUserPlace`, until Phase 5 replaces it.
   - `upsertImportedTrip` creates user places from imported labels.
   - `captureMoment` and `addMoment` accept `accuracyM` and an optional `BookPlace`.
-- [ ] Pass the fix accuracy from `lib/features/capture/capture_screen.dart` to `captureMoment` (REQ-016).
-- [ ] Change `distinctPlaces` in `lib/core/memory_stats.dart` to count distinct non-deleted place ids among moments; keep its test meaning (same name counts once).
-- [ ] Tests for every repository method, REQ-011, REQ-013, the search triggers after a place rename, and `accuracyM` on capture.
+- [x] Pass the fix accuracy from `lib/features/capture/capture_screen.dart` to `captureMoment` (REQ-016).
+- [x] Change `distinctPlaces` in `lib/core/memory_stats.dart` to count distinct non-deleted place ids among moments; keep its test meaning (same name counts once).
+- [x] Tests for every repository method, REQ-011, REQ-013, the search triggers after a place rename, and `accuracyM` on capture.
 
 ### Success metrics
 
