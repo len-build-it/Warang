@@ -39,6 +39,7 @@ flutter:
     - assets/data/news_items.json
     - assets/data/maya_lines.json
     - assets/maya/body.png
+    - assets/place_book/place_book.sqlite
     - assets/fonts/BagelFatOne-OFL.txt
     - assets/fonts/AtkinsonHyperlegibleNext-OFL.txt
     - assets/fonts/ShantellSans-OFL.txt

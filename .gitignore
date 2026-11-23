@@ -53,3 +53,7 @@ key.properties
 
 # Icon font build output (copied to assets/fonts/WarangIcons.ttf)
 /design/icons/build/
+
+# Place book builder venv and downloaded OpenStreetMap extracts
+tool/place_book/.venv/
+*.osm.pbf
