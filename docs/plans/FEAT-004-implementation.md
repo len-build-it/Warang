@@ -79,22 +79,22 @@ Checkpoint message: `docs(plan): FEAT-004 phase 0 - documents and baseline`
 ## Phase 1: Place book builder and measurement
 
 Requirements: REQ-001, REQ-002, REQ-003
-State: Approved - not started
+State: Complete
 
 ### Tasks
 
-- [ ] Create `tool/place_book/` with:
+- [x] Create `tool/place_book/` with:
   - `schema.sql`: exactly the spec D-1 schema.
   - `categories.json`: the spec D-4 tag mapping as an ordered list of `{ "category", "key", "values" }` rules; the first matching rule wins, in the order of the D-4 table, except that `amenity=cafe` and `shop=coffee` win over `food`.
   - `requirements.txt`: `osmium` pinned to an exact current version.
   - `build_place_book.py`: reads a `.osm.pbf`, keeps features with a `name` that match a rule, uses the node position or a representative point for ways and relations, fills `town` (admin level 7, or 6 when 7 is missing for highly urbanised cities) and `province` (admin level 4 or 6, verified against Kalibo and Malay in Aklan) by point-in-polygon on boundaries, writes rows sorted by `osm_ref` so output is deterministic, fills `places_fts` with the `rebuild` command, sets `meta`, and runs `VACUUM`.
   - `README.md`: source (Geofabrik Philippines extract), the exact download used and its date, setup (`python -m venv .venv`, `pip install -r requirements.txt`), the build command, the licence note (ODbL, © OpenStreetMap contributors), and how to rebuild for a release.
-- [ ] Add `tool/place_book/.venv/` and `*.osm.pbf` to `.gitignore`.
-- [ ] Download the Philippines extract (Len's machine has network; if the download is blocked, stop and ask Len to download it), build `assets/place_book/place_book.sqlite`, and build it a second time to confirm the two files are byte-identical.
-- [ ] Add `assets/place_book/place_book.sqlite` to the `flutter: assets:` list in `pubspec.yaml`.
-- [ ] Measure and record in evidence: file size, rows per category, total rows, and the REQ-003 APK growth from `flutter build apk --release --split-per-abi`.
-- [ ] Coverage check: query the file for these names and record found or missing: Kalibo Cathedral, White Beach, Puka Shell Beach, Mount Luho, Ariel's Point, Willy's Rock, Bakhawan Eco-Park, Intramuros, Rizal Park, SM Mall of Asia, Binondo Church, Manila Cathedral, and five cafes in Kalibo that Len names in the evidence log, or, if Len has not named any, the first five `cafe` rows nearest Kalibo town proper.
-- [ ] If over budget, apply spec P-1 reductions in order, re-measuring after each; if still over, stop (planned stop 1).
+- [x] Add `tool/place_book/.venv/` and `*.osm.pbf` to `.gitignore`.
+- [x] Download the Philippines extract (Len's machine has network; if the download is blocked, stop and ask Len to download it), build `assets/place_book/place_book.sqlite`, and build it a second time to confirm the two files are byte-identical.
+- [x] Add `assets/place_book/place_book.sqlite` to the `flutter: assets:` list in `pubspec.yaml`.
+- [x] Measure and record in evidence: file size, rows per category, total rows, and the REQ-003 APK growth from `flutter build apk --release --split-per-abi`.
+- [x] Coverage check: query the file for these names and record found or missing: Kalibo Cathedral, White Beach, Puka Shell Beach, Mount Luho, Ariel's Point, Willy's Rock, Bakhawan Eco-Park, Intramuros, Rizal Park, SM Mall of Asia, Binondo Church, Manila Cathedral, and five cafes in Kalibo that Len names in the evidence log, or, if Len has not named any, the first five `cafe` rows nearest Kalibo town proper.
+- [x] If over budget, apply spec P-1 reductions in order, re-measuring after each; if still over, stop (planned stop 1).
 
 ### Success metrics
 
