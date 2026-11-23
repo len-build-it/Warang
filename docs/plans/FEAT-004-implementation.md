@@ -60,14 +60,14 @@ It must include, at least: three cafes in Kalibo within 200 m of each other, one
 ## Phase 0: Approved documents and baseline
 
 Requirements: none (setup)
-State: Approved - not started
+State: Complete
 
 ### Tasks
 
-- [ ] Commit the approved documents alone: `docs/features/FEAT-004-places-search-stamps.md`, `docs/plans/FEAT-004-implementation.md`, `docs/research/RES-002-place-search-categories-progression.md`, and the edits to `docs/IMPLEMENTATION_PLAN.md`, `docs/features/FEAT-003-clay-keepsake-redesign.md`, `docs/SPEC_INDEX.md`, and `HANDOFF.md`, as `docs(spec): FEAT-004 places, search, and stamps`.
-- [ ] Create `docs/evidence/FEAT-004-verification.md` from the template.
-- [ ] Render the starting point with `--dart-define=UX_LABEL=feat-004-baseline` and commit it alone as `test(evidence): FEAT-004 visual baseline at <hash>`.
-- [ ] Build `flutter build apk --release --split-per-abi` and record the size in bytes of `build/app/outputs/flutter-apk/app-arm64-v8a-release.apk` as the REQ-003 baseline.
+- [x] Commit the approved documents alone: `docs/features/FEAT-004-places-search-stamps.md`, `docs/plans/FEAT-004-implementation.md`, `docs/research/RES-002-place-search-categories-progression.md`, and the edits to `docs/IMPLEMENTATION_PLAN.md`, `docs/features/FEAT-003-clay-keepsake-redesign.md`, `docs/SPEC_INDEX.md`, and `HANDOFF.md`, as `docs(spec): FEAT-004 places, search, and stamps`.
+- [x] Create `docs/evidence/FEAT-004-verification.md` from the template.
+- [x] Render the starting point with `--dart-define=UX_LABEL=feat-004-baseline` and commit it alone as `test(evidence): FEAT-004 visual baseline at <hash>`.
+- [x] Build `flutter build apk --release --split-per-abi` and record the size in bytes of `build/app/outputs/flutter-apk/app-arm64-v8a-release.apk` as the REQ-003 baseline.
 
 ### Success metrics
 
