@@ -108,21 +108,21 @@ Checkpoint message: `docs(plan): FEAT-004 phase 1 - place book builder`
 ## Phase 2: The place book in the app
 
 Requirements: REQ-002, REQ-004, REQ-005, REQ-006, REQ-030
-State: Approved - not started
+State: Complete
 
 ### Tasks
 
-- [ ] Add `lib/data/places/fts_query.dart`: turns user text into a safe FTS5 expression by splitting on whitespace, removing FTS syntax characters, quoting each token, and adding `*` to the last token for prefix search; returns null for empty input.
-- [ ] Use it in `SearchDao.search` in `lib/data/db/daos.dart` too, which today passes raw input to `MATCH`; add a test that typing `"`, `-`, `*`, `(`, or `NEAR` into moment search returns results or nothing and never throws.
-- [ ] Add `lib/data/places/place_book.dart`:
+- [x] Add `lib/data/places/fts_query.dart`: turns user text into a safe FTS5 expression by splitting on whitespace, removing FTS syntax characters, quoting each token, and adding `*` to the last token for prefix search; returns null for empty input.
+- [x] Use it in `SearchDao.search` in `lib/data/db/daos.dart` too, which today passes raw input to `MATCH`; add a test that typing `"`, `-`, `*`, `(`, or `NEAR` into moment search returns results or nothing and never throws.
+- [x] Add `lib/data/places/place_book.dart`:
   - `BookPlace` value class (osmRef, name, category, latitude, longitude, town, province).
   - `PlaceBook` with `search(String text, {LatLng? near, int limit = 30})` ranked by `bm25` then squared degree distance to `near`, and `nearby(LatLng point, double radiusMetres, {int limit = 8})` using a latitude range on `places_lat`, a longitude range, then exact distance with `latlong2` and sorting nearest first.
   - Opened with Drift's `NativeDatabase` on the copied file with `PRAGMA query_only = ON`.
   - `PlaceBook.memory(...)` for tests, built from `schema.sql`.
-- [ ] Add `lib/data/places/place_book_installer.dart`: copies the asset to `getApplicationSupportDirectory()` as `place_book_<schemaVersion>_<sourceDate>.sqlite` via a `.tmp` file and rename, skips the copy when the file exists with the expected size, deletes older `place_book_*` files after success, and reports `preparing`, `ready`, or `failed`.
-- [ ] Add a Riverpod provider for the place book state, started after the first frame in `lib/main.dart` so it never delays launch.
-- [ ] Create the shared test fixture (see "Shared test fixture").
-- [ ] Tests: prefix, accents, ranking by nearness for the two "Jollibee" rows, nearby radius and order, syntax-safe input, schema version check against the bundled file, installer redo after a leftover `.tmp`, installer skip when ready, failed state when the asset is missing.
+- [x] Add `lib/data/places/place_book_installer.dart`: copies the asset to `getApplicationSupportDirectory()` as `place_book_<schemaVersion>_<sourceDate>.sqlite` via a `.tmp` file and rename, skips the copy when the file exists with the expected size, deletes older `place_book_*` files after success, and reports `preparing`, `ready`, or `failed`.
+- [x] Add a Riverpod provider for the place book state, started after the first frame in `lib/main.dart` so it never delays launch.
+- [x] Create the shared test fixture (see "Shared test fixture").
+- [x] Tests: prefix, accents, ranking by nearness for the two "Jollibee" rows, nearby radius and order, syntax-safe input, schema version check against the bundled file, installer redo after a leftover `.tmp`, installer skip when ready, failed state when the asset is missing.
 
 ### Success metrics
 
