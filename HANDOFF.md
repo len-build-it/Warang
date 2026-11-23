@@ -1,8 +1,8 @@
 # Current handoff
 
 Created: 2026-10-16T22:55:00+08:00
-Updated: 2026-11-24T00:37:30+08:00
-State: FEAT-004 Phase 6 complete, awaiting Len's Planned stop 2 visual review approval before Phase 7; FEAT-003 Phases 1-10 complete, physical-device checks and D-2 art pending; FEAT-001 and FEAT-002 physical-device checks pending
+Updated: 2026-11-24T06:28:30+08:00
+State: FEAT-004 Phase 7 complete, Phase 8 (polish, accessibility, and documents) next; FEAT-003 Phases 1-10 complete, physical-device checks and D-2 art pending; FEAT-001 and FEAT-002 physical-device checks pending
 Feature: FEAT-004 places, place search, and category stamps (spec and plan revision 1, approved); FEAT-003 clay keepsake redesign (spec and plan revision 1)
 
 ## Read first
@@ -34,6 +34,7 @@ Reread these files and inspect actual Git status before acting; prior chat memor
 | RES-002 recommendations and the rule overrides in FEAT-004 "Relationship to existing documents" | RES-002 draft of 2026-11-23 19:20 | 2026-11-23 19:29 project thread: "go with recommendation for all of your questions. use /council skill when youre having a hardtime. override the original doc rules in order to push this features. then come up with an implementation plan gemini can execute" |
 | FEAT-004 feature spec | Revision 1 | 2026-11-23 19:37 (Asia/Manila), project thread decision card: "Approve as written" on "Approve FEAT-004 spec and plan revision 1 for Gemini to execute?" |
 | FEAT-004 plan | Revision 1 | 2026-11-23 19:37 (Asia/Manila), project thread decision card: "Approve as written" on "Approve FEAT-004 spec and plan revision 1 for Gemini to execute?" |
+| FEAT-004 Planned stop 2 visual approval & GitHub push | Phase 6 at `deb18a9` | 2026-11-24T06:09:23+08:00 chat: "push the changes to github, then proceed to phase 7" |
 
 Allowed phases (FEAT-002, complete): Phases 1-4 continuously without hard stops (Len's instruction, 2026-11-21), with every gate passing in every phase.
 Allowed phases (FEAT-003): Phases 1-10 continuously, with every gate passing, and one stop after Phase 6 for Len's visual review (plan P-1).
@@ -57,7 +58,7 @@ FEAT-003 Phase 7 complete in the commit `docs(plan): FEAT-003 phase 7 - trip col
 FEAT-003 Phase 8 complete in the commit `docs(plan): FEAT-003 phase 8 - search, news, and settings`.
 FEAT-003 Phase 9 complete in the commit `docs(plan): FEAT-003 phase 9 - interactive maya`.
 FEAT-003 Phase 10 complete in the commit `docs(plan): FEAT-003 phase 10 - polish and documents`.
-FEAT-004 spec and plan committed at `e4539d6`; visual baseline committed at `c22ec04`; Phase 0 complete in `docs(plan): FEAT-004 phase 0 - documents and baseline` (`feabe48`); Phase 1 complete in `docs(plan): FEAT-004 phase 1 - place book builder` (`1dec458`); Phase 2 complete in `docs(plan): FEAT-004 phase 2 - place book in the app` (`6683783`); Phase 3 complete in `docs(plan): FEAT-004 phase 3 - places table and migration` (`899ccef`); Phase 4 complete in `docs(plan): FEAT-004 phase 4 - categories and glyphs` (`30d5d31`); Phase 5 complete in `docs(plan): FEAT-004 phase 5 - place picker and capture suggestion` (`7ab55a5`); Phase 6 complete in `docs(plan): FEAT-004 phase 6 - map search and category filter` (317 tests passing, 54 PNGs in `docs/evidence/FEAT-001/feat-004-phase-6/`, stopped at Planned stop 2 for Len's visual review).
+FEAT-004 spec and plan committed at `e4539d6`; visual baseline committed at `c22ec04`; Phase 0 complete in `docs(plan): FEAT-004 phase 0 - documents and baseline` (`feabe48`); Phase 1 complete in `docs(plan): FEAT-004 phase 1 - place book builder` (`1dec458`); Phase 2 complete in `docs(plan): FEAT-004 phase 2 - place book in the app` (`6683783`); Phase 3 complete in `docs(plan): FEAT-004 phase 3 - places table and migration` (`899ccef`); Phase 4 complete in `docs(plan): FEAT-004 phase 4 - categories and glyphs` (`30d5d31`); Phase 5 complete in `docs(plan): FEAT-004 phase 5 - place picker and capture suggestion` (`7ab55a5`); Phase 6 complete in `docs(plan): FEAT-004 phase 6 - map search and category filter` (`deb18a9`, pushed to GitHub); Phase 7 complete in `docs(plan): FEAT-004 phase 7 - category stamps` (324 tests passing, 58 PNGs in `docs/evidence/FEAT-001/feat-004-phase-7/`).
 Preserve the existing untracked paths: `.agents/skills/*`, `.agents/templates/`, `.claude/`, `CLAUDE.md`, `releases/`, and `scripts/`.
 
 ## Checks and evidence
@@ -77,7 +78,7 @@ FEAT-001 evidence: [docs/evidence/FEAT-001-verification.md](docs/evidence/FEAT-0
 
 ## Next action
 
-00. **FEAT-004:** Phase 6 complete (`docs(plan): FEAT-004 phase 6 - map search and category filter`). Stopped at **Planned stop 2**: waiting on Len's visual review approval of screenshots `21` to `27`, `04`, and `13` in both themes under `docs/evidence/FEAT-001/feat-004-phase-6/`. Once Len approves, record his approval words and timestamp here, tick Planned stop 2 in `docs/plans/FEAT-004-implementation.md`, and run Phases 7 (category stamps) and 8 (polish, accessibility, and documents).
+00. **FEAT-004:** Phase 7 complete (`docs(plan): FEAT-004 phase 7 - category stamps`). Run Phase 8 (polish, accessibility, and documents).
 0. **FEAT-003:** implemented through Phase 10. Waiting on Len for physical-device checks (REQ-023 steps are in the evidence log) and the layered maya art (D-2).
 1. **Claude UI screenshot capture (requested 2026-11-21):** capture fresh UI screenshots from the current codebase (`ba0c56a`) using [tool/ux_screenshots_test.dart](tool/ux_screenshots_test.dart).
    - Working directory: `C:\Users\User\Desktop\PersonalProjects\04-FUN-STUFF\WARANG\Warang` (inner repo root, not the outer `WARANG/` folder).

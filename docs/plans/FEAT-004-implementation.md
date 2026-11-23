@@ -216,7 +216,7 @@ Checkpoint message: `docs(plan): FEAT-004 phase 5 - place picker and capture sug
 ## Phase 6: Map search, placement search, and category filter
 
 Requirements: REQ-007, REQ-008, REQ-009, REQ-020
-State: Implemented - awaiting Planned stop 2 visual approval
+State: Complete
 
 ### Tasks
 
@@ -228,7 +228,7 @@ State: Implemented - awaiting Planned stop 2 visual approval
 - [x] Category filter row (spec F5) under the pill: only categories with moments, ordered by moment count, shown when two or more exist; the filter is in-memory state in `lib/app/app_state.dart`; the pins and cluster counts in `warang_map.dart` respect it.
 - [x] Add screens: `24_map_search_<theme>`, `25_map_place_marker_<theme>`, `26_map_filter_<theme>`, `27_placement_search_<theme>`.
 - [x] Widget tests for REQ-007, REQ-008, REQ-009, and REQ-020, and the map navigation tests still pass.
-- [ ] **Planned stop 2:** send Len the screenshots `21` to `27`, `04`, and `13` in both themes and wait for approval before Phase 7. Record his words and time in `HANDOFF.md`.
+- [x] **Planned stop 2:** send Len the screenshots `21` to `27`, `04`, and `13` in both themes and wait for approval before Phase 7. Record his words and time in `HANDOFF.md`.
 
 ### Success metrics
 
@@ -240,19 +240,19 @@ Checkpoint message: `docs(plan): FEAT-004 phase 6 - map search and category filt
 ## Phase 7: Category stamps
 
 Requirements: REQ-022 to REQ-028
-State: Approved - not started
+State: Complete
 
 ### Tasks
 
-- [ ] Add `assets/data/stamps.json` with the spec D-5 titles and declare it in `pubspec.yaml`.
-- [ ] Add `lib/core/stamps.dart`: a pure function from moments and places to a list of `CategoryStamp` (category, tier, title, visits, places, first visit date and place, per-place visits), following spec D-3 exactly. No Flutter imports.
-- [ ] Extend `claimMilestone` in `lib/data/repository.dart` to return a list: the FEAT-003 milestone first, then any newly reached `stamp:<category>:<tier>` keys, each recorded in `milestonesShown`; only the highest new tier per category is cheered if one save jumps two tiers.
-- [ ] `showCaptured` in `travel_mode_screen.dart` and the edit save path show the toasts in order, using `ScaffoldMessenger`'s queue rather than replacing the current toast.
-- [ ] Extend `WarangStamp` with the four tier ring styles in spec F6, with no tier numbers or empty marks.
-- [ ] You sheet (`lib/app/shell/you_sheet.dart`): the "Your stamps" row under the count stamps, only when a stamp exists.
-- [ ] Add `lib/features/stamps/stamp_page_sheet.dart` (spec F6 step 3), whose place rows open the map with the category filter and focus that place's moments.
-- [ ] Tests for REQ-022 to REQ-028, including the forbidden-text check of REQ-026 and a 10,000-moment timing check for Council C-3 (under 16 ms on the test host, recorded).
-- [ ] Add screens: `28_you_stamps_<theme>` and `29_stamp_page_<theme>`, with a fixture that earns a tier 2 cafe stamp and a tier 1 beach stamp.
+- [x] Add `assets/data/stamps.json` with the spec D-5 titles and declare it in `pubspec.yaml`.
+- [x] Add `lib/core/stamps.dart`: a pure function from moments and places to a list of `CategoryStamp` (category, tier, title, visits, places, first visit date and place, per-place visits), following spec D-3 exactly. No Flutter imports.
+- [x] Extend `claimMilestone` in `lib/data/repository.dart` to return a list: the FEAT-003 milestone first, then any newly reached `stamp:<category>:<tier>` keys, each recorded in `milestonesShown`; only the highest new tier per category is cheered if one save jumps two tiers.
+- [x] `showCaptured` in `travel_mode_screen.dart` and the edit save path show the toasts in order, using `ScaffoldMessenger`'s queue rather than replacing the current toast.
+- [x] Extend `WarangStamp` with the four tier ring styles in spec F6, with no tier numbers or empty marks.
+- [x] You sheet (`lib/app/shell/you_sheet.dart`): the "Your stamps" row under the count stamps, only when a stamp exists.
+- [x] Add `lib/features/stamps/stamp_page_sheet.dart` (spec F6 step 3), whose place rows open the map with the category filter and focus that place's moments.
+- [x] Tests for REQ-022 to REQ-028, including the forbidden-text check of REQ-026 and a 10,000-moment timing check for Council C-3 (under 16 ms on the test host, recorded).
+- [x] Add screens: `28_you_stamps_<theme>` and `29_stamp_page_<theme>`, with a fixture that earns a tier 2 cafe stamp and a tier 1 beach stamp.
 
 ### Success metrics
 
