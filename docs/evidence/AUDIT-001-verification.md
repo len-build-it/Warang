@@ -1,7 +1,7 @@
 # Verification: AUDIT-001
 
 Created: 2026-11-24T07:13:00+08:00
-Updated: 2026-11-24T07:34:00+08:00
+Updated: 2026-11-24T07:40:00+08:00
 
 | Requirement / phase | Check or scenario | Environment and conditions | Actual result | When run | Evidence / limitations |
 | --- | --- | --- | --- | --- | --- |
@@ -19,7 +19,9 @@ Updated: 2026-11-24T07:34:00+08:00
 | Phase 3 / V3 probes | Temporary reproduction probes under `test/_audit_probe/` (`map_tile_probe_test.dart`, `state_and_data_probe_test.dart`, `capture_back_probe_test.dart`), then deleted | Windows 11, Flutter 3.44.7 | Passed under stated conditions: all 8 probe tests passed and printed observed outputs (7 bug reproductions confirmed; 1 sub-claim on `TileLayer` `User-Agent` disproved because `TileLayer` sets `flutter_map (ph.warang.app)` in `provider.headers`); `test/_audit_probe/` deleted and `git status --porcelain -- test` empty | 2026-11-24T07:28:48+08:00 | Exact probe outputs recorded in Phase 3 section below |
 | Phase 3 / V1 & second pass | Second-pass V1 `git grep`, Android plugin manifest inspection across all 9 plugins in `.flutter-plugins-dependencies`, and line-citation verification at HEAD `081d32d` | Windows 11, Python 3 stdlib + git | Passed under stated conditions: 0 of 9 Android plugins declare `INTERNET`, all V1 reference counts reproduced identically, all cited `path:line` anchors verified at HEAD | 2026-11-24T07:31:19+08:00 | Script executed from `%TEMP%\warang-audit\phase3_verify.py` |
 | Phase 3 / baseline check | `flutter analyze` and `flutter test` after probe deletion | Windows 11, `Warang` at `081d32d` | Passed under stated conditions: `flutter analyze` -> `No issues found! (ran in 55.1s)`; `flutter test` -> `00:44 +329: All tests passed!` (identical to Phase 0 baseline) | 2026-11-24T07:32:35+08:00 | Zero regression, zero product edits |
-| Phase 3 / Gates 1-4 | Gate 1, Gate 2, Gate 3, candidate reconciliation (`50` findings + `15` merged + `12` rejected = `77`) | Windows 11, `Warang` | Passed under stated conditions: Gate 1 empty, Gate 2 absent, Gate 3 `0` | 2026-11-24T07:34:00+08:00 | Ready for Phase 3 commit |
+| Phase 3 / Gates 1-4 | Gate 1, Gate 2, Gate 3, candidate reconciliation (`50` findings + `15` merged + `12` rejected = `77`) | Windows 11, `Warang` | Passed under stated conditions: Gate 1 empty, Gate 2 absent, Gate 3 `0`; committed as `4437761` | 2026-11-24T07:34:33+08:00 | Clean checkpoint |
+| Phase 4 / report & validation | Wrote `docs/audits/AUDIT-001-code-quality-report.md` (50 findings: 32 Confirmed, 18 Plausible; 12 rejected in appendix) and ran `python docs/audits/AUDIT-001/scripts/check_report.py` | Windows 11, `Warang` at `4437761` | Passed under stated conditions: `22-report-check.txt` ends with `0 problems`; Summary table total (`50`) equals `### AUD-` heading count (`50`); removable lines sum (`306`) and batch coverage (`50/50`) verified | 2026-11-24T07:40:00+08:00 | [22-report-check.txt](../audits/AUDIT-001/scans/22-report-check.txt) |
+| Phase 4 / final Gates 1-4 | Gate 1, Gate 2, Gate 3, `git diff --stat 7d6703f -- lib test tool android ios assets design pubspec.yaml pubspec.lock analysis_options.yaml` | Windows 11, `Warang` | Passed under stated conditions: Gate 1 empty, Gate 2 absent, Gate 3 `0`, product diff against `7d6703f` empty | 2026-11-24T07:40:00+08:00 | Ready for Phase 4 commit |
 
 Use Not run, Passed under stated conditions, Failed, or Blocked.
 Record actual commands or repeatable scenarios, not just conclusions.
@@ -238,7 +240,7 @@ Combined Phase 1 + Phase 2 total candidates: **77** (`C-001` to `C-077`).
 - Total raw candidates from Phase 1 (46) + Phase 2 (31): **77** (`C-001` to `C-077`).
 - Merged duplicates (combined into a finding sharing the same root cause): **15** (`C-003`, `C-004`, `C-009`, `C-011`, `C-015`, `C-022`, `C-023`, `C-024`, `C-031`, `C-037`, `C-041`, `C-042`, `C-052`, `C-056`, `C-060`).
 - Unique evaluated candidates (`77 - 15`): **62**.
-- Reported findings (`Confirmed` + `Plausible`): **50** (`AUD-001` to `AUD-050`: 30 `Confirmed`, 20 `Plausible`).
+- Reported findings (`Confirmed` + `Plausible`): **50** (`AUD-001` to `AUD-050`: 32 `Confirmed`, 18 `Plausible`).
 - Rejected candidates (in report Appendix): **12** (`C-002`, `C-007`, `C-012`, `C-013`, `C-016`, `C-017`, `C-018`, `C-019`, `C-020`, `C-028`, `C-029`, `C-045`).
 - Check: `50 reported + 15 merged + 12 rejected = 77` (`62 unique - 50 reported = 12 rejected`).
 

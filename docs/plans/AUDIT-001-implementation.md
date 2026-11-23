@@ -1,9 +1,9 @@
 # Implementation Plan: AUDIT-001 code quality audit report
 
 Created: 2026-11-24T09:30:00+08:00
-Updated: 2026-11-24T07:34:00+08:00
+Updated: 2026-11-24T07:40:00+08:00
 Revision: 1
-Status: In progress (Phase 3 complete)
+Status: Complete
 Feature spec and revision: None; this plan holds its own requirements (AUD-REQ-001 to AUD-REQ-010) because it produces a report and changes no app behavior
 Approved baseline and architecture revisions: `docs/IMPLEMENTATION_PLAN.md` at `dc407c5`, FEAT-001 to FEAT-004 revision 1 as listed in `docs/SPEC_INDEX.md`
 Len's chat approval: 2026-11-24T07:09:41+08:00 and 2026-11-24T07:10:47+08:00 chat: "read and execute:  docs/audits/AUDIT-001-code-quality-report.md." clarified as "docs/plans/AUDIT-001-implementation.md"
@@ -304,7 +304,7 @@ State: Complete
 ## Phase 4: Write the report
 
 Requirements: AUD-REQ-001 to AUD-REQ-010
-State: Awaiting approval
+State: Complete
 
 ### Report layout
 
@@ -343,27 +343,27 @@ Fix: <the concrete change, naming the function, API, or file. For shrink, show t
 
 ### Tasks
 
-- [ ] Write the report from the evidence log, using only Confirmed and Plausible findings.
-- [ ] Write `check_report.py` that parses the report and prints one line per problem, then a final line `<N> problems`.
+- [x] Write the report from the evidence log, using only Confirmed and Plausible findings.
+- [x] Write `check_report.py` that parses the report and prints one line per problem, then a final line `<N> problems`.
       It checks that every `AUD-NNN` is unique, every finding has all fields, every location's file exists at HEAD and has at least that many lines, and no em dash or en dash appears.
       Copy it to `docs/audits/AUDIT-001/scripts/` and save its output as `docs/audits/AUDIT-001/scans/22-report-check.txt`.
-- [ ] Edit the report text for plain words, active voice, no filler, no vague words such as "robust" or "various", one sentence per line, and sentence case headings.
+- [x] Edit the report text for plain words, active voice, no filler, no vague words such as "robust" or "various", one sentence per line, and sentence case headings.
       Every claim names a file, a number, or a function; delete any sentence that would fit unchanged in another project's report.
-- [ ] Add rows to `docs/SPEC_INDEX.md` for the plan, the report, and the evidence log.
-- [ ] Update `HANDOFF.md` with the completed phases, commit hashes, actual checks, the top five findings, and the next action: Len reviews the report and picks remediation batches to turn into feature specs.
+- [x] Add rows to `docs/SPEC_INDEX.md` for the plan, the report, and the evidence log.
+- [x] Update `HANDOFF.md` with the completed phases, commit hashes, actual checks, the top five findings, and the next action: Len reviews the report and picks remediation batches to turn into feature specs.
 
 ### Verification
 
-- [ ] Gates 1 to 4 pass.
-- [ ] `22-report-check.txt` ends with `0 problems`.
-- [ ] `git diff --stat 7d6703f -- lib test tool android ios assets design pubspec.yaml pubspec.lock analysis_options.yaml` prints nothing.
-- [ ] The finding count in the Summary equals the number of `### AUD-` headings.
+- [x] Gates 1 to 4 pass.
+- [x] `22-report-check.txt` ends with `0 problems`.
+- [x] `git diff --stat 7d6703f -- lib test tool android ios assets design pubspec.yaml pubspec.lock analysis_options.yaml` prints nothing.
+- [x] The finding count in the Summary equals the number of `### AUD-` headings.
 
 ### Review and checkpoint
 
-- [ ] Stage `docs/audits/`, `docs/evidence/AUDIT-001-verification.md`, `docs/plans/AUDIT-001-implementation.md`, `docs/SPEC_INDEX.md`, and `HANDOFF.md` only.
-- [ ] Commit `docs(audit): AUDIT-001 phase 4 - quality report`, and confirm the hash.
-- [ ] Do not push.
+- [x] Stage `docs/audits/`, `docs/evidence/AUDIT-001-verification.md`, `docs/plans/AUDIT-001-implementation.md`, `docs/SPEC_INDEX.md`, and `HANDOFF.md` only.
+- [x] Commit `docs(audit): AUDIT-001 phase 4 - quality report`, and confirm the hash.
+- [x] Do not push.
 
 ## Recovery
 

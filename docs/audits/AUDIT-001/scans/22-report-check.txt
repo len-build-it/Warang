@@ -1,0 +1,4 @@
+# Scan 22: Automated report validation
+# Command: python docs/audits/AUDIT-001/scripts/check_report.py
+
+0 problems
