@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'app/app.dart';
 import 'app/app_state.dart';
 import 'data/db/database.dart';
 import 'data/files/photo_store.dart';
+import 'data/places/place_book_installer.dart';
 import 'data/repository.dart';
 import 'features/map/map_tile_store.dart';
 
@@ -24,13 +26,16 @@ Future<void> main() async {
   final repository = WarangRepository(database, photoStore: photoStore);
   await repository.initialize();
   await photoStore.sweepOrphans(database);
-  runApp(
-    ProviderScope(
-      overrides: [
-        repositoryProvider.overrideWithValue(repository),
-        mapTileStoreProvider.overrideWithValue(MapTileStore()),
-      ],
-      child: const WarangApp(),
-    ),
+  final container = ProviderContainer(
+    overrides: [
+      repositoryProvider.overrideWithValue(repository),
+      mapTileStoreProvider.overrideWithValue(MapTileStore()),
+    ],
   );
+  runApp(
+    UncontrolledProviderScope(container: container, child: const WarangApp()),
+  );
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    unawaited(container.read(placeBookProvider.notifier).ensureReady());
+  });
 }

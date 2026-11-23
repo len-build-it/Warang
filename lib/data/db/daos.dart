@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 
 import '../../core/trip_rules.dart';
+import '../places/fts_query.dart';
 import 'database.dart';
 import 'tables.dart';
 
@@ -269,8 +270,8 @@ class SearchDao extends DatabaseAccessor<WarangDatabase> with _$SearchDaoMixin {
   SearchDao(super.attachedDatabase);
 
   Future<List<SearchHit>> search(String query) async {
-    final value = query.trim();
-    if (value.isEmpty) return const [];
+    final value = buildFtsQuery(query);
+    if (value == null) return const [];
     final rows = await customSelect(
       '''SELECT s.entity_type, s.entity_id
          FROM warang_search s
