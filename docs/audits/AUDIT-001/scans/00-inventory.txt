@@ -1,0 +1,425 @@
+# Scan 00: Repository inventory at 7d6703f
+# Commands: git ls-files lib test tool (excluding *.g.dart), pubspec.yaml dependencies, dart pub deps --style=compact, flutter pub outdated, largest 30 tracked files
+
+=== TRACKED HAND-WRITTEN FILES UNDER lib, test, tool ===
+    41 lib/app/app.dart
+   102 lib/app/app_state.dart
+    70 lib/app/device_providers.dart
+   157 lib/app/shell/app_shell.dart
+   362 lib/app/shell/dock.dart
+   528 lib/app/shell/you_sheet.dart
+   750 lib/app/theme/clay.dart
+  1516 lib/app/theme/clay_components.dart
+   581 lib/app/theme/components.dart
+    82 lib/app/theme/motion.dart
+   148 lib/app/theme/palette.dart
+   345 lib/app/theme/tokens.dart
+   110 lib/app/theme/typography.dart
+   187 lib/app/theme/warang_icons.dart
+    47 lib/core/formatting.dart
+     4 lib/core/ids.dart
+    52 lib/core/memory_stats.dart
+    64 lib/core/milestones.dart
+   135 lib/core/models.dart
+   174 lib/core/place_categories.dart
+   201 lib/core/stamps.dart
+    60 lib/core/trip_rules.dart
+   360 lib/data/db/daos.dart
+   344 lib/data/db/database.dart
+   109 lib/data/db/tables.dart
+   267 lib/data/files/photo_store.dart
+    28 lib/data/places/fts_query.dart
+   294 lib/data/places/place_book.dart
+   163 lib/data/places/place_book_installer.dart
+   791 lib/data/repository.dart
+   465 lib/features/capture/capture_screen.dart
+   462 lib/features/home_tab/home_tab_screen.dart
+   345 lib/features/home_tab/trip_detail_screen.dart
+   376 lib/features/home_tab/trip_form_screen.dart
+   100 lib/features/home_tab/trip_photo.dart
+   471 lib/features/map/map_tile_store.dart
+   943 lib/features/map/warang_map.dart
+   403 lib/features/maya/maya_companion.dart
+   247 lib/features/news_tab/news_tab_screen.dart
+   138 lib/features/onboarding/onboarding_screen.dart
+   597 lib/features/places/place_picker_sheet.dart
+   348 lib/features/search/search_tab_screen.dart
+    93 lib/features/settings/about_screen.dart
+   283 lib/features/settings/settings_screen.dart
+   182 lib/features/stamps/stamp_page_sheet.dart
+    34 lib/features/stamps/stamp_titles.dart
+   311 lib/features/travel_mode/moment_edit_sheet.dart
+  1169 lib/features/travel_mode/travel_mode_screen.dart
+    41 lib/main.dart
+    58 test/android_hardening_test.dart
+    42 test/capture_button_test.dart
+   239 test/capture_flow_test.dart
+   503 test/clay_components_test.dart
+    98 test/contrast_test.dart
+   151 test/core_rules_test.dart
+   417 test/data_layer_test.dart
+   332 test/fixtures/place_book_fixture.json
+   291 test/icon_semantics_test.dart
+    41 test/identity_assets_test.dart
+   351 test/map_clusters_and_credit_test.dart
+   245 test/map_navigation_test.dart
+   196 test/map_pins_test.dart
+   272 test/map_places_test.dart
+   222 test/map_tile_store_test.dart
+   477 test/maya_test.dart
+   404 test/migration_test.dart
+   258 test/moment_actions_test.dart
+    44 test/news_tab_test.dart
+   432 test/phase_six_layout_test.dart
+   166 test/photo_store_test.dart
+   292 test/place_book_test.dart
+   326 test/places_flow_test.dart
+   207 test/reduced_motion_test.dart
+    35 test/shared_surfaces_test.dart
+   238 test/shell_navigation_test.dart
+   570 test/stamps_test.dart
+    26 test/support/place_book_fixture.dart
+   267 test/tactile_memories_test.dart
+   121 test/theme_tokens_test.dart
+   232 test/trips_flow_test.dart
+   317 test/trips_shelf_test.dart
+   150 test/unavailable_actions_test.dart
+   227 test/user_journey_test.dart
+   372 test/utility_screens_test.dart
+    16 test/widget_test.dart
+    46 tool/place_book/README.md
+   511 tool/place_book/build_place_book.py
+    26 tool/place_book/categories.json
+     1 tool/place_book/requirements.txt
+    29 tool/place_book/schema.sql
+   655 tool/ux_screenshots_test.dart
+ 24983 total (91 files; lib: 49 files, 15080 lines)
+
+=== DIRECT DEPENDENCIES FROM pubspec.yaml ===
+dependencies:
+  flutter:
+    sdk: flutter
+  drift: ^2.28.1
+  flutter_riverpod: ^3.0.0
+  flutter_map: ^8.3.1
+  geolocator: ^14.0.3
+  image: ^4.9.2
+  image_picker: ^1.2.3
+  intl: ^0.20.3
+  latlong2: ^0.9.1
+  path: ^1.9.1
+  path_provider: ^2.1.6
+  sqflite: ^2.4.2+1
+  sqlite3_flutter_libs: ^0.5.32
+  uuid: ^4.6.0
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  build_runner: ^2.4.15
+  drift_dev: ^2.28.1
+  flutter_launcher_icons: ^0.14.4
+  flutter_lints: ^6.0.0
+  sqflite_common_ffi: ^2.3.5
+
+=== dart pub deps --style=compact ===
+Dart SDK 3.12.2
+Flutter SDK 3.44.7
+warang 1.0.0+1
+
+dependencies:
+- drift 2.34.3 [async convert collection meta stream_channel sqlite3 path stack_trace web]
+- flutter 0.0.0 [characters collection material_color_utilities meta vector_math sky_engine]
+- flutter_map 8.3.1 [async collection dart_earcut dart_polylabel2 flutter http latlong2 meta path path_provider proj4dart uuid]
+- flutter_riverpod 3.4.2 [collection flutter flutter_test meta riverpod state_notifier]
+- geolocator 14.0.3 [flutter geolocator_platform_interface geolocator_android geolocator_apple geolocator_web geolocator_windows geolocator_linux]
+- image 4.9.2 [archive]
+- image_picker 1.2.3 [flutter image_picker_android image_picker_for_web image_picker_ios image_picker_linux image_picker_macos image_picker_platform_interface image_picker_windows]
+- intl 0.20.3 [clock meta path]
+- latlong2 0.9.1 [intl]
+- path 1.9.1
+- path_provider 2.1.6 [flutter path_provider_android path_provider_foundation path_provider_linux path_provider_platform_interface path_provider_windows]
+- sqflite 2.4.3 [flutter sqflite_android sqflite_darwin sqflite_platform_interface sqflite_common path]
+- sqlite3_flutter_libs 0.5.42 [flutter]
+- uuid 4.6.0 [crypto fixnum]
+
+dev dependencies:
+- build_runner 2.15.1 [analyzer args async build build_config build_daemon built_collection built_value collection convert crypto dart_style glob graphs http_multi_server io json_annotation logging meta mime package_config path pool pub_semver shelf shelf_web_socket stream_transform watcher web_socket_channel yaml]
+- drift_dev 2.34.0 [charcode collection recase meta path json_annotation stream_transform args logging cli_util yaml io drift sqlite3 sqlparser analyzer source_span package_config pub_semver build build_config dart_style source_gen string_scanner]
+- flutter_launcher_icons 0.14.4 [args checked_yaml cli_util image json_annotation path yaml]
+- flutter_lints 6.0.0 [lints]
+- flutter_test 0.0.0 [flutter test_api matcher path fake_async clock stack_trace vector_math leak_tracker_flutter_testing collection meta stream_channel]
+- sqflite_common_ffi 2.4.2+1 [sqlite3 sqflite_common synchronized path meta]
+
+transitive dependencies:
+- _fe_analyzer_shared 99.0.0 [meta source_span]
+- analyzer 12.1.0 [_fe_analyzer_shared collection convert crypto glob meta package_config path pub_semver source_span watcher yaml]
+- archive 4.1.0 [path posix]
+- args 2.7.0
+- async 2.13.1 [collection meta]
+- boolean_selector 2.1.2 [source_span string_scanner]
+- build 4.0.7 [analyzer crypto glob logging package_config path]
+- build_config 1.3.2 [checked_yaml json_annotation path pubspec_parse]
+- build_daemon 4.1.5 [built_collection built_value crypto http_multi_server logging package_config path pool pub_semver shelf shelf_web_socket stream_transform watcher web_socket_channel yaml]
+- built_collection 5.1.1
+- built_value 8.12.7 [built_collection collection fixnum meta]
+- characters 1.4.1
+- charcode 1.4.0
+- checked_yaml 2.0.4 [json_annotation source_span yaml]
+- cli_config 0.2.0 [args yaml]
+- cli_util 0.4.2 [meta path]
+- clock 1.1.2
+- code_assets 1.2.1 [collection hooks]
+- collection 1.19.1
+- convert 3.1.2 [typed_data]
+- coverage 1.15.1 [args cli_config glob logging meta package_config path source_maps stack_trace vm_service yaml]
+- cross_file 0.3.5+4 [meta web]
+- crypto 3.0.7 [typed_data]
+- dart_earcut 1.2.0
+- dart_polylabel2 1.0.0 [collection meta]
+- dart_style 3.1.8 [analyzer args collection package_config path pub_semver source_span yaml]
+- dbus 0.7.15 [args ffi meta xml]
+- fake_async 1.3.3 [clock collection]
+- ffi 2.2.0
+- ffi_leak_tracker 0.1.2 [ffi]
+- file 7.0.1 [meta path]
+- file_selector_linux 0.9.4 [cross_file file_selector_platform_interface flutter]
+- file_selector_macos 0.9.5 [cross_file file_selector_platform_interface flutter]
+- file_selector_platform_interface 2.7.0 [cross_file flutter http plugin_platform_interface]
+- file_selector_windows 0.9.3+5 [cross_file file_selector_platform_interface flutter]
+- fixnum 1.1.1
+- flutter_plugin_android_lifecycle 2.0.35 [flutter]
+- flutter_web_plugins 0.0.0 [flutter]
+- frontend_server_client 4.0.0 [async path]
+- geoclue 0.1.1 [dbus meta]
+- geolocator_android 5.0.3 [flutter geolocator_platform_interface meta uuid]
+- geolocator_apple 2.3.14 [flutter geolocator_platform_interface]
+- geolocator_linux 0.2.6 [dbus flutter geoclue geolocator_platform_interface gsettings package_info_plus]
+- geolocator_platform_interface 4.3.0 [flutter plugin_platform_interface vector_math meta]
+- geolocator_web 4.1.4 [flutter flutter_web_plugins geolocator_platform_interface web]
+- geolocator_windows 0.2.5 [flutter geolocator_platform_interface]
+- glob 2.1.3 [async collection file path string_scanner]
+- graphs 2.3.2 [collection]
+- gsettings 0.2.8 [dbus xdg_directories]
+- hooks 2.0.2 [collection crypto logging meta pub_semver record_use yaml]
+- http 1.6.0 [async http_parser meta web]
+- http_multi_server 3.2.2 [async]
+- http_parser 4.1.2 [collection source_span string_scanner typed_data]
+- image_picker_android 0.8.13+19 [flutter flutter_plugin_android_lifecycle image_picker_platform_interface meta]
+- image_picker_for_web 3.1.1 [flutter flutter_web_plugins image_picker_platform_interface mime web]
+- image_picker_ios 0.8.13+6 [flutter image_picker_platform_interface]
+- image_picker_linux 0.2.2 [file_selector_linux file_selector_platform_interface flutter image_picker_platform_interface]
+- image_picker_macos 0.2.2+1 [file_selector_macos file_selector_platform_interface flutter image_picker_platform_interface]
+- image_picker_platform_interface 2.11.1 [cross_file flutter http plugin_platform_interface]
+- image_picker_windows 0.2.2 [file_selector_platform_interface file_selector_windows flutter image_picker_platform_interface]
+- io 1.0.5 [meta path string_scanner]
+- jni 1.0.3 [args collection ffi jni_util meta package_config path plugin_platform_interface]
+- jni_flutter 1.0.2 [flutter jni]
+- jni_util 1.0.0 [path]
+- json_annotation 4.12.0 [meta]
+- leak_tracker 11.0.2 [clock collection meta path vm_service]
+- leak_tracker_flutter_testing 3.0.10 [flutter leak_tracker leak_tracker_testing matcher meta]
+- leak_tracker_testing 3.0.2 [leak_tracker matcher meta]
+- lints 6.1.0
+- listen 1.0.1 [meta]
+- logging 1.3.0
+- matcher 0.12.19 [async meta stack_trace term_glyph test_api]
+- material_color_utilities 0.13.0 [collection]
+- meta 1.18.0
+- mgrs_dart 3.0.0 [unicode]
+- mime 2.0.0
+- native_toolchain_c 0.19.2 [code_assets glob hooks logging meta pub_semver]
+- node_preamble 2.0.2
+- objective_c 9.5.0 [code_assets collection ffi hooks logging meta pub_semver]
+- package_config 2.2.0 [path]
+- package_info_plus 10.2.1 [clock ffi flutter flutter_web_plugins http meta package_info_plus_platform_interface path web win32]
+- package_info_plus_platform_interface 4.1.0 [flutter meta plugin_platform_interface]
+- path_provider_android 2.3.1 [flutter jni jni_flutter path_provider_platform_interface]
+- path_provider_foundation 2.6.0 [ffi flutter objective_c path_provider_platform_interface]
+- path_provider_linux 2.2.2 [ffi flutter path path_provider_platform_interface xdg_directories]
+- path_provider_platform_interface 2.1.3 [flutter platform plugin_platform_interface]
+- path_provider_windows 2.3.0 [ffi flutter path path_provider_platform_interface]
+- petitparser 7.0.2 [meta collection]
+- platform 3.1.6
+- plugin_platform_interface 2.1.8 [meta]
+- pool 1.5.2 [async stack_trace]
+- posix 6.5.2 [ffi meta path]
+- proj4dart 3.0.0 [mgrs_dart wkt_parser meta]
+- pub_semver 2.2.0 [collection]
+- pubspec_parse 1.5.0 [checked_yaml collection json_annotation pub_semver yaml]
+- recase 4.1.0
+- record_use 0.6.0 [collection meta pub_semver]
+- riverpod 3.4.2 [async clock collection listen meta stack_trace state_notifier test uuid]
+- shelf 1.4.2 [async collection http_parser path stack_trace stream_channel]
+- shelf_packages_handler 3.0.2 [path shelf shelf_static]
+- shelf_static 1.1.3 [convert http_parser mime path shelf]
+- shelf_web_socket 3.0.0 [shelf stream_channel web_socket_channel]
+- simple_sparse_list 0.1.4
+- sky_engine 0.0.0
+- source_gen 4.2.4 [analyzer async build dart_style glob path pub_semver source_span yaml]
+- source_map_stack_trace 2.1.2 [path source_maps stack_trace]
+- source_maps 0.10.14 [source_span]
+- source_span 1.10.2 [collection path term_glyph]
+- sqflite_android 2.4.3 [flutter sqflite_common path sqflite_platform_interface]
+- sqflite_common 2.5.11 [synchronized path meta]
+- sqflite_darwin 2.4.3+1 [flutter sqflite_platform_interface meta sqflite_common path]
+- sqflite_platform_interface 2.4.1 [flutter platform sqflite_common plugin_platform_interface meta]
+- sqlite3 3.5.2 [collection ffi meta path web typed_data hooks code_assets native_toolchain_c crypto]
+- sqlparser 0.44.5 [meta collection source_span charcode]
+- stack_trace 1.12.1 [path]
+- state_notifier 1.0.0 [meta]
+- stream_channel 2.1.4 [async]
+- stream_transform 2.1.1
+- string_scanner 1.4.1 [source_span]
+- synchronized 3.4.1+2
+- term_glyph 1.2.2
+- test 1.31.0 [analyzer async boolean_selector collection coverage http_multi_server io matcher node_preamble package_config path pool shelf shelf_packages_handler shelf_static shelf_web_socket source_span stack_trace stream_channel test_api test_core typed_data web_socket_channel webkit_inspection_protocol yaml]
+- test_api 0.7.11 [async boolean_selector collection meta source_span stack_trace stream_channel string_scanner term_glyph]
+- test_core 0.6.17 [analyzer args async boolean_selector collection coverage frontend_server_client glob io meta package_config path pool source_map_stack_trace source_maps source_span stack_trace stream_channel test_api vm_service yaml]
+- typed_data 1.4.0 [collection]
+- unicode 1.1.9 [archive simple_sparse_list]
+- vector_math 2.2.0
+- vm_service 15.3.0
+- watcher 1.2.1 [async path]
+- web 1.1.1
+- web_socket 1.0.1 [web]
+- web_socket_channel 3.0.3 [async crypto stream_channel web web_socket]
+- webkit_inspection_protocol 1.2.1 [logging]
+- win32 6.4.0 [ffi ffi_leak_tracker meta]
+- wkt_parser 2.0.0
+- xdg_directories 1.1.0 [meta path]
+- xml 7.0.1 [collection meta petitparser]
+- yaml 3.1.3 [collection source_span string_scanner]
+
+=== flutter pub outdated ===
+Showing outdated packages.
+[*] indicates versions that are not the latest available.
+
+Package Name                     Current     Upgradable  Resolvable  Latest     
+
+direct dependencies:            
+drift                            *2.34.3     2.35.4      2.35.4      2.35.4     
+flutter_map                      *8.3.1      8.3.2       8.3.2       8.3.2      
+flutter_riverpod                 *3.4.2      *3.4.3      *3.4.3      3.5.0      
+geolocator                       *14.0.3     14.1.2      14.1.2      14.1.2     
+image                            *4.9.2      4.13.1      4.13.1      4.13.1     
+image_picker                     *1.2.3      1.2.4       1.2.4       1.2.4      
+latlong2                         *0.9.1      *0.9.1      0.10.1      0.10.1     
+sqflite                          *2.4.3      2.4.6       2.4.6       2.4.6      
+sqlite3_flutter_libs             *0.5.42     *0.5.42     0.6.0+eol   0.6.0+eol  
+
+dev_dependencies:               
+build_runner                     *2.15.1     *2.15.1     *2.15.1     2.17.1     
+drift_dev                        *2.34.0     2.35.3      2.35.3      2.35.3     
+sqflite_common_ffi               *2.4.2+1    2.4.7       2.4.7       2.4.7      
+
+transitive dependencies:        
+_fe_analyzer_shared              *99.0.0     *100.0.0    *100.0.0    111.0.0    
+analyzer                         *12.1.0     *13.0.0     *13.0.0     14.7.0     
+archive                          *4.1.0      4.7.1       4.7.1       4.7.1      
+clock                            *1.1.2      *1.1.2      *1.1.2      1.1.3      
+code_assets                      *1.2.1      *1.2.1      *1.2.1      2.2.0      
+coverage                         *1.15.1     -           -           1.16.1     
+cross_file                       *0.3.5+4    *0.3.5+5    *0.3.5+5    0.4.0      
+crypto                           *3.0.7      3.0.8       3.0.8       3.0.8      
+dbus                             *0.7.15     *0.7.15     *0.7.15     0.8.1      
+file_selector_linux              *0.9.4      0.9.4+1     0.9.4+1     0.9.4+1    
+file_selector_macos              *0.9.5      *0.9.5+1    *0.9.5+1    0.9.5+2    
+file_selector_windows            *0.9.3+5    0.9.3+6     0.9.3+6     0.9.3+6    
+frontend_server_client           *4.0.0      -           -           4.2.0      
+geolocator_android               *5.0.3      5.2.1       5.2.1       5.2.1      
+geolocator_apple                 *2.3.14     2.4.3       2.4.3       2.4.3      
+geolocator_platform_interface    *4.3.0      4.4.1       4.4.1       4.4.1      
+glob                             *2.1.3      2.2.0       2.2.0       2.2.0      
+gsettings                        *0.2.8      *0.2.8      *0.2.8      0.2.9      
+hooks                            *2.0.2      *2.0.2      *2.0.2      2.2.0      
+http_multi_server                *3.2.2      3.2.3       3.2.3       3.2.3      
+image_picker_android             *0.8.13+19  0.8.13+25   0.8.13+25   0.8.13+25  
+image_picker_ios                 *0.8.13+6   *0.8.13+10  *0.8.13+10  0.8.13+16  
+image_picker_platform_interface  *2.11.1     2.11.2      2.11.2      2.11.2     
+io                               *1.0.5      1.1.0       1.1.0       1.1.0      
+jni                              *1.0.3      1.2.1       1.2.1       1.2.1      
+jni_flutter                      *1.0.2      1.1.0       1.1.0       1.1.0      
+matcher                          *0.12.19    *0.12.19    *0.12.19    0.12.20    
+material_color_utilities         *0.13.0     *0.13.0     *0.13.0     0.13.1     
+meta                             *1.18.0     *1.18.0     *1.18.0     1.19.0     
+mime                             *2.0.0      2.1.0       2.1.0       2.1.0      
+native_toolchain_c               *0.19.2     *0.19.2     *0.19.2     0.19.6     
+objective_c                      *9.5.0      *9.5.0      *9.5.0      9.6.4      
+package_config                   *2.2.0      *2.2.0      *2.2.0      3.0.0      
+package_info_plus                *10.2.1     10.2.2      10.2.2      10.2.2     
+petitparser                      *7.0.2      *7.0.2      *7.0.2      7.1.0      
+platform                         *3.1.6      3.2.0       3.2.0       3.2.0      
+pool                             *1.5.2      1.5.3       1.5.3       1.5.3      
+posix                            *6.5.2      6.5.4       6.5.4       6.5.4      
+pub_semver                       *2.2.0      2.2.1       2.2.1       2.2.1      
+record_use                       *0.6.0      *0.6.0      *0.6.0      1.1.1      
+riverpod                         *3.4.2      *3.4.3      *3.4.3      3.5.0      
+shelf                            *1.4.2      1.4.3       1.4.3       1.4.3      
+shelf_static                     *1.1.3      -           -           1.2.0      
+sqflite_android                  *2.4.3      2.4.6       2.4.6       2.4.6      
+sqflite_common                   *2.5.11     2.5.17      2.5.17      2.5.17     
+sqflite_darwin                   *2.4.3+1    2.4.6       2.4.6       2.4.6      
+sqflite_platform_interface       *2.4.1      2.4.4       2.4.4       2.4.4      
+sqlite3                          *3.5.2      *3.5.2      *3.5.2      3.9.2      
+stack_trace                      *1.12.1     *1.12.1     *1.12.1     1.12.2     
+synchronized                     *3.4.1+2    3.6.1+1     3.6.1+1     3.6.1+1    
+test                             *1.31.0     -           -           1.33.0     
+test_api                         *0.7.11     *0.7.11     *0.7.11     0.7.15     
+test_core                        *0.6.17     -           -           0.6.21     
+vector_math                      *2.2.0      *2.2.0      *2.2.0      2.4.4      
+vm_service                       *15.3.0     15.4.0      15.4.0      15.4.0     
+web                              *1.1.1      *1.1.1      *1.1.1      1.1.2      
+xml                              *7.0.1      *7.0.1      *7.0.1      7.1.0      
+yaml                             *3.1.3      3.1.4       3.1.4       3.1.4      
+
+transitive dev_dependencies:    
+build                            *4.0.7      *4.0.7      *4.0.7      5.0.0      
+build_config                     *1.3.2      *1.3.3      *1.3.3      1.4.0      
+build_daemon                     *4.1.5      4.1.7       4.1.7       4.1.7      
+built_collection                 *5.1.1      *5.1.2      *5.1.2      6.0.0      
+built_value                      *8.12.7     8.13.0      8.13.0      8.13.0     
+cli_util                         *0.4.2      *0.4.2      *0.4.2      0.6.1      
+dart_style                       *3.1.8      *3.1.9      *3.1.9      3.1.14     
+pubspec_parse                    *1.5.0      1.7.0       1.7.0       1.7.0      
+source_gen                       *4.2.4      *4.2.4      *4.2.4      4.3.1      
+sqlparser                        *0.44.5     0.45.1      0.45.1      0.45.1     
+stream_transform                 *2.1.1      2.1.2       2.1.2       2.1.2      
+yaml_edit                        -           2.2.4       2.2.4       2.2.4      
+
+51 upgradable dependencies are locked (in pubspec.lock) to older versions.
+To update these dependencies, use `flutter pub upgrade`.
+
+2  dependencies are constrained to versions that are older than a resolvable version.
+To update these dependencies, edit pubspec.yaml, or run `flutter pub upgrade --major-versions`.
+
+=== 30 LARGEST TRACKED FILES ===
+     230 KB (    235206 B) docs/evidence/FEAT-001/feat-004-phase-6/08_home_scrolled_light.png
+     230 KB (    235375 B) docs/evidence/FEAT-001/feat-004-phase-7/07_home_light.png
+     230 KB (    235375 B) docs/evidence/FEAT-001/feat-004-phase-7/08_home_scrolled_light.png
+     231 KB (    235918 B) docs/evidence/FEAT-001/feat-004-phase-2/07_home_light.png
+     231 KB (    235918 B) docs/evidence/FEAT-001/feat-004-phase-2/08_home_scrolled_light.png
+     231 KB (    235918 B) docs/evidence/FEAT-001/feat-004-phase-3/07_home_light.png
+     231 KB (    235918 B) docs/evidence/FEAT-001/feat-004-phase-3/08_home_scrolled_light.png
+     231 KB (    235918 B) docs/evidence/FEAT-001/feat-004-phase-4/07_home_light.png
+     231 KB (    235918 B) docs/evidence/FEAT-001/feat-004-phase-4/08_home_scrolled_light.png
+     231 KB (    236086 B) docs/evidence/FEAT-001/feat-003-phase-10/07_home_light.png
+     231 KB (    236086 B) docs/evidence/FEAT-001/feat-003-phase-10/08_home_scrolled_light.png
+     231 KB (    236086 B) docs/evidence/FEAT-001/feat-003-phase-9/07_home_light.png
+     231 KB (    236086 B) docs/evidence/FEAT-001/feat-003-phase-9/08_home_scrolled_light.png
+     231 KB (    236086 B) docs/evidence/FEAT-001/feat-004-baseline/07_home_light.png
+     231 KB (    236086 B) docs/evidence/FEAT-001/feat-004-baseline/08_home_scrolled_light.png
+     231 KB (    236086 B) docs/evidence/FEAT-001/feat-004-phase-1/07_home_light.png
+     231 KB (    236086 B) docs/evidence/FEAT-001/feat-004-phase-1/08_home_scrolled_light.png
+     233 KB (    237894 B) docs/evidence/FEAT-001/feat-004-phase-8-text-2x/07_home_light.png
+     233 KB (    238565 B) docs/evidence/FEAT-001/feat-003-phase-10-text-2x/07_home_light.png
+     236 KB (    240971 B) docs/evidence/FEAT-001/feat-004-phase-8-text-2x/08_home_scrolled_light.png
+     236 KB (    241544 B) docs/evidence/FEAT-001/feat-003-phase-10-text-2x/08_home_scrolled_light.png
+     349 KB (    356751 B) android/app/src/main/res/drawable-nodpi/warang_maya_foreground.png
+     349 KB (    356751 B) design/warang-maya-foreground.png
+     384 KB (    392880 B) assets/fonts/ShantellSans-Medium.ttf
+     796 KB (    814796 B) design/warang-canvas.html
+    1089 KB (   1114152 B) assets/Logo2.png
+    1134 KB (   1160885 B) assets/Logo.png
+    1134 KB (   1160885 B) design/warang-maya.png
+    1544 KB (   1580484 B) assets/fonts/BagelFatOne-Regular.ttf
+   25356 KB (  25964544 B) assets/place_book/place_book.sqlite
