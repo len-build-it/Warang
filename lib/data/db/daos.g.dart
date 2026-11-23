@@ -27,8 +27,21 @@ class TripsDaoManager {
       $$TripsTableTableManager(_db.attachedDatabase, _db.trips);
 }
 
+mixin _$PlacesDaoMixin on DatabaseAccessor<WarangDatabase> {
+  $PlacesTable get places => attachedDatabase.places;
+  PlacesDaoManager get managers => PlacesDaoManager(this);
+}
+
+class PlacesDaoManager {
+  final _$PlacesDaoMixin _db;
+  PlacesDaoManager(this._db);
+  $$PlacesTableTableManager get places =>
+      $$PlacesTableTableManager(_db.attachedDatabase, _db.places);
+}
+
 mixin _$MomentsDaoMixin on DatabaseAccessor<WarangDatabase> {
   $TripsTable get trips => attachedDatabase.trips;
+  $PlacesTable get places => attachedDatabase.places;
   $MomentsTable get moments => attachedDatabase.moments;
   MomentsDaoManager get managers => MomentsDaoManager(this);
 }
@@ -38,12 +51,15 @@ class MomentsDaoManager {
   MomentsDaoManager(this._db);
   $$TripsTableTableManager get trips =>
       $$TripsTableTableManager(_db.attachedDatabase, _db.trips);
+  $$PlacesTableTableManager get places =>
+      $$PlacesTableTableManager(_db.attachedDatabase, _db.places);
   $$MomentsTableTableManager get moments =>
       $$MomentsTableTableManager(_db.attachedDatabase, _db.moments);
 }
 
 mixin _$PhotosDaoMixin on DatabaseAccessor<WarangDatabase> {
   $TripsTable get trips => attachedDatabase.trips;
+  $PlacesTable get places => attachedDatabase.places;
   $MomentsTable get moments => attachedDatabase.moments;
   $PhotosTable get photos => attachedDatabase.photos;
   PhotosDaoManager get managers => PhotosDaoManager(this);
@@ -54,6 +70,8 @@ class PhotosDaoManager {
   PhotosDaoManager(this._db);
   $$TripsTableTableManager get trips =>
       $$TripsTableTableManager(_db.attachedDatabase, _db.trips);
+  $$PlacesTableTableManager get places =>
+      $$PlacesTableTableManager(_db.attachedDatabase, _db.places);
   $$MomentsTableTableManager get moments =>
       $$MomentsTableTableManager(_db.attachedDatabase, _db.moments);
   $$PhotosTableTableManager get photos =>
@@ -74,6 +92,7 @@ class AppMetaDaoManager {
 
 mixin _$SearchDaoMixin on DatabaseAccessor<WarangDatabase> {
   $TripsTable get trips => attachedDatabase.trips;
+  $PlacesTable get places => attachedDatabase.places;
   $MomentsTable get moments => attachedDatabase.moments;
   SearchDaoManager get managers => SearchDaoManager(this);
 }
@@ -83,6 +102,8 @@ class SearchDaoManager {
   SearchDaoManager(this._db);
   $$TripsTableTableManager get trips =>
       $$TripsTableTableManager(_db.attachedDatabase, _db.trips);
+  $$PlacesTableTableManager get places =>
+      $$PlacesTableTableManager(_db.attachedDatabase, _db.places);
   $$MomentsTableTableManager get moments =>
       $$MomentsTableTableManager(_db.attachedDatabase, _db.moments);
 }

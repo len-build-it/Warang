@@ -7,8 +7,21 @@ import 'package:image_picker/image_picker.dart';
 
 typedef CameraPicker = Future<XFile?> Function();
 typedef LocationPermissionCheck = Future<LocationPermission> Function();
-typedef LocationReader =
-    Future<({double latitude, double longitude})?> Function();
+
+/// A single GPS fix with optional horizontal accuracy in metres.
+class LocationFix {
+  const LocationFix({
+    required this.latitude,
+    required this.longitude,
+    this.accuracyM,
+  });
+
+  final double latitude;
+  final double longitude;
+  final double? accuracyM;
+}
+
+typedef LocationReader = Future<LocationFix?> Function();
 
 final cameraPickerProvider = Provider<CameraPicker>((ref) {
   final picker = ImagePicker();
@@ -44,7 +57,11 @@ final locationReaderProvider = Provider<LocationReader>((ref) {
           timeLimit: Duration(seconds: 3),
         ),
       );
-      return (latitude: position.latitude, longitude: position.longitude);
+      return LocationFix(
+        latitude: position.latitude,
+        longitude: position.longitude,
+        accuracyM: position.accuracy.isFinite ? position.accuracy : null,
+      );
     } catch (_) {
       // Location is optional; a capture never waits for it or fails without it.
       return null;

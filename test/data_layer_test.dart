@@ -291,13 +291,13 @@ void main() {
 
   group('trip colours (FEAT-003 D-1)', () {
     test(
-      'a fresh database is at schema 2 and Everyday has no colour',
+      'a fresh database is at schema 3 and Everyday has no colour',
       () async {
-        expect(database.schemaVersion, 2);
+        expect(database.schemaVersion, 3);
         final version = await database
             .customSelect('PRAGMA user_version')
             .getSingle();
-        expect(version.read<int>('user_version'), 2);
+        expect(version.read<int>('user_version'), 3);
         expect(repository.everyday.colorKey, isNull);
         expect(tripColorKey(repository.everyday), isNull);
       },

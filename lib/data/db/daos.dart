@@ -125,6 +125,70 @@ class TripsDao extends DatabaseAccessor<WarangDatabase> with _$TripsDaoMixin {
   );
 }
 
+@DriftAccessor(tables: [Places])
+class PlacesDao extends DatabaseAccessor<WarangDatabase> with _$PlacesDaoMixin {
+  PlacesDao(super.attachedDatabase);
+
+  Stream<List<PlaceRow>> watchActive() =>
+      (select(places)
+            ..where((place) => place.deletedAt.isNull())
+            ..orderBy([(place) => OrderingTerm(expression: place.name)]))
+          .watch();
+
+  Future<List<PlaceRow>> getActive() =>
+      (select(places)
+            ..where((place) => place.deletedAt.isNull())
+            ..orderBy([(place) => OrderingTerm(expression: place.name)]))
+          .get();
+
+  Future<PlaceRow?> byId(String id) =>
+      (select(places)
+            ..where((place) => place.id.equals(id) & place.deletedAt.isNull())
+            ..limit(1))
+          .getSingleOrNull();
+
+  Future<PlaceRow?> findBySourceRef(String sourceRef) =>
+      (select(places)
+            ..where(
+              (place) =>
+                  place.sourceRef.equals(sourceRef) & place.deletedAt.isNull(),
+            )
+            ..limit(1))
+          .getSingleOrNull();
+
+  Future<PlaceRow?> findUserByLowerName(String lowerTrimmedName) async {
+    final rows = await customSelect(
+      '''SELECT * FROM places
+         WHERE source = 'user'
+           AND deleted_at IS NULL
+           AND lower(trim(name)) = ?
+         LIMIT 1''',
+      variables: [Variable.withString(lowerTrimmedName)],
+      readsFrom: {places},
+    ).get();
+    if (rows.isEmpty) return null;
+    final row = rows.first;
+    return PlaceRow(
+      id: row.read<String>('id'),
+      name: row.read<String>('name'),
+      categoryKey: row.readNullable<String>('category_key'),
+      latitude: row.readNullable<double>('latitude'),
+      longitude: row.readNullable<double>('longitude'),
+      source: row.read<String>('source'),
+      sourceRef: row.readNullable<String>('source_ref'),
+      createdAt: row.read<DateTime>('created_at'),
+      updatedAt: row.read<DateTime>('updated_at'),
+      deletedAt: row.readNullable<DateTime>('deleted_at'),
+      authorId: row.read<String>('author_id'),
+    );
+  }
+
+  Future<int> insertPlace(PlacesCompanion entry) => into(places).insert(entry);
+
+  Future<int> updatePlace(String id, PlacesCompanion entry) =>
+      (update(places)..where((place) => place.id.equals(id))).write(entry);
+}
+
 @DriftAccessor(tables: [Moments])
 class MomentsDao extends DatabaseAccessor<WarangDatabase>
     with _$MomentsDaoMixin {

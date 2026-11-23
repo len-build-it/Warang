@@ -56,11 +56,41 @@ class Trip {
   final DateTime? createdAt;
 }
 
+class Place {
+  const Place({
+    required this.id,
+    required this.name,
+    required this.source,
+    this.categoryKey,
+    this.latitude,
+    this.longitude,
+    this.sourceRef,
+    this.deletedAt,
+    this.updatedAt,
+    this.authorId = 'local',
+    this.createdAt,
+  });
+
+  final String id;
+  final String name;
+  final String? categoryKey;
+  final double? latitude;
+  final double? longitude;
+  final String source;
+  final String? sourceRef;
+  final DateTime? deletedAt;
+  final DateTime? updatedAt;
+  final String authorId;
+  final DateTime? createdAt;
+}
+
 class Moment {
   const Moment({
     required this.id,
     required this.tripId,
     required this.capturedAt,
+    this.placeId,
+    this.placeCategory,
     this.caption,
     this.latitude,
     this.longitude,
@@ -81,10 +111,14 @@ class Moment {
   final String id;
   final String tripId;
   final DateTime capturedAt;
+  final String? placeId;
+  final String? placeCategory;
   final String? caption;
   final double? latitude;
   final double? longitude;
   final double? accuracyM;
+
+  /// Compatibility projection of the linked place's name.
   final String? placeLabel;
   final int sortIndex;
 

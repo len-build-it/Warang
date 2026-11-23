@@ -86,7 +86,8 @@ void main() {
           repositoryProvider.overrideWithValue(repository),
           mapTileStoreProvider.overrideWithValue(tileStore),
           locationReaderProvider.overrideWithValue(
-            () async => (latitude: 11.9686, longitude: 121.918),
+            () async =>
+                const LocationFix(latitude: 11.9686, longitude: 121.918),
           ),
         ],
         child: MaterialApp(theme: buildWarangTheme(brightness), home: home),

@@ -1332,6 +1332,665 @@ class TripsCompanion extends UpdateCompanion<TripRow> {
   }
 }
 
+class $PlacesTable extends Places with TableInfo<$PlacesTable, PlaceRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PlacesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _categoryKeyMeta = const VerificationMeta(
+    'categoryKey',
+  );
+  @override
+  late final GeneratedColumn<String> categoryKey = GeneratedColumn<String>(
+    'category_key',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _latitudeMeta = const VerificationMeta(
+    'latitude',
+  );
+  @override
+  late final GeneratedColumn<double> latitude = GeneratedColumn<double>(
+    'latitude',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _longitudeMeta = const VerificationMeta(
+    'longitude',
+  );
+  @override
+  late final GeneratedColumn<double> longitude = GeneratedColumn<double>(
+    'longitude',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
+  @override
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+    'source',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sourceRefMeta = const VerificationMeta(
+    'sourceRef',
+  );
+  @override
+  late final GeneratedColumn<String> sourceRef = GeneratedColumn<String>(
+    'source_ref',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _authorIdMeta = const VerificationMeta(
+    'authorId',
+  );
+  @override
+  late final GeneratedColumn<String> authorId = GeneratedColumn<String>(
+    'author_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('local'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    name,
+    categoryKey,
+    latitude,
+    longitude,
+    source,
+    sourceRef,
+    createdAt,
+    updatedAt,
+    deletedAt,
+    authorId,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'places';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PlaceRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('category_key')) {
+      context.handle(
+        _categoryKeyMeta,
+        categoryKey.isAcceptableOrUnknown(
+          data['category_key']!,
+          _categoryKeyMeta,
+        ),
+      );
+    }
+    if (data.containsKey('latitude')) {
+      context.handle(
+        _latitudeMeta,
+        latitude.isAcceptableOrUnknown(data['latitude']!, _latitudeMeta),
+      );
+    }
+    if (data.containsKey('longitude')) {
+      context.handle(
+        _longitudeMeta,
+        longitude.isAcceptableOrUnknown(data['longitude']!, _longitudeMeta),
+      );
+    }
+    if (data.containsKey('source')) {
+      context.handle(
+        _sourceMeta,
+        source.isAcceptableOrUnknown(data['source']!, _sourceMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sourceMeta);
+    }
+    if (data.containsKey('source_ref')) {
+      context.handle(
+        _sourceRefMeta,
+        sourceRef.isAcceptableOrUnknown(data['source_ref']!, _sourceRefMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    if (data.containsKey('author_id')) {
+      context.handle(
+        _authorIdMeta,
+        authorId.isAcceptableOrUnknown(data['author_id']!, _authorIdMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PlaceRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PlaceRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      categoryKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category_key'],
+      ),
+      latitude: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}latitude'],
+      ),
+      longitude: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}longitude'],
+      ),
+      source: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source'],
+      )!,
+      sourceRef: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_ref'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+      authorId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}author_id'],
+      )!,
+    );
+  }
+
+  @override
+  $PlacesTable createAlias(String alias) {
+    return $PlacesTable(attachedDatabase, alias);
+  }
+}
+
+class PlaceRow extends DataClass implements Insertable<PlaceRow> {
+  final String id;
+  final String name;
+  final String? categoryKey;
+  final double? latitude;
+  final double? longitude;
+  final String source;
+  final String? sourceRef;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  final String authorId;
+  const PlaceRow({
+    required this.id,
+    required this.name,
+    this.categoryKey,
+    this.latitude,
+    this.longitude,
+    required this.source,
+    this.sourceRef,
+    required this.createdAt,
+    required this.updatedAt,
+    this.deletedAt,
+    required this.authorId,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || categoryKey != null) {
+      map['category_key'] = Variable<String>(categoryKey);
+    }
+    if (!nullToAbsent || latitude != null) {
+      map['latitude'] = Variable<double>(latitude);
+    }
+    if (!nullToAbsent || longitude != null) {
+      map['longitude'] = Variable<double>(longitude);
+    }
+    map['source'] = Variable<String>(source);
+    if (!nullToAbsent || sourceRef != null) {
+      map['source_ref'] = Variable<String>(sourceRef);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    map['author_id'] = Variable<String>(authorId);
+    return map;
+  }
+
+  PlacesCompanion toCompanion(bool nullToAbsent) {
+    return PlacesCompanion(
+      id: Value(id),
+      name: Value(name),
+      categoryKey: categoryKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(categoryKey),
+      latitude: latitude == null && nullToAbsent
+          ? const Value.absent()
+          : Value(latitude),
+      longitude: longitude == null && nullToAbsent
+          ? const Value.absent()
+          : Value(longitude),
+      source: Value(source),
+      sourceRef: sourceRef == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceRef),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+      authorId: Value(authorId),
+    );
+  }
+
+  factory PlaceRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PlaceRow(
+      id: serializer.fromJson<String>(json['id']),
+      name: serializer.fromJson<String>(json['name']),
+      categoryKey: serializer.fromJson<String?>(json['categoryKey']),
+      latitude: serializer.fromJson<double?>(json['latitude']),
+      longitude: serializer.fromJson<double?>(json['longitude']),
+      source: serializer.fromJson<String>(json['source']),
+      sourceRef: serializer.fromJson<String?>(json['sourceRef']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      authorId: serializer.fromJson<String>(json['authorId']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'name': serializer.toJson<String>(name),
+      'categoryKey': serializer.toJson<String?>(categoryKey),
+      'latitude': serializer.toJson<double?>(latitude),
+      'longitude': serializer.toJson<double?>(longitude),
+      'source': serializer.toJson<String>(source),
+      'sourceRef': serializer.toJson<String?>(sourceRef),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'authorId': serializer.toJson<String>(authorId),
+    };
+  }
+
+  PlaceRow copyWith({
+    String? id,
+    String? name,
+    Value<String?> categoryKey = const Value.absent(),
+    Value<double?> latitude = const Value.absent(),
+    Value<double?> longitude = const Value.absent(),
+    String? source,
+    Value<String?> sourceRef = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Value<DateTime?> deletedAt = const Value.absent(),
+    String? authorId,
+  }) => PlaceRow(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    categoryKey: categoryKey.present ? categoryKey.value : this.categoryKey,
+    latitude: latitude.present ? latitude.value : this.latitude,
+    longitude: longitude.present ? longitude.value : this.longitude,
+    source: source ?? this.source,
+    sourceRef: sourceRef.present ? sourceRef.value : this.sourceRef,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    authorId: authorId ?? this.authorId,
+  );
+  PlaceRow copyWithCompanion(PlacesCompanion data) {
+    return PlaceRow(
+      id: data.id.present ? data.id.value : this.id,
+      name: data.name.present ? data.name.value : this.name,
+      categoryKey: data.categoryKey.present
+          ? data.categoryKey.value
+          : this.categoryKey,
+      latitude: data.latitude.present ? data.latitude.value : this.latitude,
+      longitude: data.longitude.present ? data.longitude.value : this.longitude,
+      source: data.source.present ? data.source.value : this.source,
+      sourceRef: data.sourceRef.present ? data.sourceRef.value : this.sourceRef,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      authorId: data.authorId.present ? data.authorId.value : this.authorId,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PlaceRow(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('categoryKey: $categoryKey, ')
+          ..write('latitude: $latitude, ')
+          ..write('longitude: $longitude, ')
+          ..write('source: $source, ')
+          ..write('sourceRef: $sourceRef, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('authorId: $authorId')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    name,
+    categoryKey,
+    latitude,
+    longitude,
+    source,
+    sourceRef,
+    createdAt,
+    updatedAt,
+    deletedAt,
+    authorId,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PlaceRow &&
+          other.id == this.id &&
+          other.name == this.name &&
+          other.categoryKey == this.categoryKey &&
+          other.latitude == this.latitude &&
+          other.longitude == this.longitude &&
+          other.source == this.source &&
+          other.sourceRef == this.sourceRef &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt &&
+          other.authorId == this.authorId);
+}
+
+class PlacesCompanion extends UpdateCompanion<PlaceRow> {
+  final Value<String> id;
+  final Value<String> name;
+  final Value<String?> categoryKey;
+  final Value<double?> latitude;
+  final Value<double?> longitude;
+  final Value<String> source;
+  final Value<String?> sourceRef;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<String> authorId;
+  final Value<int> rowid;
+  const PlacesCompanion({
+    this.id = const Value.absent(),
+    this.name = const Value.absent(),
+    this.categoryKey = const Value.absent(),
+    this.latitude = const Value.absent(),
+    this.longitude = const Value.absent(),
+    this.source = const Value.absent(),
+    this.sourceRef = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.authorId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PlacesCompanion.insert({
+    required String id,
+    required String name,
+    this.categoryKey = const Value.absent(),
+    this.latitude = const Value.absent(),
+    this.longitude = const Value.absent(),
+    required String source,
+    this.sourceRef = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.deletedAt = const Value.absent(),
+    this.authorId = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       name = Value(name),
+       source = Value(source),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<PlaceRow> custom({
+    Expression<String>? id,
+    Expression<String>? name,
+    Expression<String>? categoryKey,
+    Expression<double>? latitude,
+    Expression<double>? longitude,
+    Expression<String>? source,
+    Expression<String>? sourceRef,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<String>? authorId,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (name != null) 'name': name,
+      if (categoryKey != null) 'category_key': categoryKey,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
+      if (source != null) 'source': source,
+      if (sourceRef != null) 'source_ref': sourceRef,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (authorId != null) 'author_id': authorId,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PlacesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? name,
+    Value<String?>? categoryKey,
+    Value<double?>? latitude,
+    Value<double?>? longitude,
+    Value<String>? source,
+    Value<String?>? sourceRef,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime?>? deletedAt,
+    Value<String>? authorId,
+    Value<int>? rowid,
+  }) {
+    return PlacesCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      categoryKey: categoryKey ?? this.categoryKey,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      source: source ?? this.source,
+      sourceRef: sourceRef ?? this.sourceRef,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      authorId: authorId ?? this.authorId,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (categoryKey.present) {
+      map['category_key'] = Variable<String>(categoryKey.value);
+    }
+    if (latitude.present) {
+      map['latitude'] = Variable<double>(latitude.value);
+    }
+    if (longitude.present) {
+      map['longitude'] = Variable<double>(longitude.value);
+    }
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
+    }
+    if (sourceRef.present) {
+      map['source_ref'] = Variable<String>(sourceRef.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (authorId.present) {
+      map['author_id'] = Variable<String>(authorId.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PlacesCompanion(')
+          ..write('id: $id, ')
+          ..write('name: $name, ')
+          ..write('categoryKey: $categoryKey, ')
+          ..write('latitude: $latitude, ')
+          ..write('longitude: $longitude, ')
+          ..write('source: $source, ')
+          ..write('sourceRef: $sourceRef, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('authorId: $authorId, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $MomentsTable extends Moments with TableInfo<$MomentsTable, MomentRow> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -1356,6 +2015,20 @@ class $MomentsTable extends Moments with TableInfo<$MomentsTable, MomentRow> {
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'REFERENCES trips (id)',
+    ),
+  );
+  static const VerificationMeta _placeIdMeta = const VerificationMeta(
+    'placeId',
+  );
+  @override
+  late final GeneratedColumn<String> placeId = GeneratedColumn<String>(
+    'place_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES places (id)',
     ),
   );
   static const VerificationMeta _captionMeta = const VerificationMeta(
@@ -1411,17 +2084,6 @@ class $MomentsTable extends Moments with TableInfo<$MomentsTable, MomentRow> {
     aliasedName,
     true,
     type: DriftSqlType.double,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _placeLabelMeta = const VerificationMeta(
-    'placeLabel',
-  );
-  @override
-  late final GeneratedColumn<String> placeLabel = GeneratedColumn<String>(
-    'place_label',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
   static const VerificationMeta _sortIndexMeta = const VerificationMeta(
@@ -1485,12 +2147,12 @@ class $MomentsTable extends Moments with TableInfo<$MomentsTable, MomentRow> {
   List<GeneratedColumn> get $columns => [
     id,
     tripId,
+    placeId,
     caption,
     capturedAt,
     latitude,
     longitude,
     accuracyM,
-    placeLabel,
     sortIndex,
     createdAt,
     updatedAt,
@@ -1522,6 +2184,12 @@ class $MomentsTable extends Moments with TableInfo<$MomentsTable, MomentRow> {
     } else if (isInserting) {
       context.missing(_tripIdMeta);
     }
+    if (data.containsKey('place_id')) {
+      context.handle(
+        _placeIdMeta,
+        placeId.isAcceptableOrUnknown(data['place_id']!, _placeIdMeta),
+      );
+    }
     if (data.containsKey('caption')) {
       context.handle(
         _captionMeta,
@@ -1552,12 +2220,6 @@ class $MomentsTable extends Moments with TableInfo<$MomentsTable, MomentRow> {
       context.handle(
         _accuracyMMeta,
         accuracyM.isAcceptableOrUnknown(data['accuracy_m']!, _accuracyMMeta),
-      );
-    }
-    if (data.containsKey('place_label')) {
-      context.handle(
-        _placeLabelMeta,
-        placeLabel.isAcceptableOrUnknown(data['place_label']!, _placeLabelMeta),
       );
     }
     if (data.containsKey('sort_index')) {
@@ -1611,6 +2273,10 @@ class $MomentsTable extends Moments with TableInfo<$MomentsTable, MomentRow> {
         DriftSqlType.string,
         data['${effectivePrefix}trip_id'],
       )!,
+      placeId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}place_id'],
+      ),
       caption: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}caption'],
@@ -1630,10 +2296,6 @@ class $MomentsTable extends Moments with TableInfo<$MomentsTable, MomentRow> {
       accuracyM: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
         data['${effectivePrefix}accuracy_m'],
-      ),
-      placeLabel: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}place_label'],
       ),
       sortIndex: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
@@ -1667,12 +2329,12 @@ class $MomentsTable extends Moments with TableInfo<$MomentsTable, MomentRow> {
 class MomentRow extends DataClass implements Insertable<MomentRow> {
   final String id;
   final String tripId;
+  final String? placeId;
   final String? caption;
   final DateTime capturedAt;
   final double? latitude;
   final double? longitude;
   final double? accuracyM;
-  final String? placeLabel;
   final int sortIndex;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -1681,12 +2343,12 @@ class MomentRow extends DataClass implements Insertable<MomentRow> {
   const MomentRow({
     required this.id,
     required this.tripId,
+    this.placeId,
     this.caption,
     required this.capturedAt,
     this.latitude,
     this.longitude,
     this.accuracyM,
-    this.placeLabel,
     required this.sortIndex,
     required this.createdAt,
     required this.updatedAt,
@@ -1698,6 +2360,9 @@ class MomentRow extends DataClass implements Insertable<MomentRow> {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['trip_id'] = Variable<String>(tripId);
+    if (!nullToAbsent || placeId != null) {
+      map['place_id'] = Variable<String>(placeId);
+    }
     if (!nullToAbsent || caption != null) {
       map['caption'] = Variable<String>(caption);
     }
@@ -1710,9 +2375,6 @@ class MomentRow extends DataClass implements Insertable<MomentRow> {
     }
     if (!nullToAbsent || accuracyM != null) {
       map['accuracy_m'] = Variable<double>(accuracyM);
-    }
-    if (!nullToAbsent || placeLabel != null) {
-      map['place_label'] = Variable<String>(placeLabel);
     }
     map['sort_index'] = Variable<int>(sortIndex);
     map['created_at'] = Variable<DateTime>(createdAt);
@@ -1728,6 +2390,9 @@ class MomentRow extends DataClass implements Insertable<MomentRow> {
     return MomentsCompanion(
       id: Value(id),
       tripId: Value(tripId),
+      placeId: placeId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(placeId),
       caption: caption == null && nullToAbsent
           ? const Value.absent()
           : Value(caption),
@@ -1741,9 +2406,6 @@ class MomentRow extends DataClass implements Insertable<MomentRow> {
       accuracyM: accuracyM == null && nullToAbsent
           ? const Value.absent()
           : Value(accuracyM),
-      placeLabel: placeLabel == null && nullToAbsent
-          ? const Value.absent()
-          : Value(placeLabel),
       sortIndex: Value(sortIndex),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -1762,12 +2424,12 @@ class MomentRow extends DataClass implements Insertable<MomentRow> {
     return MomentRow(
       id: serializer.fromJson<String>(json['id']),
       tripId: serializer.fromJson<String>(json['tripId']),
+      placeId: serializer.fromJson<String?>(json['placeId']),
       caption: serializer.fromJson<String?>(json['caption']),
       capturedAt: serializer.fromJson<DateTime>(json['capturedAt']),
       latitude: serializer.fromJson<double?>(json['latitude']),
       longitude: serializer.fromJson<double?>(json['longitude']),
       accuracyM: serializer.fromJson<double?>(json['accuracyM']),
-      placeLabel: serializer.fromJson<String?>(json['placeLabel']),
       sortIndex: serializer.fromJson<int>(json['sortIndex']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -1781,12 +2443,12 @@ class MomentRow extends DataClass implements Insertable<MomentRow> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'tripId': serializer.toJson<String>(tripId),
+      'placeId': serializer.toJson<String?>(placeId),
       'caption': serializer.toJson<String?>(caption),
       'capturedAt': serializer.toJson<DateTime>(capturedAt),
       'latitude': serializer.toJson<double?>(latitude),
       'longitude': serializer.toJson<double?>(longitude),
       'accuracyM': serializer.toJson<double?>(accuracyM),
-      'placeLabel': serializer.toJson<String?>(placeLabel),
       'sortIndex': serializer.toJson<int>(sortIndex),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -1798,12 +2460,12 @@ class MomentRow extends DataClass implements Insertable<MomentRow> {
   MomentRow copyWith({
     String? id,
     String? tripId,
+    Value<String?> placeId = const Value.absent(),
     Value<String?> caption = const Value.absent(),
     DateTime? capturedAt,
     Value<double?> latitude = const Value.absent(),
     Value<double?> longitude = const Value.absent(),
     Value<double?> accuracyM = const Value.absent(),
-    Value<String?> placeLabel = const Value.absent(),
     int? sortIndex,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -1812,12 +2474,12 @@ class MomentRow extends DataClass implements Insertable<MomentRow> {
   }) => MomentRow(
     id: id ?? this.id,
     tripId: tripId ?? this.tripId,
+    placeId: placeId.present ? placeId.value : this.placeId,
     caption: caption.present ? caption.value : this.caption,
     capturedAt: capturedAt ?? this.capturedAt,
     latitude: latitude.present ? latitude.value : this.latitude,
     longitude: longitude.present ? longitude.value : this.longitude,
     accuracyM: accuracyM.present ? accuracyM.value : this.accuracyM,
-    placeLabel: placeLabel.present ? placeLabel.value : this.placeLabel,
     sortIndex: sortIndex ?? this.sortIndex,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
@@ -1828,6 +2490,7 @@ class MomentRow extends DataClass implements Insertable<MomentRow> {
     return MomentRow(
       id: data.id.present ? data.id.value : this.id,
       tripId: data.tripId.present ? data.tripId.value : this.tripId,
+      placeId: data.placeId.present ? data.placeId.value : this.placeId,
       caption: data.caption.present ? data.caption.value : this.caption,
       capturedAt: data.capturedAt.present
           ? data.capturedAt.value
@@ -1835,9 +2498,6 @@ class MomentRow extends DataClass implements Insertable<MomentRow> {
       latitude: data.latitude.present ? data.latitude.value : this.latitude,
       longitude: data.longitude.present ? data.longitude.value : this.longitude,
       accuracyM: data.accuracyM.present ? data.accuracyM.value : this.accuracyM,
-      placeLabel: data.placeLabel.present
-          ? data.placeLabel.value
-          : this.placeLabel,
       sortIndex: data.sortIndex.present ? data.sortIndex.value : this.sortIndex,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
@@ -1851,12 +2511,12 @@ class MomentRow extends DataClass implements Insertable<MomentRow> {
     return (StringBuffer('MomentRow(')
           ..write('id: $id, ')
           ..write('tripId: $tripId, ')
+          ..write('placeId: $placeId, ')
           ..write('caption: $caption, ')
           ..write('capturedAt: $capturedAt, ')
           ..write('latitude: $latitude, ')
           ..write('longitude: $longitude, ')
           ..write('accuracyM: $accuracyM, ')
-          ..write('placeLabel: $placeLabel, ')
           ..write('sortIndex: $sortIndex, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -1870,12 +2530,12 @@ class MomentRow extends DataClass implements Insertable<MomentRow> {
   int get hashCode => Object.hash(
     id,
     tripId,
+    placeId,
     caption,
     capturedAt,
     latitude,
     longitude,
     accuracyM,
-    placeLabel,
     sortIndex,
     createdAt,
     updatedAt,
@@ -1888,12 +2548,12 @@ class MomentRow extends DataClass implements Insertable<MomentRow> {
       (other is MomentRow &&
           other.id == this.id &&
           other.tripId == this.tripId &&
+          other.placeId == this.placeId &&
           other.caption == this.caption &&
           other.capturedAt == this.capturedAt &&
           other.latitude == this.latitude &&
           other.longitude == this.longitude &&
           other.accuracyM == this.accuracyM &&
-          other.placeLabel == this.placeLabel &&
           other.sortIndex == this.sortIndex &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
@@ -1904,12 +2564,12 @@ class MomentRow extends DataClass implements Insertable<MomentRow> {
 class MomentsCompanion extends UpdateCompanion<MomentRow> {
   final Value<String> id;
   final Value<String> tripId;
+  final Value<String?> placeId;
   final Value<String?> caption;
   final Value<DateTime> capturedAt;
   final Value<double?> latitude;
   final Value<double?> longitude;
   final Value<double?> accuracyM;
-  final Value<String?> placeLabel;
   final Value<int> sortIndex;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -1919,12 +2579,12 @@ class MomentsCompanion extends UpdateCompanion<MomentRow> {
   const MomentsCompanion({
     this.id = const Value.absent(),
     this.tripId = const Value.absent(),
+    this.placeId = const Value.absent(),
     this.caption = const Value.absent(),
     this.capturedAt = const Value.absent(),
     this.latitude = const Value.absent(),
     this.longitude = const Value.absent(),
     this.accuracyM = const Value.absent(),
-    this.placeLabel = const Value.absent(),
     this.sortIndex = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -1935,12 +2595,12 @@ class MomentsCompanion extends UpdateCompanion<MomentRow> {
   MomentsCompanion.insert({
     required String id,
     required String tripId,
+    this.placeId = const Value.absent(),
     this.caption = const Value.absent(),
     required DateTime capturedAt,
     this.latitude = const Value.absent(),
     this.longitude = const Value.absent(),
     this.accuracyM = const Value.absent(),
-    this.placeLabel = const Value.absent(),
     this.sortIndex = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
@@ -1955,12 +2615,12 @@ class MomentsCompanion extends UpdateCompanion<MomentRow> {
   static Insertable<MomentRow> custom({
     Expression<String>? id,
     Expression<String>? tripId,
+    Expression<String>? placeId,
     Expression<String>? caption,
     Expression<DateTime>? capturedAt,
     Expression<double>? latitude,
     Expression<double>? longitude,
     Expression<double>? accuracyM,
-    Expression<String>? placeLabel,
     Expression<int>? sortIndex,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -1971,12 +2631,12 @@ class MomentsCompanion extends UpdateCompanion<MomentRow> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (tripId != null) 'trip_id': tripId,
+      if (placeId != null) 'place_id': placeId,
       if (caption != null) 'caption': caption,
       if (capturedAt != null) 'captured_at': capturedAt,
       if (latitude != null) 'latitude': latitude,
       if (longitude != null) 'longitude': longitude,
       if (accuracyM != null) 'accuracy_m': accuracyM,
-      if (placeLabel != null) 'place_label': placeLabel,
       if (sortIndex != null) 'sort_index': sortIndex,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -1989,12 +2649,12 @@ class MomentsCompanion extends UpdateCompanion<MomentRow> {
   MomentsCompanion copyWith({
     Value<String>? id,
     Value<String>? tripId,
+    Value<String?>? placeId,
     Value<String?>? caption,
     Value<DateTime>? capturedAt,
     Value<double?>? latitude,
     Value<double?>? longitude,
     Value<double?>? accuracyM,
-    Value<String?>? placeLabel,
     Value<int>? sortIndex,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
@@ -2005,12 +2665,12 @@ class MomentsCompanion extends UpdateCompanion<MomentRow> {
     return MomentsCompanion(
       id: id ?? this.id,
       tripId: tripId ?? this.tripId,
+      placeId: placeId ?? this.placeId,
       caption: caption ?? this.caption,
       capturedAt: capturedAt ?? this.capturedAt,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       accuracyM: accuracyM ?? this.accuracyM,
-      placeLabel: placeLabel ?? this.placeLabel,
       sortIndex: sortIndex ?? this.sortIndex,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -2029,6 +2689,9 @@ class MomentsCompanion extends UpdateCompanion<MomentRow> {
     if (tripId.present) {
       map['trip_id'] = Variable<String>(tripId.value);
     }
+    if (placeId.present) {
+      map['place_id'] = Variable<String>(placeId.value);
+    }
     if (caption.present) {
       map['caption'] = Variable<String>(caption.value);
     }
@@ -2043,9 +2706,6 @@ class MomentsCompanion extends UpdateCompanion<MomentRow> {
     }
     if (accuracyM.present) {
       map['accuracy_m'] = Variable<double>(accuracyM.value);
-    }
-    if (placeLabel.present) {
-      map['place_label'] = Variable<String>(placeLabel.value);
     }
     if (sortIndex.present) {
       map['sort_index'] = Variable<int>(sortIndex.value);
@@ -2073,12 +2733,12 @@ class MomentsCompanion extends UpdateCompanion<MomentRow> {
     return (StringBuffer('MomentsCompanion(')
           ..write('id: $id, ')
           ..write('tripId: $tripId, ')
+          ..write('placeId: $placeId, ')
           ..write('caption: $caption, ')
           ..write('capturedAt: $capturedAt, ')
           ..write('latitude: $latitude, ')
           ..write('longitude: $longitude, ')
           ..write('accuracyM: $accuracyM, ')
-          ..write('placeLabel: $placeLabel, ')
           ..write('sortIndex: $sortIndex, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -3206,11 +3866,13 @@ abstract class _$WarangDatabase extends GeneratedDatabase {
   $WarangDatabaseManager get managers => $WarangDatabaseManager(this);
   late final $ProfilesTable profiles = $ProfilesTable(this);
   late final $TripsTable trips = $TripsTable(this);
+  late final $PlacesTable places = $PlacesTable(this);
   late final $MomentsTable moments = $MomentsTable(this);
   late final $PhotosTable photos = $PhotosTable(this);
   late final $AppMetaTable appMeta = $AppMetaTable(this);
   late final ProfilesDao profilesDao = ProfilesDao(this as WarangDatabase);
   late final TripsDao tripsDao = TripsDao(this as WarangDatabase);
+  late final PlacesDao placesDao = PlacesDao(this as WarangDatabase);
   late final MomentsDao momentsDao = MomentsDao(this as WarangDatabase);
   late final PhotosDao photosDao = PhotosDao(this as WarangDatabase);
   late final AppMetaDao appMetaDao = AppMetaDao(this as WarangDatabase);
@@ -3222,6 +3884,7 @@ abstract class _$WarangDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     profiles,
     trips,
+    places,
     moments,
     photos,
     appMeta,
@@ -3957,16 +4620,428 @@ typedef $$TripsTableProcessedTableManager =
       TripRow,
       PrefetchHooks Function({bool momentsRefs})
     >;
+typedef $$PlacesTableCreateCompanionBuilder =
+    PlacesCompanion Function({
+      required String id,
+      required String name,
+      Value<String?> categoryKey,
+      Value<double?> latitude,
+      Value<double?> longitude,
+      required String source,
+      Value<String?> sourceRef,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<String> authorId,
+      Value<int> rowid,
+    });
+typedef $$PlacesTableUpdateCompanionBuilder =
+    PlacesCompanion Function({
+      Value<String> id,
+      Value<String> name,
+      Value<String?> categoryKey,
+      Value<double?> latitude,
+      Value<double?> longitude,
+      Value<String> source,
+      Value<String?> sourceRef,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<String> authorId,
+      Value<int> rowid,
+    });
+
+final class $$PlacesTableReferences
+    extends BaseReferences<_$WarangDatabase, $PlacesTable, PlaceRow> {
+  $$PlacesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$MomentsTable, List<MomentRow>> _momentsRefsTable(
+    _$WarangDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.moments,
+    aliasName: 'places__id__moments__place_id',
+  );
+
+  $$MomentsTableProcessedTableManager get momentsRefs {
+    final manager = $$MomentsTableTableManager(
+      $_db,
+      $_db.moments,
+    ).filter((f) => f.placeId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_momentsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$PlacesTableFilterComposer
+    extends Composer<_$WarangDatabase, $PlacesTable> {
+  $$PlacesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get categoryKey => $composableBuilder(
+    column: $table.categoryKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get latitude => $composableBuilder(
+    column: $table.latitude,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get longitude => $composableBuilder(
+    column: $table.longitude,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceRef => $composableBuilder(
+    column: $table.sourceRef,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get authorId => $composableBuilder(
+    column: $table.authorId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  Expression<bool> momentsRefs(
+    Expression<bool> Function($$MomentsTableFilterComposer f) f,
+  ) {
+    final $$MomentsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.moments,
+      getReferencedColumn: (t) => t.placeId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MomentsTableFilterComposer(
+            $db: $db,
+            $table: $db.moments,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$PlacesTableOrderingComposer
+    extends Composer<_$WarangDatabase, $PlacesTable> {
+  $$PlacesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get categoryKey => $composableBuilder(
+    column: $table.categoryKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get latitude => $composableBuilder(
+    column: $table.latitude,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get longitude => $composableBuilder(
+    column: $table.longitude,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceRef => $composableBuilder(
+    column: $table.sourceRef,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get authorId => $composableBuilder(
+    column: $table.authorId,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PlacesTableAnnotationComposer
+    extends Composer<_$WarangDatabase, $PlacesTable> {
+  $$PlacesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get categoryKey => $composableBuilder(
+    column: $table.categoryKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get latitude =>
+      $composableBuilder(column: $table.latitude, builder: (column) => column);
+
+  GeneratedColumn<double> get longitude =>
+      $composableBuilder(column: $table.longitude, builder: (column) => column);
+
+  GeneratedColumn<String> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceRef =>
+      $composableBuilder(column: $table.sourceRef, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get authorId =>
+      $composableBuilder(column: $table.authorId, builder: (column) => column);
+
+  Expression<T> momentsRefs<T extends Object>(
+    Expression<T> Function($$MomentsTableAnnotationComposer a) f,
+  ) {
+    final $$MomentsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.moments,
+      getReferencedColumn: (t) => t.placeId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MomentsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.moments,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$PlacesTableTableManager
+    extends
+        RootTableManager<
+          _$WarangDatabase,
+          $PlacesTable,
+          PlaceRow,
+          $$PlacesTableFilterComposer,
+          $$PlacesTableOrderingComposer,
+          $$PlacesTableAnnotationComposer,
+          $$PlacesTableCreateCompanionBuilder,
+          $$PlacesTableUpdateCompanionBuilder,
+          (PlaceRow, $$PlacesTableReferences),
+          PlaceRow,
+          PrefetchHooks Function({bool momentsRefs})
+        > {
+  $$PlacesTableTableManager(_$WarangDatabase db, $PlacesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PlacesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PlacesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PlacesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String?> categoryKey = const Value.absent(),
+                Value<double?> latitude = const Value.absent(),
+                Value<double?> longitude = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<String?> sourceRef = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<String> authorId = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PlacesCompanion(
+                id: id,
+                name: name,
+                categoryKey: categoryKey,
+                latitude: latitude,
+                longitude: longitude,
+                source: source,
+                sourceRef: sourceRef,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                authorId: authorId,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String name,
+                Value<String?> categoryKey = const Value.absent(),
+                Value<double?> latitude = const Value.absent(),
+                Value<double?> longitude = const Value.absent(),
+                required String source,
+                Value<String?> sourceRef = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<String> authorId = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PlacesCompanion.insert(
+                id: id,
+                name: name,
+                categoryKey: categoryKey,
+                latitude: latitude,
+                longitude: longitude,
+                source: source,
+                sourceRef: sourceRef,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                authorId: authorId,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) =>
+                    (e.readTable(table), $$PlacesTableReferences(db, table, e)),
+              )
+              .toList(),
+          prefetchHooksCallback: ({momentsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (momentsRefs) db.moments],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (momentsRefs)
+                    await $_getPrefetchedData<
+                      PlaceRow,
+                      $PlacesTable,
+                      MomentRow
+                    >(
+                      currentTable: table,
+                      referencedTable: $$PlacesTableReferences
+                          ._momentsRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$PlacesTableReferences(db, table, p0).momentsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where((e) => e.placeId == item.id),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$PlacesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$WarangDatabase,
+      $PlacesTable,
+      PlaceRow,
+      $$PlacesTableFilterComposer,
+      $$PlacesTableOrderingComposer,
+      $$PlacesTableAnnotationComposer,
+      $$PlacesTableCreateCompanionBuilder,
+      $$PlacesTableUpdateCompanionBuilder,
+      (PlaceRow, $$PlacesTableReferences),
+      PlaceRow,
+      PrefetchHooks Function({bool momentsRefs})
+    >;
 typedef $$MomentsTableCreateCompanionBuilder =
     MomentsCompanion Function({
       required String id,
       required String tripId,
+      Value<String?> placeId,
       Value<String?> caption,
       required DateTime capturedAt,
       Value<double?> latitude,
       Value<double?> longitude,
       Value<double?> accuracyM,
-      Value<String?> placeLabel,
       Value<int> sortIndex,
       required DateTime createdAt,
       required DateTime updatedAt,
@@ -3978,12 +5053,12 @@ typedef $$MomentsTableUpdateCompanionBuilder =
     MomentsCompanion Function({
       Value<String> id,
       Value<String> tripId,
+      Value<String?> placeId,
       Value<String?> caption,
       Value<DateTime> capturedAt,
       Value<double?> latitude,
       Value<double?> longitude,
       Value<double?> accuracyM,
-      Value<String?> placeLabel,
       Value<int> sortIndex,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
@@ -4007,6 +5082,23 @@ final class $$MomentsTableReferences
       $_db.trips,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_tripIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $PlacesTable _placeIdTable(_$WarangDatabase db) =>
+      db.places.createAlias('moments__place_id__places__id');
+
+  $$PlacesTableProcessedTableManager? get placeId {
+    final $_column = $_itemColumn<String>('place_id');
+    if ($_column == null) return null;
+    final manager = $$PlacesTableTableManager(
+      $_db,
+      $_db.places,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_placeIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
@@ -4072,11 +5164,6 @@ class $$MomentsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get placeLabel => $composableBuilder(
-    column: $table.placeLabel,
-    builder: (column) => ColumnFilters(column),
-  );
-
   ColumnFilters<int> get sortIndex => $composableBuilder(
     column: $table.sortIndex,
     builder: (column) => ColumnFilters(column),
@@ -4116,6 +5203,29 @@ class $$MomentsTableFilterComposer
           }) => $$TripsTableFilterComposer(
             $db: $db,
             $table: $db.trips,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$PlacesTableFilterComposer get placeId {
+    final $$PlacesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.placeId,
+      referencedTable: $db.places,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlacesTableFilterComposer(
+            $db: $db,
+            $table: $db.places,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4190,11 +5300,6 @@ class $$MomentsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get placeLabel => $composableBuilder(
-    column: $table.placeLabel,
-    builder: (column) => ColumnOrderings(column),
-  );
-
   ColumnOrderings<int> get sortIndex => $composableBuilder(
     column: $table.sortIndex,
     builder: (column) => ColumnOrderings(column),
@@ -4242,6 +5347,29 @@ class $$MomentsTableOrderingComposer
     );
     return composer;
   }
+
+  $$PlacesTableOrderingComposer get placeId {
+    final $$PlacesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.placeId,
+      referencedTable: $db.places,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlacesTableOrderingComposer(
+            $db: $db,
+            $table: $db.places,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$MomentsTableAnnotationComposer
@@ -4273,11 +5401,6 @@ class $$MomentsTableAnnotationComposer
   GeneratedColumn<double> get accuracyM =>
       $composableBuilder(column: $table.accuracyM, builder: (column) => column);
 
-  GeneratedColumn<String> get placeLabel => $composableBuilder(
-    column: $table.placeLabel,
-    builder: (column) => column,
-  );
-
   GeneratedColumn<int> get sortIndex =>
       $composableBuilder(column: $table.sortIndex, builder: (column) => column);
 
@@ -4307,6 +5430,29 @@ class $$MomentsTableAnnotationComposer
           }) => $$TripsTableAnnotationComposer(
             $db: $db,
             $table: $db.trips,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$PlacesTableAnnotationComposer get placeId {
+    final $$PlacesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.placeId,
+      referencedTable: $db.places,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PlacesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.places,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4355,7 +5501,7 @@ class $$MomentsTableTableManager
           $$MomentsTableUpdateCompanionBuilder,
           (MomentRow, $$MomentsTableReferences),
           MomentRow,
-          PrefetchHooks Function({bool tripId, bool photosRefs})
+          PrefetchHooks Function({bool tripId, bool placeId, bool photosRefs})
         > {
   $$MomentsTableTableManager(_$WarangDatabase db, $MomentsTable table)
     : super(
@@ -4372,12 +5518,12 @@ class $$MomentsTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String> tripId = const Value.absent(),
+                Value<String?> placeId = const Value.absent(),
                 Value<String?> caption = const Value.absent(),
                 Value<DateTime> capturedAt = const Value.absent(),
                 Value<double?> latitude = const Value.absent(),
                 Value<double?> longitude = const Value.absent(),
                 Value<double?> accuracyM = const Value.absent(),
-                Value<String?> placeLabel = const Value.absent(),
                 Value<int> sortIndex = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
@@ -4387,12 +5533,12 @@ class $$MomentsTableTableManager
               }) => MomentsCompanion(
                 id: id,
                 tripId: tripId,
+                placeId: placeId,
                 caption: caption,
                 capturedAt: capturedAt,
                 latitude: latitude,
                 longitude: longitude,
                 accuracyM: accuracyM,
-                placeLabel: placeLabel,
                 sortIndex: sortIndex,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -4404,12 +5550,12 @@ class $$MomentsTableTableManager
               ({
                 required String id,
                 required String tripId,
+                Value<String?> placeId = const Value.absent(),
                 Value<String?> caption = const Value.absent(),
                 required DateTime capturedAt,
                 Value<double?> latitude = const Value.absent(),
                 Value<double?> longitude = const Value.absent(),
                 Value<double?> accuracyM = const Value.absent(),
-                Value<String?> placeLabel = const Value.absent(),
                 Value<int> sortIndex = const Value.absent(),
                 required DateTime createdAt,
                 required DateTime updatedAt,
@@ -4419,12 +5565,12 @@ class $$MomentsTableTableManager
               }) => MomentsCompanion.insert(
                 id: id,
                 tripId: tripId,
+                placeId: placeId,
                 caption: caption,
                 capturedAt: capturedAt,
                 latitude: latitude,
                 longitude: longitude,
                 accuracyM: accuracyM,
-                placeLabel: placeLabel,
                 sortIndex: sortIndex,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -4440,63 +5586,83 @@ class $$MomentsTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({tripId = false, photosRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [if (photosRefs) db.photos],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (tripId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.tripId,
-                                referencedTable: $$MomentsTableReferences
-                                    ._tripIdTable(db),
-                                referencedColumn: $$MomentsTableReferences
-                                    ._tripIdTable(db)
-                                    .id,
-                              )
-                              as T;
-                    }
+          prefetchHooksCallback:
+              ({tripId = false, placeId = false, photosRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [if (photosRefs) db.photos],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (tripId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.tripId,
+                                    referencedTable: $$MomentsTableReferences
+                                        ._tripIdTable(db),
+                                    referencedColumn: $$MomentsTableReferences
+                                        ._tripIdTable(db)
+                                        .id,
+                                  )
+                                  as T;
+                        }
+                        if (placeId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.placeId,
+                                    referencedTable: $$MomentsTableReferences
+                                        ._placeIdTable(db),
+                                    referencedColumn: $$MomentsTableReferences
+                                        ._placeIdTable(db)
+                                        .id,
+                                  )
+                                  as T;
+                        }
 
-                    return state;
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (photosRefs)
+                        await $_getPrefetchedData<
+                          MomentRow,
+                          $MomentsTable,
+                          PhotoRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$MomentsTableReferences
+                              ._photosRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$MomentsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).photosRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.momentId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
                   },
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (photosRefs)
-                    await $_getPrefetchedData<
-                      MomentRow,
-                      $MomentsTable,
-                      PhotoRow
-                    >(
-                      currentTable: table,
-                      referencedTable: $$MomentsTableReferences
-                          ._photosRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$MomentsTableReferences(db, table, p0).photosRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.momentId == item.id),
-                      typedResults: items,
-                    ),
-                ];
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -4513,7 +5679,7 @@ typedef $$MomentsTableProcessedTableManager =
       $$MomentsTableUpdateCompanionBuilder,
       (MomentRow, $$MomentsTableReferences),
       MomentRow,
-      PrefetchHooks Function({bool tripId, bool photosRefs})
+      PrefetchHooks Function({bool tripId, bool placeId, bool photosRefs})
     >;
 typedef $$PhotosTableCreateCompanionBuilder =
     PhotosCompanion Function({
@@ -5189,6 +6355,8 @@ class $WarangDatabaseManager {
       $$ProfilesTableTableManager(_db, _db.profiles);
   $$TripsTableTableManager get trips =>
       $$TripsTableTableManager(_db, _db.trips);
+  $$PlacesTableTableManager get places =>
+      $$PlacesTableTableManager(_db, _db.places);
   $$MomentsTableTableManager get moments =>
       $$MomentsTableTableManager(_db, _db.moments);
   $$PhotosTableTableManager get photos =>

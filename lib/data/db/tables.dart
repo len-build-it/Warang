@@ -38,16 +38,34 @@ class Trips extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+@DataClassName('PlaceRow')
+class Places extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+  TextColumn get categoryKey => text().nullable()();
+  RealColumn get latitude => real().nullable()();
+  RealColumn get longitude => real().nullable()();
+  TextColumn get source => text()();
+  TextColumn get sourceRef => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get deletedAt => dateTime().nullable()();
+  TextColumn get authorId => text().withDefault(const Constant('local'))();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 @DataClassName('MomentRow')
 class Moments extends Table {
   TextColumn get id => text()();
   TextColumn get tripId => text().references(Trips, #id)();
+  TextColumn get placeId => text().nullable().references(Places, #id)();
   TextColumn get caption => text().nullable()();
   DateTimeColumn get capturedAt => dateTime()();
   RealColumn get latitude => real().nullable()();
   RealColumn get longitude => real().nullable()();
   RealColumn get accuracyM => real().nullable()();
-  TextColumn get placeLabel => text().nullable()();
   IntColumn get sortIndex => integer().withDefault(const Constant(0))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();

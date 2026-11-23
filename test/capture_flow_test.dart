@@ -23,7 +23,7 @@ import 'package:warang/features/capture/capture_screen.dart';
 import 'package:warang/features/map/map_tile_store.dart';
 import 'package:warang/features/map/warang_map.dart';
 
-typedef _Fix = ({double latitude, double longitude});
+typedef _Fix = LocationFix;
 
 void main() {
   late Directory documents;
@@ -97,13 +97,28 @@ void main() {
     await tester.pump();
     expect(find.text('Locating…'), findsOneWidget);
 
-    fix.complete((latitude: 11.96864, longitude: 121.91804));
+    fix.complete(
+      const LocationFix(
+        latitude: 11.96864,
+        longitude: 121.91804,
+        accuracyM: 18.5,
+      ),
+    );
     await tester.pump();
     await tester.pump();
 
     expect(find.text('11.969°N'), findsOneWidget);
     expect(find.text('121.918°E'), findsOneWidget);
     expect(find.textContaining('Locating'), findsNothing);
+
+    await tester.runAsync(() async {
+      await tester.tap(find.text('Save'));
+      for (var i = 0; i < 40 && repository.moments.isEmpty; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 25));
+      }
+    });
+    expect(repository.moments, hasLength(1));
+    expect(repository.moments.single.accuracyM, closeTo(18.5, 0.01));
   });
 
   testWidgets('meta line says no location yet when no fix arrives', (
@@ -188,7 +203,8 @@ void main() {
     await tester.pumpWidget(
       host(
         const AppShell(),
-        locate: () async => (latitude: 11.9686, longitude: 121.918),
+        locate: () async =>
+            const LocationFix(latitude: 11.9686, longitude: 121.918),
       ),
     );
     await tester.pump(const Duration(milliseconds: 100));

@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 
 import '../core/ids.dart';
 import '../core/milestones.dart';
@@ -11,6 +11,7 @@ import '../core/models.dart';
 import '../core/trip_rules.dart';
 import 'db/database.dart';
 import 'files/photo_store.dart';
+import 'places/place_book.dart';
 
 /// UI-facing compatibility façade over the Drift data layer.
 ///
@@ -25,9 +26,12 @@ class WarangRepository extends ChangeNotifier {
   final PhotoStore photoStore;
   late Profile _profile;
   List<Trip> _trips = const [];
+  List<Place> _places = const [];
+  Map<String, Place> _placesById = const {};
   List<Moment> _moments = const [];
   StreamSubscription<ProfileRow?>? _profileSubscription;
   StreamSubscription<List<TripRow>>? _tripsSubscription;
+  StreamSubscription<List<PlaceRow>>? _placesSubscription;
   StreamSubscription<List<MomentRow>>? _momentsSubscription;
   bool _isDisposed = false;
 
@@ -36,6 +40,7 @@ class WarangRepository extends ChangeNotifier {
     await _refreshAll();
     await _profileSubscription?.cancel();
     await _tripsSubscription?.cancel();
+    await _placesSubscription?.cancel();
     await _momentsSubscription?.cancel();
     _profileSubscription = database.profilesDao.watchActive().listen((row) {
       if (_isDisposed) return;
@@ -48,6 +53,12 @@ class WarangRepository extends ChangeNotifier {
       _trips = rows.map(_tripFromRow).toList(growable: false);
       notifyListeners();
     });
+    _placesSubscription = database.placesDao.watchActive().listen((rows) {
+      if (_isDisposed) return;
+      _setPlaces(rows);
+      _remapMomentPlaces();
+      notifyListeners();
+    });
     _momentsSubscription = database.momentsDao.watchActive().listen((rows) {
       if (_isDisposed) return;
       unawaited(_refreshMoments(rows));
@@ -57,6 +68,10 @@ class WarangRepository extends ChangeNotifier {
   Profile get profile => _profile;
 
   List<Trip> get trips => List.unmodifiable(_trips);
+
+  List<Place> get places => List.unmodifiable(_places);
+
+  Place? placeById(String? id) => id == null ? null : _placesById[id];
 
   List<Moment> get moments => List.unmodifiable(_moments);
 
@@ -75,6 +90,8 @@ class WarangRepository extends ChangeNotifier {
     String? caption,
     double? latitude,
     double? longitude,
+    double? accuracyM,
+    BookPlace? place,
     DateTime? capturedAt,
   }) async {
     final stored = await photoStore.importPhotoAsset(photo);
@@ -83,6 +100,8 @@ class WarangRepository extends ChangeNotifier {
         caption: caption,
         latitude: latitude,
         longitude: longitude,
+        accuracyM: accuracyM,
+        place: place,
         relPath: stored.relPath,
         thumbRelPath: stored.thumbRelPath,
         width: stored.width,
@@ -123,6 +142,7 @@ class WarangRepository extends ChangeNotifier {
     double? longitude,
     double? accuracyM,
     String? placeLabel,
+    BookPlace? place,
     String? relPath,
     String? thumbRelPath,
     int width = 0,
@@ -141,10 +161,17 @@ class WarangRepository extends ChangeNotifier {
     final now = DateTime.now();
     final normalizedCaption = caption?.trim();
     await database.transaction(() async {
+      String? placeId;
+      if (place != null) {
+        placeId = await _ensureBookPlace(place, now);
+      } else if (placeLabel != null && placeLabel.trim().isNotEmpty) {
+        placeId = await _ensureUserPlace(placeLabel, now);
+      }
       await database.momentsDao.insertMoment(
         MomentsCompanion.insert(
           id: id,
           tripId: active.id,
+          placeId: Value(placeId),
           caption: normalizedCaption == null || normalizedCaption.isEmpty
               ? const Value.absent()
               : Value(normalizedCaption),
@@ -152,7 +179,6 @@ class WarangRepository extends ChangeNotifier {
           latitude: Value(latitude),
           longitude: Value(longitude),
           accuracyM: Value(accuracyM),
-          placeLabel: Value(placeLabel),
           createdAt: now,
           updatedAt: now,
         ),
@@ -179,6 +205,111 @@ class WarangRepository extends ChangeNotifier {
     });
     await _refreshAll();
     return _moments.firstWhere((moment) => moment.id == id);
+  }
+
+  /// Copies [place] from the place book into `Places` if not already present,
+  /// and attaches it to [momentId].
+  Future<Place> attachBookPlace(String momentId, BookPlace place) async {
+    final now = DateTime.now();
+    late final String placeId;
+    await database.transaction(() async {
+      placeId = await _ensureBookPlace(place, now);
+      await database.momentsDao.updateMoment(
+        momentId,
+        MomentsCompanion(placeId: Value(placeId), updatedAt: Value(now)),
+      );
+    });
+    await _refreshAll();
+    return _placesById[placeId]!;
+  }
+
+  /// Attaches a user-typed place name to [momentId], reusing any existing user
+  /// place with the same trimmed lower-cased name. A blank name clears the place.
+  Future<Place?> attachUserPlace(String momentId, String name) async {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) {
+      await clearPlace(momentId);
+      return null;
+    }
+    final now = DateTime.now();
+    late final String placeId;
+    await database.transaction(() async {
+      placeId = await _ensureUserPlace(trimmed, now);
+      await database.momentsDao.updateMoment(
+        momentId,
+        MomentsCompanion(placeId: Value(placeId), updatedAt: Value(now)),
+      );
+    });
+    await _refreshAll();
+    return _placesById[placeId];
+  }
+
+  /// Detaches any place from [momentId].
+  Future<void> clearPlace(String momentId) async {
+    await database.momentsDao.updateMoment(
+      momentId,
+      MomentsCompanion(
+        placeId: const Value(null),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+    await _refreshAll();
+  }
+
+  /// Sets or clears the category for [placeId], updating every moment there.
+  Future<void> setPlaceCategory(String placeId, String? categoryKey) async {
+    await database.placesDao.updatePlace(
+      placeId,
+      PlacesCompanion(
+        categoryKey: Value(categoryKey),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+    await _refreshAll();
+  }
+
+  Future<String> _ensureBookPlace(BookPlace place, DateTime now) async {
+    final existing = await database.placesDao.findBySourceRef(place.osmRef);
+    if (existing != null) return existing.id;
+    final placeId = newId();
+    await database.placesDao.insertPlace(
+      PlacesCompanion.insert(
+        id: placeId,
+        name: place.name.trim(),
+        categoryKey: Value(place.category),
+        latitude: Value(place.latitude),
+        longitude: Value(place.longitude),
+        source: 'book',
+        sourceRef: Value(place.osmRef),
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+    return placeId;
+  }
+
+  Future<String> _ensureUserPlace(
+    String name,
+    DateTime now, {
+    String? categoryKey,
+  }) async {
+    final trimmed = name.trim();
+    final existing = await database.placesDao.findUserByLowerName(
+      trimmed.toLowerCase(),
+    );
+    if (existing != null) return existing.id;
+    final placeId = newId();
+    await database.placesDao.insertPlace(
+      PlacesCompanion.insert(
+        id: placeId,
+        name: trimmed,
+        categoryKey: Value(categoryKey),
+        source: 'user',
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+    return placeId;
   }
 
   static const _milestonesKey = 'milestonesShown';
@@ -332,15 +463,22 @@ class WarangRepository extends ChangeNotifier {
       throw ArgumentError.value(tripId, 'tripId', 'Unknown trip');
     }
     String? clean(String value) => value.trim().isEmpty ? null : value.trim();
-    await database.momentsDao.updateMoment(
-      id,
-      MomentsCompanion(
-        caption: Value(clean(caption)),
-        placeLabel: Value(clean(placeLabel)),
-        tripId: Value(tripId),
-        updatedAt: Value(DateTime.now()),
-      ),
-    );
+    final now = DateTime.now();
+    await database.transaction(() async {
+      final cleanLabel = clean(placeLabel);
+      final placeId = cleanLabel == null
+          ? null
+          : await _ensureUserPlace(cleanLabel, now);
+      await database.momentsDao.updateMoment(
+        id,
+        MomentsCompanion(
+          caption: Value(clean(caption)),
+          placeId: Value(placeId),
+          tripId: Value(tripId),
+          updatedAt: Value(now),
+        ),
+      );
+    });
     await _refreshAll();
   }
 
@@ -392,15 +530,23 @@ class WarangRepository extends ChangeNotifier {
       }
       for (final moment in importedMoments) {
         final existing = await database.momentsDao.byId(moment.id);
+        final cleanLabel = moment.placeLabel?.trim();
+        final placeId = (cleanLabel != null && cleanLabel.isNotEmpty)
+            ? await _ensureUserPlace(
+                cleanLabel,
+                now,
+                categoryKey: moment.placeCategory,
+              )
+            : null;
         final values = MomentsCompanion(
           id: Value(moment.id),
           tripId: Value(moment.tripId),
+          placeId: Value(placeId),
           caption: Value(moment.caption),
           capturedAt: Value(moment.capturedAt),
           latitude: Value(moment.latitude),
           longitude: Value(moment.longitude),
           accuracyM: Value(moment.accuracyM),
-          placeLabel: Value(moment.placeLabel),
           sortIndex: Value(moment.sortIndex),
           createdAt: Value(moment.createdAt ?? now),
           updatedAt: Value(now),
@@ -456,8 +602,15 @@ class WarangRepository extends ChangeNotifier {
     _isDisposed = true;
     unawaited(_profileSubscription?.cancel());
     unawaited(_tripsSubscription?.cancel());
+    unawaited(_placesSubscription?.cancel());
     unawaited(_momentsSubscription?.cancel());
     super.dispose();
+  }
+
+  void _setPlaces(List<PlaceRow> rows) {
+    final list = rows.map(_placeFromRow).toList(growable: false);
+    _places = list;
+    _placesById = {for (final place in list) place.id: place};
   }
 
   Future<void> _refreshAll() async {
@@ -469,8 +622,42 @@ class WarangRepository extends ChangeNotifier {
     _trips = (await database.tripsDao.getActive())
         .map(_tripFromRow)
         .toList(growable: false);
+    _setPlaces(await database.placesDao.getActive());
     await _refreshMoments(await database.momentsDao.getActive(), notify: false);
     notifyListeners();
+  }
+
+  void _remapMomentPlaces() {
+    if (_moments.isEmpty) return;
+    _moments = _moments
+        .map((moment) {
+          final place = moment.placeId == null
+              ? null
+              : _placesById[moment.placeId!];
+          return Moment(
+            id: moment.id,
+            tripId: moment.tripId,
+            capturedAt: moment.capturedAt,
+            placeId: place?.id,
+            placeCategory: place?.categoryKey,
+            caption: moment.caption,
+            latitude: moment.latitude,
+            longitude: moment.longitude,
+            accuracyM: moment.accuracyM,
+            placeLabel: place?.name,
+            sortIndex: moment.sortIndex,
+            relPath: moment.relPath,
+            thumbRelPath: moment.thumbRelPath,
+            width: moment.width,
+            height: moment.height,
+            bytes: moment.bytes,
+            deletedAt: moment.deletedAt,
+            authorId: moment.authorId,
+            createdAt: moment.createdAt,
+            updatedAt: moment.updatedAt,
+          );
+        })
+        .toList(growable: false);
   }
 
   Future<void> _refreshMoments(
@@ -486,15 +673,18 @@ class WarangRepository extends ChangeNotifier {
 
   Future<Moment> _momentFromRow(MomentRow row) async {
     final photo = await database.photosDao.firstForMoment(row.id);
+    final place = row.placeId == null ? null : _placesById[row.placeId!];
     return Moment(
       id: row.id,
       tripId: row.tripId,
       capturedAt: row.capturedAt,
+      placeId: place?.id,
+      placeCategory: place?.categoryKey,
       caption: row.caption,
       latitude: row.latitude,
       longitude: row.longitude,
       accuracyM: row.accuracyM,
-      placeLabel: row.placeLabel,
+      placeLabel: place?.name,
       sortIndex: row.sortIndex,
       relPath: photo?.relPath,
       thumbRelPath: photo?.thumbRelPath,
@@ -530,6 +720,20 @@ class WarangRepository extends ChangeNotifier {
     isEveryday: row.isEveryday,
     tagsJson: row.tagsJson,
     colorKey: row.colorKey,
+    deletedAt: row.deletedAt,
+    updatedAt: row.updatedAt,
+    authorId: row.authorId,
+    createdAt: row.createdAt,
+  );
+
+  Place _placeFromRow(PlaceRow row) => Place(
+    id: row.id,
+    name: row.name,
+    categoryKey: row.categoryKey,
+    latitude: row.latitude,
+    longitude: row.longitude,
+    source: row.source,
+    sourceRef: row.sourceRef,
     deletedAt: row.deletedAt,
     updatedAt: row.updatedAt,
     authorId: row.authorId,

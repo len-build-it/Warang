@@ -1,12 +1,24 @@
 import 'models.dart';
 
-/// Number of distinct non-blank place names the user has written.
-int distinctPlaces(Iterable<Moment> moments) => moments
-    .map((moment) => moment.placeLabel?.trim().toLowerCase())
-    .whereType<String>()
-    .where((place) => place.isNotEmpty)
-    .toSet()
-    .length;
+/// Number of distinct places attached to moments.
+///
+/// Counts distinct non-deleted place ids when present, falling back to
+/// trimmed lower-cased names for synthetic in-memory moments without a place id.
+int distinctPlaces(Iterable<Moment> moments) {
+  final keys = <String>{};
+  for (final moment in moments) {
+    final placeId = moment.placeId;
+    if (placeId != null && placeId.isNotEmpty) {
+      keys.add('id:$placeId');
+      continue;
+    }
+    final label = moment.placeLabel?.trim().toLowerCase();
+    if (label != null && label.isNotEmpty) {
+      keys.add('name:$label');
+    }
+  }
+  return keys.length;
+}
 
 /// The plain totals on the Trips shelf's stamps. Neutral totals only: no
 /// goals, or anything that asks the user to keep up.

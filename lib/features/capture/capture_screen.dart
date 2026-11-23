@@ -39,7 +39,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
   );
   final _capturedAt = DateTime.now();
   XFile? _photo;
-  ({double latitude, double longitude})? _position;
+  LocationFix? _position;
   var _location = _LocationState.unavailable;
   bool _saving = false;
 
@@ -92,6 +92,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
             caption: caption.isEmpty ? null : caption,
             latitude: _position?.latitude,
             longitude: _position?.longitude,
+            accuracyM: _position?.accuracyM,
             capturedAt: _capturedAt,
           );
       if (!mounted) return;
