@@ -6,12 +6,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:latlong2/latlong.dart';
 
 import '../../app/app.dart';
 import '../../app/device_providers.dart';
 import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
 import '../../core/formatting.dart';
+import '../../core/place_categories.dart';
+import '../../data/places/place_book.dart';
+import '../../data/places/place_book_installer.dart';
+import '../places/place_picker_sheet.dart';
 
 enum _LocationState { locating, located, unavailable }
 
@@ -41,6 +46,8 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
   XFile? _photo;
   LocationFix? _position;
   var _location = _LocationState.unavailable;
+  BookPlace? _suggestedPlace;
+  BookPlace? _acceptedPlace;
   bool _saving = false;
 
   @override
@@ -77,6 +84,42 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
           ? _LocationState.unavailable
           : _LocationState.located;
     });
+    if (position != null) {
+      await _lookupNearby(position);
+    }
+  }
+
+  Future<void> _lookupNearby(LocationFix position) async {
+    final state = ref.read(placeBookProvider);
+    final book = state.book;
+    if (!state.isReady || book == null) return;
+    final radius = (position.accuracyM ?? 50.0).clamp(25.0, 75.0);
+    final nearby = await book.nearby(
+      LatLng(position.latitude, position.longitude),
+      radius,
+      limit: 1,
+    );
+    if (!mounted) return;
+    setState(() {
+      _suggestedPlace = nearby.isEmpty ? null : nearby.first;
+    });
+  }
+
+  Future<void> _pickOtherPlace() async {
+    final position = _position;
+    if (position == null) return;
+    final picked = await showPlacePickerSheet(
+      context,
+      near: LatLng(position.latitude, position.longitude),
+      allowUserPlace: false,
+      showNearbyWhenEmpty: true,
+    );
+    if (!mounted || picked is! BookPlacePick) return;
+    WarangHaptic.selection.play();
+    setState(() {
+      _suggestedPlace = picked.place;
+      _acceptedPlace = picked.place;
+    });
   }
 
   Future<void> _save() async {
@@ -93,6 +136,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
             latitude: _position?.latitude,
             longitude: _position?.longitude,
             accuracyM: _position?.accuracyM,
+            place: _acceptedPlace,
             capturedAt: _capturedAt,
           );
       if (!mounted) return;
@@ -142,6 +186,14 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<PlaceBookState>(placeBookProvider, (previous, next) {
+      if (previous?.status != PlaceBookStatus.ready &&
+          next.isReady &&
+          _position != null &&
+          _suggestedPlace == null) {
+        _lookupNearby(_position!);
+      }
+    });
     final theme = Theme.of(context);
     final dark = theme.brightness == Brightness.dark;
     final neutrals = WarangNeutrals.of(context);
@@ -282,6 +334,47 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
                         ),
                       ],
                     ),
+                    if (_suggestedPlace != null) ...[
+                      const SizedBox(height: 12),
+                      Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          WarangChip(
+                            label: 'At ${_suggestedPlace!.name}?',
+                            tone: PlaceCategories.byKey(
+                              _suggestedPlace!.category,
+                            )?.tone,
+                            icon: PlaceCategories.byKey(
+                              _suggestedPlace!.category,
+                            )?.glyph,
+                            selected: _acceptedPlace == _suggestedPlace,
+                            onSelected: () {
+                              WarangHaptic.selection.play();
+                              setState(() {
+                                _acceptedPlace =
+                                    _acceptedPlace == _suggestedPlace
+                                    ? null
+                                    : _suggestedPlace;
+                              });
+                            },
+                          ),
+                          TextButton(
+                            onPressed: _saving ? null : _pickOtherPlace,
+                            style: TextButton.styleFrom(
+                              minimumSize: const Size(48, 48),
+                            ),
+                            child: Text(
+                              'Other place',
+                              style: WarangType.meta.copyWith(
+                                color: neutrals.inkSoft,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                     const SizedBox(height: 18),
                     WarangField(
                       label: 'Caption',

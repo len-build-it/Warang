@@ -102,11 +102,19 @@ void main() {
     await tester.tap(find.text('Edit'));
     await settle(tester);
     await tester.enterText(field('Caption'), 'Sunset at White Beach');
-    await tester.enterText(field('Place name'), 'White Beach');
+    await tester.tap(find.text('Add a place'));
+    await settle(tester);
+    await tester.enterText(find.byType(TextField).last, 'White Beach');
+    await settle(tester);
+    await tester.tap(find.text('Use "White Beach" as your own place'));
+    await settle(tester);
     // The trip is a row of chips, not a dropdown.
+    await tester.ensureVisible(find.text('Antique').last);
     await tester.tap(find.text('Antique').last);
     await settle(tester);
+    await tester.ensureVisible(find.text('Save'));
     await tester.tap(find.text('Save'));
+    await settle(tester);
     await settle(tester);
 
     final saved = repository.moments.single;
@@ -114,7 +122,7 @@ void main() {
     expect(saved.placeLabel, 'White Beach');
     expect(saved.tripId, repository.trips.firstWhere((t) => !t.isEveryday).id);
     expect(find.text('Sunset at White Beach'), findsOneWidget);
-    expect(find.text('White Beach'), findsOneWidget);
+    expect(find.text('White Beach'), findsAtLeastNWidgets(1));
   });
 
   testWidgets('add location places the pin at the map centre', (tester) async {

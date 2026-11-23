@@ -26,10 +26,23 @@ import 'package:warang/app/theme/tokens.dart';
 import 'package:warang/core/place_categories.dart';
 import 'package:warang/data/db/database.dart';
 import 'package:warang/data/files/photo_store.dart';
+import 'package:warang/data/places/place_book.dart';
+import 'package:warang/data/places/place_book_installer.dart';
 import 'package:warang/data/repository.dart';
 import 'package:warang/features/capture/capture_screen.dart';
 import 'package:warang/features/map/map_tile_store.dart';
+import 'package:warang/features/places/place_picker_sheet.dart';
 import 'package:warang/features/search/search_tab_screen.dart';
+
+import '../test/support/place_book_fixture.dart';
+
+class _ReadyPlaceBookNotifier extends PlaceBookNotifier {
+  _ReadyPlaceBookNotifier(this._book);
+  final PlaceBook _book;
+
+  @override
+  PlaceBookState build() => PlaceBookState.ready(_book);
+}
 
 const _label = String.fromEnvironment('UX_LABEL', defaultValue: 'latest');
 
@@ -89,6 +102,7 @@ void main() {
   late WarangRepository repository;
   late PhotoStore photoStore;
   late MapTileStore tileStore;
+  late PlaceBook placeBook;
 
   setUpAll(() async {
     sqfliteFfiInit();
@@ -125,9 +139,11 @@ void main() {
     await repository.initialize();
     // In memory, so no camera or location leaks in from an earlier run.
     tileStore = MapTileStore(databasePath: sqflite.inMemoryDatabasePath);
+    placeBook = await openFixturePlaceBook();
   });
 
   tearDown(() async {
+    await placeBook.close();
     await tileStore.close();
     repository.dispose();
     await database.close();
@@ -148,6 +164,7 @@ void main() {
         (11.9750, 121.9250, 'Breakfast by the water'),
         (11.9690, 121.9182, 'Second visit'),
       ];
+      final cafe = (await placeBook.search('Station Two Espresso')).first;
       for (var index = 0; index < moments.length; index++) {
         final (latitude, longitude, caption) = moments[index];
         final stored = await photoStore.storeBytesAsset(_photo(index));
@@ -155,6 +172,7 @@ void main() {
           caption: caption,
           latitude: latitude,
           longitude: longitude,
+          place: index == 0 ? cafe : null,
           relPath: stored.relPath,
           thumbRelPath: stored.thumbRelPath,
           width: stored.width,
@@ -214,24 +232,30 @@ void main() {
     }
   }
 
-  Widget host(Widget home, Brightness brightness) => ProviderScope(
-    overrides: [
-      repositoryProvider.overrideWithValue(repository),
-      mapTileStoreProvider.overrideWithValue(tileStore),
-      locationReaderProvider.overrideWithValue(
-        () async => const LocationFix(latitude: 11.9686, longitude: 121.918),
-      ),
-    ],
-    child: MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: buildWarangTheme(Brightness.light),
-      darkTheme: buildWarangTheme(Brightness.dark),
-      themeMode: brightness == Brightness.dark
-          ? ThemeMode.dark
-          : ThemeMode.light,
-      home: home,
-    ),
-  );
+  Widget host(Widget home, Brightness brightness, {LocationReader? locate}) =>
+      ProviderScope(
+        overrides: [
+          repositoryProvider.overrideWithValue(repository),
+          mapTileStoreProvider.overrideWithValue(tileStore),
+          placeBookProvider.overrideWith(
+            () => _ReadyPlaceBookNotifier(placeBook),
+          ),
+          locationReaderProvider.overrideWithValue(
+            locate ??
+                () async =>
+                    const LocationFix(latitude: 11.9686, longitude: 121.918),
+          ),
+        ],
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: buildWarangTheme(Brightness.light),
+          darkTheme: buildWarangTheme(Brightness.dark),
+          themeMode: brightness == Brightness.dark
+              ? ThemeMode.dark
+              : ThemeMode.light,
+          home: home,
+        ),
+      );
 
   void phone(WidgetTester tester) {
     tester.view.physicalSize = const Size(780, 1688);
@@ -415,6 +439,61 @@ void main() {
         ),
       );
       await shot(tester, '20_categories_$theme');
+    });
+
+    testWidgets('places picker and capture chip $theme', (tester) async {
+      phone(tester);
+      await tester.runAsync(() async {
+        await repository.setName('Len');
+        await repository.addMoment(placeLabel: 'Kape Tambayan');
+      });
+
+      await tester.pumpWidget(
+        host(
+          Scaffold(
+            body: Builder(
+              builder: (context) => Center(
+                child: ElevatedButton(
+                  onPressed: () => showPlacePickerSheet(
+                    context,
+                    near: const LatLng(11.7086, 122.3643),
+                    allowUserPlace: true,
+                    allowClear: true,
+                    userPlaces: repository.places,
+                  ),
+                  child: const Text('Pick'),
+                ),
+              ),
+            ),
+          ),
+          brightness,
+        ),
+      );
+      await tester.tap(find.text('Pick'));
+      await shot(tester, '21_place_picker_$theme');
+
+      await tester.enterText(find.byType(TextField).last, 'kap');
+      await shot(tester, '22_place_picker_typing_$theme');
+      await tester.binding.handlePopRoute();
+      await settle(tester);
+
+      late File file;
+      await tester.runAsync(() async {
+        file = File(p.join(documents.path, 'cafe_shot.jpg'))
+          ..writeAsBytesSync(_photo(1));
+      });
+      await tester.pumpWidget(
+        host(
+          CaptureScreen(initialPhoto: XFile(file.path)),
+          brightness,
+          locate: () async => const LocationFix(
+            latitude: 11.7086,
+            longitude: 122.3643,
+            accuracyM: 25,
+          ),
+        ),
+      );
+      await shot(tester, '23_capture_place_chip_$theme');
     });
   }
 }

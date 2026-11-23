@@ -217,7 +217,6 @@ void main() {
       await repository.updateMoment(
         moment.id,
         caption: 'Chocolate hills',
-        placeLabel: '',
         tripId: trip.id,
       );
     });
@@ -291,12 +290,7 @@ void main() {
     final trip = repository.trips.firstWhere((t) => t.title == 'Coron');
     final coloured = repository.moments.first;
     await tester.runAsync(
-      () => repository.updateMoment(
-        coloured.id,
-        caption: '',
-        placeLabel: '',
-        tripId: trip.id,
-      ),
+      () => repository.updateMoment(coloured.id, caption: '', tripId: trip.id),
     );
     final fill = WarangKeepsake.forTrip(trip)!.fill;
     await pump(

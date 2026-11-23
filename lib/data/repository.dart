@@ -451,34 +451,25 @@ class WarangRepository extends ChangeNotifier {
     await _refreshAll();
   }
 
-  /// Replaces the editable text and trip of a moment. Blank text clears the
-  /// field.
+  /// Replaces the editable caption and trip of a moment. Blank text clears the
+  /// caption.
   Future<void> updateMoment(
     String id, {
     required String caption,
-    required String placeLabel,
     required String tripId,
   }) async {
     if (!_trips.any((trip) => trip.id == tripId)) {
       throw ArgumentError.value(tripId, 'tripId', 'Unknown trip');
     }
     String? clean(String value) => value.trim().isEmpty ? null : value.trim();
-    final now = DateTime.now();
-    await database.transaction(() async {
-      final cleanLabel = clean(placeLabel);
-      final placeId = cleanLabel == null
-          ? null
-          : await _ensureUserPlace(cleanLabel, now);
-      await database.momentsDao.updateMoment(
-        id,
-        MomentsCompanion(
-          caption: Value(clean(caption)),
-          placeId: Value(placeId),
-          tripId: Value(tripId),
-          updatedAt: Value(now),
-        ),
-      );
-    });
+    await database.momentsDao.updateMoment(
+      id,
+      MomentsCompanion(
+        caption: Value(clean(caption)),
+        tripId: Value(tripId),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
     await _refreshAll();
   }
 

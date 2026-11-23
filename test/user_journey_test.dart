@@ -141,13 +141,12 @@ void main() {
       ),
       'Sunset at White Beach',
     );
-    await tester.enterText(
-      find.descendant(
-        of: find.widgetWithText(WarangField, 'Place name'),
-        matching: find.byType(TextField),
-      ),
-      'White Beach',
-    );
+    await tester.tap(find.text('Add a place'));
+    await settle(tester);
+    await tester.enterText(find.byType(TextField).last, 'White Beach');
+    await settle(tester);
+    await tester.tap(find.text('Use "White Beach" as your own place'));
+    await settle(tester);
     await tester.tap(find.text('Save'));
     await settle(tester);
     expect(find.text('Sunset at White Beach'), findsOneWidget);

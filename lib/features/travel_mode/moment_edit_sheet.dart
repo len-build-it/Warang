@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
 
 import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
 import '../../core/models.dart';
+import '../../core/place_categories.dart';
+import '../../data/places/place_book.dart';
 import '../../data/repository.dart';
+import '../places/place_picker_sheet.dart';
 
 /// What the edit sheet asks its caller to do after it closes.
 enum MomentEditOutcome { saved, placeOnMap }
@@ -34,15 +38,62 @@ class MomentEditSheet extends StatefulWidget {
 
 class _MomentEditSheetState extends State<MomentEditSheet> {
   late final _caption = TextEditingController(text: widget.moment.caption);
-  late final _place = TextEditingController(text: widget.moment.placeLabel);
   late String _tripId = widget.moment.tripId;
+  late String? _placeName = widget.moment.placeLabel;
+  late String? _categoryKey = widget.moment.placeCategory;
+  BookPlace? _pickedBookPlace;
+  String? _pickedUserName;
+  bool _clearedPlace = false;
   bool _saving = false;
 
   @override
   void dispose() {
     _caption.dispose();
-    _place.dispose();
     super.dispose();
+  }
+
+  bool get _hasPlace =>
+      !_clearedPlace &&
+      (_pickedBookPlace != null ||
+          _pickedUserName != null ||
+          (_placeName != null && _placeName!.trim().isNotEmpty));
+
+  Future<void> _pickPlace() async {
+    final near =
+        widget.moment.latitude != null && widget.moment.longitude != null
+        ? LatLng(widget.moment.latitude!, widget.moment.longitude!)
+        : null;
+    final picked = await showPlacePickerSheet(
+      context,
+      near: near,
+      allowUserPlace: true,
+      allowClear: _hasPlace,
+      showNearbyWhenEmpty: true,
+      userPlaces: widget.repository.places,
+    );
+    if (!mounted || picked == null) return;
+    setState(() {
+      switch (picked) {
+        case BookPlacePick(:final place):
+          _pickedBookPlace = place;
+          _pickedUserName = null;
+          _clearedPlace = false;
+          _placeName = place.name;
+          _categoryKey = place.category;
+        case UserPlacePick(:final name, :final existing):
+          _pickedBookPlace = null;
+          _pickedUserName = name;
+          _clearedPlace = false;
+          _placeName = existing?.name ?? name;
+          _categoryKey = existing?.categoryKey;
+        case ClearPlacePick():
+          _pickedBookPlace = null;
+          _pickedUserName = null;
+          _clearedPlace = true;
+          _placeName = null;
+          _categoryKey = null;
+      }
+    });
   }
 
   /// Saves the fields, then closes with [outcome]; moving the pin keeps any
@@ -56,9 +107,33 @@ class _MomentEditSheetState extends State<MomentEditSheet> {
       await widget.repository.updateMoment(
         widget.moment.id,
         caption: _caption.text,
-        placeLabel: _place.text,
         tripId: _tripId,
       );
+      String? targetPlaceId = widget.moment.placeId;
+      if (_clearedPlace) {
+        await widget.repository.clearPlace(widget.moment.id);
+        targetPlaceId = null;
+      } else if (_pickedBookPlace != null) {
+        final place = await widget.repository.attachBookPlace(
+          widget.moment.id,
+          _pickedBookPlace!,
+        );
+        targetPlaceId = place.id;
+      } else if (_pickedUserName != null) {
+        final place = await widget.repository.attachUserPlace(
+          widget.moment.id,
+          _pickedUserName!,
+        );
+        targetPlaceId = place?.id;
+      }
+      if (targetPlaceId != null) {
+        final existingCategory = widget.repository
+            .placeById(targetPlaceId)
+            ?.categoryKey;
+        if (existingCategory != _categoryKey) {
+          await widget.repository.setPlaceCategory(targetPlaceId, _categoryKey);
+        }
+      }
       if (mounted) Navigator.of(context).pop(outcome);
     } catch (_) {
       if (!mounted) return;
@@ -77,6 +152,7 @@ class _MomentEditSheetState extends State<MomentEditSheet> {
     final trips = widget.repository.trips;
     final hasLocation =
         widget.moment.latitude != null && widget.moment.longitude != null;
+    final category = PlaceCategories.byKey(_categoryKey);
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
       child: SafeArea(
@@ -105,13 +181,91 @@ class _MomentEditSheetState extends State<MomentEditSheet> {
                 hintStyle: WarangType.handL.copyWith(color: neutrals.inkFaint),
               ),
               const SizedBox(height: 14),
-              WarangField(
-                label: 'Place name',
-                controller: _place,
-                textCapitalization: TextCapitalization.words,
-                textInputAction: TextInputAction.done,
-                helperText: 'Shown instead of coordinates.',
+              Text(
+                'Place',
+                style: WarangType.meta.copyWith(color: neutrals.inkSoft),
               ),
+              const SizedBox(height: 8),
+              ClayPressable(
+                onPressed: _saving ? null : _pickPlace,
+                semanticLabel: _hasPlace
+                    ? 'Place, $_placeName, change place'
+                    : 'Add a place',
+                builder: (context, press) => ClaySurface(
+                  depth: ClayDepth.inset,
+                  press: press,
+                  color: neutrals.surfaceRaised,
+                  outline: BorderSide(color: neutrals.boundary),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(minHeight: 36),
+                    child: Row(
+                      children: [
+                        if (_hasPlace && category != null)
+                          CategoryDisc(category: category, size: 32)
+                        else
+                          WarangIcon(
+                            WarangGlyphs.pin,
+                            size: 20,
+                            color: neutrals.inkSoft,
+                          ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            _hasPlace ? _placeName! : 'Add a place',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: WarangType.body.copyWith(
+                              color: _hasPlace
+                                  ? neutrals.ink
+                                  : neutrals.inkFaint,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        WarangIcon(
+                          WarangGlyphs.chevron,
+                          size: 18,
+                          color: neutrals.inkFaint,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              if (_hasPlace) ...[
+                const SizedBox(height: 14),
+                Text(
+                  'Category',
+                  style: WarangType.meta.copyWith(color: neutrals.inkSoft),
+                ),
+                const SizedBox(height: 8),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  clipBehavior: Clip.none,
+                  child: Row(
+                    children: [
+                      for (final cat in PlaceCategories.all) ...[
+                        WarangChip(
+                          label: cat.name,
+                          tone: cat.tone,
+                          icon: cat.glyph,
+                          selected: cat.key == _categoryKey,
+                          onSelected: () => setState(
+                            () => _categoryKey = _categoryKey == cat.key
+                                ? null
+                                : cat.key,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 14),
               Text(
                 'Trip',

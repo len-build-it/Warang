@@ -15,6 +15,7 @@ import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
 import '../../core/formatting.dart';
 import '../../core/models.dart';
+import '../../core/place_categories.dart';
 import '../../data/files/photo_store.dart';
 import '../../data/repository.dart';
 import '../map/warang_map.dart';
@@ -722,10 +723,45 @@ class _MomentCardState extends State<MomentCard> {
                 ),
               ),
               const SizedBox(height: 14),
-              Text(
-                formatMomentTime(moment.capturedAt),
-                style: WarangType.meta.copyWith(color: neutrals.inkFaint),
-              ),
+              if (moment.placeLabel != null &&
+                  moment.placeLabel!.trim().isNotEmpty &&
+                  PlaceCategories.byKey(moment.placeCategory) != null) ...[
+                Row(
+                  children: [
+                    CategoryDisc(
+                      category: PlaceCategories.byKey(moment.placeCategory)!,
+                      size: 32,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            moment.placeLabel!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: WarangType.titleS.copyWith(
+                              color: neutrals.ink,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            formatMomentTime(moment.capturedAt),
+                            style: WarangType.meta.copyWith(
+                              color: neutrals.inkFaint,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ] else
+                Text(
+                  formatMomentTime(moment.capturedAt),
+                  style: WarangType.meta.copyWith(color: neutrals.inkFaint),
+                ),
               const SizedBox(height: 16),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,

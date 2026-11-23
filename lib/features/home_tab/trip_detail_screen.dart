@@ -8,6 +8,7 @@ import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
 import '../../core/formatting.dart';
 import '../../core/models.dart';
+import '../../core/place_categories.dart';
 import '../../data/files/photo_store.dart';
 import '../../data/repository.dart';
 import 'home_tab_screen.dart' show TripName;
@@ -317,16 +318,27 @@ class _MomentPrint extends StatelessWidget {
     final label = written
         ? caption
         : moment.placeLabel ?? formatMomentTime(moment.capturedAt);
+    final category = PlaceCategories.byKey(moment.placeCategory);
     return ClayPressable(
       onPressed: onTap,
       semanticLabel: '$label, show on map',
-      builder: (context, press) => WarangPolaroid(
-        frame: const EdgeInsets.fromLTRB(8, 8, 8, 52),
-        captionStyle: written
-            ? WarangType.hand.copyWith(color: neutrals.ink)
-            : WarangType.meta.copyWith(color: neutrals.inkFaint),
-        caption: label,
-        photo: MomentPhoto(moment: moment, photoStore: photoStore),
+      builder: (context, press) => Stack(
+        children: [
+          WarangPolaroid(
+            frame: const EdgeInsets.fromLTRB(8, 8, 8, 52),
+            captionStyle: written
+                ? WarangType.hand.copyWith(color: neutrals.ink)
+                : WarangType.meta.copyWith(color: neutrals.inkFaint),
+            caption: label,
+            photo: MomentPhoto(moment: moment, photoStore: photoStore),
+          ),
+          if (category != null)
+            Positioned(
+              top: 12,
+              left: 12,
+              child: CategoryDisc(category: category, size: 32),
+            ),
+        ],
       ),
     );
   }

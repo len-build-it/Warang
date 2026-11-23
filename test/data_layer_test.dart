@@ -163,9 +163,9 @@ void main() {
     await repository.updateMoment(
       moment.id,
       caption: '  New caption ',
-      placeLabel: 'White Beach',
       tripId: trip.id,
     );
+    await repository.attachUserPlace(moment.id, 'White Beach');
     var saved = repository.moments.single;
     expect(saved.caption, 'New caption');
     expect(saved.placeLabel, 'White Beach');
@@ -175,21 +175,16 @@ void main() {
     await repository.updateMoment(
       moment.id,
       caption: ' ',
-      placeLabel: '',
       tripId: repository.everyday.id,
     );
+    await repository.clearPlace(moment.id);
     saved = repository.moments.single;
     expect(saved.caption, isNull);
     expect(saved.placeLabel, isNull);
     expect(saved.tripId, repository.everyday.id);
 
     await expectLater(
-      repository.updateMoment(
-        moment.id,
-        caption: '',
-        placeLabel: '',
-        tripId: 'missing',
-      ),
+      repository.updateMoment(moment.id, caption: '', tripId: 'missing'),
       throwsArgumentError,
     );
   });

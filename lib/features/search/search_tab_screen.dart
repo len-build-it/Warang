@@ -9,6 +9,7 @@ import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
 import '../../core/formatting.dart';
 import '../../core/models.dart';
+import '../../core/place_categories.dart';
 import '../../data/files/photo_store.dart';
 import '../../data/repository.dart';
 import '../home_tab/trip_photo.dart';
@@ -271,7 +272,13 @@ class _ResultRow extends StatelessWidget {
                   ],
                 ),
               ),
-              if (moment.latitude != null && moment.longitude != null)
+              if (PlaceCategories.byKey(moment.placeCategory)
+                  case final category?)
+                Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: CategoryDisc(category: category, size: 32),
+                )
+              else if (moment.latitude != null && moment.longitude != null)
                 const Padding(
                   padding: EdgeInsets.only(left: 8),
                   child: WarangIcon(WarangGlyphs.pin, size: 20),
