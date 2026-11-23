@@ -80,26 +80,57 @@ class TravelModeScreenState extends ConsumerState<TravelModeScreen> {
   }
 
   /// Shows a just-saved [moment] landing on the map and confirms its trip,
-  /// or cheers a milestone with the maya (M4) the first time one is reached.
+  /// or cheers milestones and category stamps with the maya (M4, FEAT-004 F7)
+  /// in order using `ScaffoldMessenger`'s queue.
   Future<void> showCaptured(Moment moment) async {
     setState(() => _landingId = moment.id);
     _focus(moment);
     final repository = ref.read(repositoryProvider);
     final trip = repository.trips.where((trip) => trip.id == moment.tripId);
     final saved = 'Saved to ${trip.isEmpty ? 'Everyday' : trip.first.title}';
-    final milestone = await repository.claimMilestone(moment);
+    final milestones = await repository.claimMilestone(moment);
     if (!mounted) return;
-    showWarangSnackBar(
-      context,
-      milestone == null ? saved : '${milestone.message} $saved.',
-      leading: milestone == null
-          ? null
-          : const MayaCompanion(
-              size: 48,
-              place: MayaPlace.milestone,
-              pose: MayaPose.cheer,
-            ),
-    );
+    if (milestones.isEmpty) {
+      showWarangSnackBar(context, saved);
+      return;
+    }
+    for (var i = 0; i < milestones.length; i++) {
+      final milestone = milestones[i];
+      showWarangSnackBar(
+        context,
+        i == 0 ? '${milestone.message} $saved.' : milestone.message,
+        replace: false,
+        leading: const MayaCompanion(
+          size: 48,
+          place: MayaPlace.milestone,
+          pose: MayaPose.cheer,
+        ),
+      );
+    }
+  }
+
+  /// Focuses the map on moments at [placeId] (called from the stamp page).
+  void focusPlace(String placeId) {
+    final repository = ref.read(repositoryProvider);
+    final matching = repository.moments
+        .where(
+          (m) =>
+              m.placeId == placeId && m.latitude != null && m.longitude != null,
+        )
+        .toList();
+    if (matching.isNotEmpty) {
+      matching.sort((a, b) => b.capturedAt.compareTo(a.capturedAt));
+      final target = matching.first;
+      ref.read(selectedMomentProvider.notifier).select(target, focus: true);
+      return;
+    }
+    final place = repository.placeById(placeId);
+    if (place?.latitude != null && place?.longitude != null) {
+      _mapKey.currentState?.moveToPlace(
+        LatLng(place!.latitude!, place.longitude!),
+        zoom: 16,
+      );
+    }
   }
 
   Future<void> _delete(Moment moment) async {
@@ -865,7 +896,27 @@ class _MomentCardState extends State<MomentCard> {
       moment: widget.moment,
       repository: widget.repository,
     );
-    if (outcome == MomentEditOutcome.placeOnMap) widget.onPlaceOnMap?.call();
+    if (!mounted) return;
+    if (outcome == MomentEditOutcome.placeOnMap) {
+      widget.onPlaceOnMap?.call();
+      return;
+    }
+    if (outcome == MomentEditOutcome.saved) {
+      final stamps = await widget.repository.claimCategoryStamps();
+      if (!mounted) return;
+      for (final stamp in stamps) {
+        showWarangSnackBar(
+          context,
+          stamp.message,
+          replace: false,
+          leading: const MayaCompanion(
+            size: 48,
+            place: MayaPlace.milestone,
+            pose: MayaPose.cheer,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _delete() async {

@@ -5,8 +5,12 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../core/memory_stats.dart';
 import '../../core/models.dart';
+import '../../core/place_categories.dart';
+import '../../core/stamps.dart';
 import '../../data/files/photo_store.dart';
 import '../../data/repository.dart';
+import '../../features/stamps/stamp_page_sheet.dart';
+import '../../features/stamps/stamp_titles.dart';
 import '../theme/components.dart';
 import '../theme/tokens.dart';
 
@@ -55,6 +59,7 @@ Future<void> showYouSheet(
   required WarangRepository repository,
   required VoidCallback onSettings,
   required VoidCallback onAbout,
+  void Function(String categoryKey, String placeId)? onSelectStampPlace,
 }) => showWarangSheet<void>(
   context,
   builder: (sheetContext) => AnimatedBuilder(
@@ -69,25 +74,42 @@ Future<void> showYouSheet(
         Navigator.of(sheetContext).pop();
         onAbout();
       },
+      onSelectStampPlace: onSelectStampPlace == null
+          ? null
+          : (categoryKey, placeId) {
+              Navigator.of(sheetContext).pop();
+              onSelectStampPlace(categoryKey, placeId);
+            },
     ),
   ),
 );
 
-class YouSheet extends StatelessWidget {
+class YouSheet extends StatefulWidget {
   const YouSheet({
     super.key,
     required this.repository,
     required this.onSettings,
     required this.onAbout,
+    this.onSelectStampPlace,
   });
 
   final WarangRepository repository;
   final VoidCallback onSettings;
   final VoidCallback onAbout;
+  final void Function(String categoryKey, String placeId)? onSelectStampPlace;
+
+  @override
+  State<YouSheet> createState() => _YouSheetState();
+}
+
+class _YouSheetState extends State<YouSheet> {
+  late final Future<Map<String, List<String>>> _titlesFuture =
+      StampTitles.load();
 
   @override
   Widget build(BuildContext context) {
     final neutrals = WarangNeutrals.of(context);
+    final repository = widget.repository;
     final profile = repository.profile;
     final places = distinctPlaces(repository.moments);
     final trips = repository.trips.where((trip) => !trip.isEveryday).length;
@@ -171,6 +193,50 @@ class YouSheet extends StatelessWidget {
                 ),
               ],
             ),
+            FutureBuilder<Map<String, List<String>>>(
+              future: _titlesFuture,
+              initialData: StampTitles.cached,
+              builder: (context, snapshot) {
+                final titles = snapshot.data;
+                if (titles == null) return const SizedBox.shrink();
+                final stamps = computeCategoryStamps(
+                  moments: repository.moments,
+                  places: repository.places,
+                  titles: titles,
+                );
+                if (stamps.isEmpty) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.only(top: 22),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Your stamps',
+                        style: WarangType.titleS.copyWith(color: neutrals.ink),
+                      ),
+                      const SizedBox(height: 12),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        clipBehavior: Clip.none,
+                        child: Row(
+                          children: [
+                            for (var i = 0; i < stamps.length; i++) ...[
+                              if (i > 0) const SizedBox(width: 14),
+                              _CategoryStampButton(
+                                stamp: stamps[i],
+                                onSelectPlace: (categoryKey, placeId) => widget
+                                    .onSelectStampPlace
+                                    ?.call(categoryKey, placeId),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
             const SizedBox(height: 22),
             ClaySurface(
               depth: ClayDepth.clay1,
@@ -183,7 +249,7 @@ class YouSheet extends StatelessWidget {
                     _YouRow(
                       icon: WarangGlyphs.settings,
                       label: 'Settings',
-                      onTap: onSettings,
+                      onTap: widget.onSettings,
                     ),
                     Divider(
                       height: 1,
@@ -194,13 +260,48 @@ class YouSheet extends StatelessWidget {
                     _YouRow(
                       icon: WarangGlyphs.info,
                       label: 'About Warang',
-                      onTap: onAbout,
+                      onTap: widget.onAbout,
                     ),
                   ],
                 ),
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CategoryStampButton extends StatelessWidget {
+  const _CategoryStampButton({
+    required this.stamp,
+    required this.onSelectPlace,
+  });
+
+  final CategoryStamp stamp;
+  final void Function(String categoryKey, String placeId) onSelectPlace;
+
+  @override
+  Widget build(BuildContext context) {
+    final category = PlaceCategories.byKey(stamp.categoryKey);
+    if (category == null) return const SizedBox.shrink();
+    final tone = category.tone ?? WarangKeepsake.amber;
+    return ClayPressable(
+      onPressed: () => showStampPageSheet(
+        context,
+        stamp: stamp,
+        category: category,
+        onSelectPlace: onSelectPlace,
+      ),
+      semanticLabel: '${stamp.title}, ${category.name}',
+      builder: (context, _) => ExcludeSemantics(
+        child: WarangStamp.category(
+          id: 'you-stamp-${stamp.categoryKey}-${stamp.tier}',
+          glyph: category.glyph,
+          word: stamp.title,
+          tone: tone,
+          tier: stamp.tier,
         ),
       ),
     );

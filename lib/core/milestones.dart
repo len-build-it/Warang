@@ -4,7 +4,7 @@ import 'models.dart';
 
 /// A moment worth a small cheer (M4). Milestones are only celebrated, never
 /// counted down, chained, or shown as missed (M5).
-enum MilestoneKind { firstMoment, firstInTrip, somewhereNew }
+enum MilestoneKind { firstMoment, firstInTrip, somewhereNew, categoryStamp }
 
 class Milestone {
   const Milestone(this.kind, this.key, this.message);

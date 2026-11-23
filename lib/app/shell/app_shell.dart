@@ -60,7 +60,14 @@ class _AppShellState extends ConsumerState<AppShell> {
     repository: ref.read(repositoryProvider),
     onSettings: _openSettings,
     onAbout: _openAbout,
+    onSelectStampPlace: _focusStampPlace,
   );
+
+  void _focusStampPlace(String categoryKey, String placeId) {
+    ref.read(mapCategoryFilterProvider.notifier).select(categoryKey);
+    ref.read(shellTabProvider.notifier).select(ShellTab.map);
+    _travelKey.currentState?.focusPlace(placeId);
+  }
 
   void _openSettings() => Navigator.of(
     context,

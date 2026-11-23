@@ -560,5 +560,96 @@ void main() {
       await settle(tester);
       await shot(tester, '27_placement_search_$theme');
     });
+
+    testWidgets('you stamps and stamp page $theme', (tester) async {
+      phone(tester);
+      await tester.runAsync(() async {
+        await repository.setName('Len');
+        final cafes = [
+          for (var i = 1; i <= 5; i++)
+            BookPlace(
+              osmRef: 'n-cafe-$i',
+              name: [
+                'Kape ni Juan',
+                'Poblacion Brew',
+                'Piña Café',
+                'Station Two Espresso',
+                'Kalibo Roasters',
+              ][i - 1],
+              altNames: '',
+              category: 'cafe',
+              latitude: 11.7086 + i * 0.001,
+              longitude: 122.3643 + i * 0.001,
+              town: 'Kalibo',
+              province: 'Aklan',
+              weight: 1,
+            ),
+        ];
+        // 10 visits across 5 cafes -> tier 2 ("Coffee connoisseur").
+        for (var day = 0; day < 10; day++) {
+          final cafe = cafes[day % 5];
+          await repository.addMoment(
+            caption: 'Coffee stop ${day + 1}',
+            latitude: cafe.latitude,
+            longitude: cafe.longitude,
+            place: cafe,
+            capturedAt: DateTime(2026, 8, 1 + day, 9, 15),
+          );
+        }
+        // 3 visits across 2 beaches -> tier 1 ("Sun seeker").
+        const b1 = BookPlace(
+          osmRef: 'n-beach-1',
+          name: 'White Beach',
+          altNames: '',
+          category: 'beach',
+          latitude: 11.9618,
+          longitude: 121.9242,
+          town: 'Malay',
+          province: 'Aklan',
+          weight: 1,
+        );
+        const b2 = BookPlace(
+          osmRef: 'n-beach-2',
+          name: 'Puka Beach',
+          altNames: '',
+          category: 'beach',
+          latitude: 11.9950,
+          longitude: 121.9120,
+          town: 'Malay',
+          province: 'Aklan',
+          weight: 1,
+        );
+        await repository.addMoment(
+          caption: 'Morning swim',
+          latitude: b1.latitude,
+          longitude: b1.longitude,
+          place: b1,
+          capturedAt: DateTime(2026, 8, 12, 8, 30),
+        );
+        await repository.addMoment(
+          caption: 'Sunset walk',
+          latitude: b1.latitude,
+          longitude: b1.longitude,
+          place: b1,
+          capturedAt: DateTime(2026, 8, 13, 17, 45),
+        );
+        await repository.addMoment(
+          caption: 'Quiet shells',
+          latitude: b2.latitude,
+          longitude: b2.longitude,
+          place: b2,
+          capturedAt: DateTime(2026, 8, 14, 10, 0),
+        );
+      });
+
+      await tester.pumpWidget(host(const WarangHome(), brightness));
+      await settle(tester);
+
+      await tester.tap(find.bySemanticsLabel('You, profile and settings'));
+      await shot(tester, '28_you_stamps_$theme');
+
+      await tester.tap(find.bySemanticsLabel('Coffee connoisseur, Cafe'));
+      await shot(tester, '29_stamp_page_$theme');
+    });
   }
 }

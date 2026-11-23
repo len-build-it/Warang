@@ -398,7 +398,9 @@ class WarangStamp extends StatefulWidget {
     this.countUp = false,
   }) : lines = const [],
        glyph = null,
-       place = false;
+       place = false,
+       tier = null,
+       large = false;
 
   const WarangStamp.place({
     super.key,
@@ -409,7 +411,9 @@ class WarangStamp extends StatefulWidget {
        word = null,
        countUp = false,
        glyph = null,
-       place = true;
+       place = true,
+       tier = null,
+       large = false;
 
   /// A small postage stamp, 52 by 60, with [glyph] at its centre, for the
   /// corner of a postcard.
@@ -422,7 +426,24 @@ class WarangStamp extends StatefulWidget {
        word = null,
        lines = const [],
        countUp = false,
-       place = true;
+       place = true,
+       tier = null,
+       large = false;
+
+  /// A FEAT-004 category stamp with a glyph, title, and one of the four tier
+  /// ring styles (no tier numbers or empty marks).
+  const WarangStamp.category({
+    super.key,
+    required this.id,
+    required WarangGlyph this.glyph,
+    required String this.word,
+    required this.tone,
+    required int this.tier,
+    this.large = false,
+  }) : number = null,
+       lines = const [],
+       countUp = false,
+       place = false;
 
   final String id;
   final int? number;
@@ -431,14 +452,22 @@ class WarangStamp extends StatefulWidget {
   final KeepsakeTone tone;
   final bool place;
 
-  /// The postage stamp's picture.
+  /// The postage or category stamp's picture.
   final WarangGlyph? glyph;
+
+  /// Category stamp tier (1 to 4) controlling ring richness.
+  final int? tier;
+
+  /// Whether a category stamp uses the large stamp-page size.
+  final bool large;
 
   /// The number counts up from zero (`count`) the first time the stamp is
   /// shown in a session, as the Trips shelf's stamps do.
   final bool countUp;
 
-  Size get size => glyph != null
+  Size get size => tier != null
+      ? Size.square(large ? 124 : 96)
+      : glyph != null
       ? const Size(52, 60)
       : place
       ? Size(120, lines.length > 2 ? 80 : 64)
@@ -489,7 +518,44 @@ class _WarangStampState extends State<WarangStamp>
     final brightness = Theme.of(context).brightness;
     final ink = widget.tone.text(brightness);
     final glyph = widget.glyph;
-    final content = glyph != null
+    final tier = widget.tier;
+    final content = tier != null && glyph != null
+        ? Padding(
+            padding: EdgeInsets.all(widget.large ? 22 : 17),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                WarangIcon(
+                  glyph,
+                  size: widget.large ? 30 : 22,
+                  color: ink,
+                  fillColor: ink,
+                ),
+                SizedBox(height: widget.large ? 4 : 2),
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: widget.large ? 104 : 84,
+                      ),
+                      child: Text(
+                        widget.word!,
+                        maxLines: 2,
+                        textAlign: TextAlign.center,
+                        style:
+                            (widget.large
+                                    ? WarangType.meta
+                                    : WarangType.caption)
+                                .copyWith(color: ink, height: 1.1),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )
+        : glyph != null
         ? Center(
             child: WarangIcon(glyph, size: 24, color: ink, fillColor: ink),
           )
@@ -545,7 +611,9 @@ class _WarangStampState extends State<WarangStamp>
           );
     return Semantics(
       container: true,
-      label: widget.glyph != null
+      label: widget.tier != null
+          ? widget.word
+          : widget.glyph != null
           ? null
           : widget.place
           ? widget.lines.join(', ')
@@ -564,6 +632,7 @@ class _WarangStampState extends State<WarangStamp>
                 fill: widget.tone.tint(brightness),
                 ring: ink,
                 place: widget.place,
+                tier: widget.tier,
               ),
               child: SizedBox.fromSize(
                 size: widget.size,
@@ -578,11 +647,17 @@ class _WarangStampState extends State<WarangStamp>
 }
 
 class _StampPainter extends CustomPainter {
-  _StampPainter({required this.fill, required this.ring, required this.place});
+  _StampPainter({
+    required this.fill,
+    required this.ring,
+    required this.place,
+    this.tier,
+  });
 
   final Color fill;
   final Color ring;
   final bool place;
+  final int? tier;
 
   /// How far each bump stands out from the base outline.
   static const _bump = 2.8;
@@ -661,32 +736,129 @@ class _StampPainter extends CustomPainter {
     return path..close();
   }
 
-  @override
-  void paint(Canvas canvas, Size size) {
-    final edge = (Offset.zero & size).deflate(_bump);
-    canvas.drawPath(_scalloped(edge), Paint()..color = fill);
-    final inner = _base(edge.deflate(_ringGap), WarangRadius.chip);
-    final dash = Paint()
-      ..color = ring
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2
-      ..strokeCap = StrokeCap.round;
-    for (final PathMetric metric in inner.computeMetrics()) {
+  void _drawDashed(Canvas canvas, Path path, Paint paint) {
+    for (final PathMetric metric in path.computeMetrics()) {
       // A whole number of dashes, so none doubles up where the ring closes.
       final count = (metric.length / 7).round();
       final step = metric.length / count;
       for (var index = 0; index < count; index++) {
         canvas.drawPath(
           metric.extractPath(index * step, (index + .5) * step),
-          dash,
+          paint,
         );
       }
     }
   }
 
+  /// A small five-point star centred at [center] for tier 4 stamps.
+  Path _star(Offset center, double outerRadius) {
+    final innerRadius = outerRadius * 0.44;
+    final path = Path();
+    for (var i = 0; i < 10; i++) {
+      final radius = i.isEven ? outerRadius : innerRadius;
+      final angle = -math.pi / 2 + i * math.pi / 5;
+      final point = Offset(
+        center.dx + math.cos(angle) * radius,
+        center.dy + math.sin(angle) * radius,
+      );
+      if (i == 0) {
+        path.moveTo(point.dx, point.dy);
+      } else {
+        path.lineTo(point.dx, point.dy);
+      }
+    }
+    return path..close();
+  }
+
+  /// An inner wavy/scalloped circle for tier 3 and tier 4 rings.
+  Path _innerScallopedCircle(Rect rect) {
+    const waves = 20;
+    const amp = 1.6;
+    final cx = rect.center.dx;
+    final cy = rect.center.dy;
+    final baseR = rect.width / 2;
+    final path = Path();
+    const steps = waves * 6;
+    for (var i = 0; i <= steps; i++) {
+      final angle = (i / steps) * 2 * math.pi;
+      final r = baseR + math.sin(angle * waves) * amp;
+      final x = cx + math.cos(angle) * r;
+      final y = cy + math.sin(angle) * r;
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
+    return path..close();
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final edge = (Offset.zero & size).deflate(_bump);
+    canvas.drawPath(_scalloped(edge), Paint()..color = fill);
+    final dash = Paint()
+      ..color = ring
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2
+      ..strokeCap = StrokeCap.round;
+    final fine = Paint()
+      ..color = ring
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.3
+      ..strokeCap = StrokeCap.round;
+
+    final stampTier = tier;
+    if (stampTier == null || stampTier <= 1) {
+      final inner = _base(edge.deflate(_ringGap), WarangRadius.chip);
+      _drawDashed(canvas, inner, dash);
+      return;
+    }
+    if (stampTier == 2) {
+      // Tier 2: double ring (outer fine solid + inner dashed).
+      canvas.drawPath(
+        _base(edge.deflate(_ringGap - 1.2), WarangRadius.chip),
+        fine,
+      );
+      _drawDashed(
+        canvas,
+        _base(edge.deflate(_ringGap + 3.0), WarangRadius.chip),
+        dash..strokeWidth = 1.7,
+      );
+      return;
+    }
+    if (stampTier == 3) {
+      // Tier 3: scalloped double ring.
+      _drawDashed(
+        canvas,
+        _base(edge.deflate(_ringGap - 1.2), WarangRadius.chip),
+        dash..strokeWidth = 1.7,
+      );
+      canvas.drawPath(
+        _innerScallopedCircle(edge.deflate(_ringGap + 3.5)),
+        fine,
+      );
+      return;
+    }
+    // Tier 4: scalloped ring with a small star at the crown.
+    final outerRect = edge.deflate(_ringGap - 1.0);
+    canvas.drawPath(_innerScallopedCircle(outerRect), fine..strokeWidth = 1.6);
+    _drawDashed(
+      canvas,
+      _base(edge.deflate(_ringGap + 3.5), WarangRadius.chip),
+      dash..strokeWidth = 1.5,
+    );
+    final starCenter = Offset(outerRect.center.dx, outerRect.top + 1.5);
+    canvas.drawCircle(starCenter, 6.0, Paint()..color = fill);
+    canvas.drawPath(_star(starCenter, 5.2), Paint()..color = ring);
+  }
+
   @override
   bool shouldRepaint(covariant _StampPainter old) =>
-      old.fill != fill || old.ring != ring || old.place != place;
+      old.fill != fill ||
+      old.ring != ring ||
+      old.place != place ||
+      old.tier != tier;
 }
 
 // ------------------------------------------------------------------ C7

@@ -1,0 +1,74 @@
+{
+  "cafe": [
+    "Kape lover",
+    "Coffee connoisseur",
+    "Coffee master",
+    "Barista's favourite"
+  ],
+  "food": [
+    "Hungry wanderer",
+    "Foodie",
+    "Kain champion",
+    "Taste keeper"
+  ],
+  "sweets": [
+    "Sweet tooth",
+    "Merienda regular",
+    "Pastry hunter",
+    "Dessert legend"
+  ],
+  "nightlife": [
+    "Night owl",
+    "Gimmick regular",
+    "Life of the party",
+    "Sunrise survivor"
+  ],
+  "beach": [
+    "Sun seeker",
+    "Beach bum",
+    "Shore collector",
+    "Island soul"
+  ],
+  "island": [
+    "Island hopper",
+    "Bangka regular",
+    "Archipelago explorer",
+    "Seven thousand islands"
+  ],
+  "nature": [
+    "Trail starter",
+    "Waterfall chaser",
+    "Summit seeker",
+    "Mountain friend"
+  ],
+  "park": [
+    "Fresh-air fan",
+    "Park stroller",
+    "View hunter",
+    "Golden-hour keeper"
+  ],
+  "church": [
+    "Visita guest",
+    "Bell listener",
+    "Pilgrim",
+    "Visita Iglesia pro"
+  ],
+  "heritage": [
+    "Curious one",
+    "History buff",
+    "Heritage keeper",
+    "Living museum"
+  ],
+  "market": [
+    "Tiangge browser",
+    "Haggler",
+    "Market regular",
+    "Suki everywhere"
+  ],
+  "stay": [
+    "First check-in",
+    "Weekend wanderer",
+    "Seasoned guest",
+    "Home anywhere"
+  ]
+}

@@ -27,11 +27,13 @@ ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showWarangSnackBar(
   Duration duration = const Duration(seconds: 4),
   bool aboveNavigation = true,
   Widget? leading,
+  bool replace = true,
 }) {
   final bottom = aboveNavigation
       ? WarangLayout.navigationHeight(context) + 8
       : 16.0;
-  final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
+  final messenger = ScaffoldMessenger.of(context);
+  if (replace) messenger.hideCurrentSnackBar();
   return messenger.showSnackBar(
     SnackBar(
       content: WarangToast(

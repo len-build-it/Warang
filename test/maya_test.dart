@@ -385,18 +385,21 @@ void main() {
 
     test('each fires once, and the record survives a restart', () async {
       final first = await repository.addMoment(caption: 'One');
-      expect((await repository.claimMilestone(first))?.key, 'first-moment');
-      expect(await repository.claimMilestone(first), isNull);
+      expect(
+        (await repository.claimMilestone(first)).map((m) => m.key).toList(),
+        ['first-moment'],
+      );
+      expect(await repository.claimMilestone(first), isEmpty);
 
       // Deleting and starting again does not repeat the first-moment cheer.
       await repository.softDeleteMoment(first.id);
       final again = await repository.addMoment(caption: 'Two');
-      expect(await repository.claimMilestone(again), isNull);
+      expect(await repository.claimMilestone(again), isEmpty);
 
       repository.dispose();
       repository = WarangRepository(database);
       await repository.initialize();
-      expect(await repository.claimMilestone(again), isNull);
+      expect(await repository.claimMilestone(again), isEmpty);
     });
 
     testWidgets('the first save is cheered once by the maya in the toast', (

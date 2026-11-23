@@ -38,6 +38,7 @@ flutter:
     - design/warang-maya.png
     - assets/data/news_items.json
     - assets/data/maya_lines.json
+    - assets/data/stamps.json
     - assets/maya/body.png
     - assets/place_book/place_book.sqlite
     - assets/fonts/BagelFatOne-OFL.txt

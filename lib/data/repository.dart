@@ -8,7 +8,9 @@ import 'package:flutter/foundation.dart';
 import '../core/ids.dart';
 import '../core/milestones.dart';
 import '../core/models.dart';
+import '../core/stamps.dart';
 import '../core/trip_rules.dart';
+import '../features/stamps/stamp_titles.dart';
 import 'db/database.dart';
 import 'files/photo_store.dart';
 import 'places/place_book.dart';
@@ -314,23 +316,79 @@ class WarangRepository extends ChangeNotifier {
 
   static const _milestonesKey = 'milestonesShown';
 
-  /// The milestone [moment] reaches, if it has not been shown before. It is
-  /// recorded as shown, so each one fires once (REQ-020).
-  Future<Milestone?> claimMilestone(Moment moment) async {
+  /// Milestones [moment] reaches, if they have not been shown before: the
+  /// FEAT-003 milestone first, then any newly reached category stamp tiers
+  /// (`stamp:<category>:<tier>`). Each key is recorded as shown so it fires
+  /// once (FEAT-003 REQ-020, FEAT-004 REQ-025).
+  Future<List<Milestone>> claimMilestone(
+    Moment moment, {
+    Map<String, List<String>>? stampTitles,
+  }) async {
     final trip = _trips.where((trip) => trip.id == moment.tripId).firstOrNull;
     final milestone = milestoneFor(moment, _moments, trip);
-    if (milestone == null) return null;
+    return _claimMilestones(baseMilestone: milestone, stampTitles: stampTitles);
+  }
+
+  /// Newly reached category stamp tiers after editing a moment's place or
+  /// category (FEAT-004 F7, REQ-025).
+  Future<List<Milestone>> claimCategoryStamps({
+    Map<String, List<String>>? stampTitles,
+  }) => _claimMilestones(stampTitles: stampTitles);
+
+  Future<List<Milestone>> _claimMilestones({
+    Milestone? baseMilestone,
+    Map<String, List<String>>? stampTitles,
+  }) async {
     final raw = await database.appMetaDao.readValue(_milestonesKey);
     final shown = raw == null
         ? <String>[]
         : (jsonDecode(raw) as List<dynamic>).cast<String>();
-    if (shown.contains(milestone.key)) return null;
-    await database.appMetaDao.writeValue(
-      _milestonesKey,
-      jsonEncode([...shown, milestone.key]),
-      DateTime.now(),
+    final shownSet = shown.toSet();
+    final claimed = <Milestone>[];
+    final newKeys = <String>[];
+
+    if (baseMilestone != null && shownSet.add(baseMilestone.key)) {
+      claimed.add(baseMilestone);
+      newKeys.add(baseMilestone.key);
+    }
+
+    Map<String, List<String>> titles;
+    if (stampTitles != null) {
+      titles = stampTitles;
+    } else {
+      try {
+        titles = await StampTitles.load();
+      } catch (_) {
+        titles = const {};
+      }
+    }
+
+    final stamps = computeCategoryStamps(
+      moments: _moments,
+      places: _places,
+      titles: titles,
     );
-    return milestone;
+    for (final stamp in stamps) {
+      if (shownSet.add(stamp.milestoneKey)) {
+        claimed.add(
+          Milestone(
+            MilestoneKind.categoryStamp,
+            stamp.milestoneKey,
+            '${stamp.title}!',
+          ),
+        );
+        newKeys.add(stamp.milestoneKey);
+      }
+    }
+
+    if (newKeys.isNotEmpty) {
+      await database.appMetaDao.writeValue(
+        _milestonesKey,
+        jsonEncode([...shown, ...newKeys]),
+        DateTime.now(),
+      );
+    }
+    return claimed;
   }
 
   /// The colour a new trip gets unless the user picks another: the one
