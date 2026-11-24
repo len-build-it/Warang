@@ -1,4 +1,4 @@
-# Scan 22: Automated report validation
 # Command: python docs/audits/AUDIT-001/scripts/check_report.py
+# Rerun at 2026-11-24T08:19:00+08:00 on revision 2.
 
 0 problems

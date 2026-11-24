@@ -1,9 +1,9 @@
 # Current handoff
 
 Created: 2026-10-16T22:55:00+08:00
-Updated: 2026-11-24T07:40:00+08:00
-State: AUDIT-001 Phases 0-4 complete (50 verified findings in report, 0 app files changed); FEAT-004 Phases 0-8 complete, physical-device checks pending; FEAT-003 Phases 1-10 complete, physical-device checks and D-2 art pending; FEAT-001 and FEAT-002 physical-device checks pending
-Feature: AUDIT-001 code quality audit report (plan revision 1, complete); FEAT-004 places, place search, and category stamps (spec and plan revision 1, approved); FEAT-003 clay keepsake redesign (spec and plan revision 1)
+Updated: 2026-11-24T08:19:00+08:00
+State: AUDIT-001 Phases 0-4 complete and report revision 2 corrections applied (51 findings, 0 app files changed, Gemini re-verification pending); FEAT-004 Phases 0-8 complete, physical-device checks pending; FEAT-003 Phases 1-10 complete, physical-device checks and D-2 art pending; FEAT-001 and FEAT-002 physical-device checks pending
+Feature: AUDIT-001 code quality audit report (plan revision 1, complete; report revision 2); FEAT-004 places, place search, and category stamps (spec and plan revision 1, approved); FEAT-003 clay keepsake redesign (spec and plan revision 1)
 
 ## Read first
 
@@ -37,6 +37,7 @@ Reread these files and inspect actual Git status before acting; prior chat memor
 | FEAT-004 plan | Revision 1 | 2026-11-23 19:37 (Asia/Manila), project thread decision card: "Approve as written" on "Approve FEAT-004 spec and plan revision 1 for Gemini to execute?" |
 | FEAT-004 Planned stop 2 visual approval & GitHub push | Phase 6 at `deb18a9` | 2026-11-24T06:09:23+08:00 chat: "push the changes to github, then proceed to phase 7" |
 | AUDIT-001 plan | Revision 1 | 2026-11-24T07:09:41+08:00 and 2026-11-24T07:10:47+08:00 chat: "read and execute:  docs/audits/AUDIT-001-code-quality-report.md." clarified as "docs/plans/AUDIT-001-implementation.md" |
+| AUDIT-001 report revision 2 corrections (editorial and severity corrections from the Claude Code review of `946b3d7`) | Report revision 2 | 2026-11-24 chat, answering the review: "Yes make the corrections, Ill have gemini re verify it" |
 
 Allowed phases (AUDIT-001, complete): Phases 0-4 continuously without hard stops (plan revision 1), never editing product code and never pushing.
 
@@ -63,14 +64,15 @@ FEAT-003 Phase 8 complete in the commit `docs(plan): FEAT-003 phase 8 - search, 
 FEAT-003 Phase 9 complete in the commit `docs(plan): FEAT-003 phase 9 - interactive maya`.
 FEAT-003 Phase 10 complete in the commit `docs(plan): FEAT-003 phase 10 - polish and documents`.
 FEAT-004 spec and plan committed at `e4539d6`; visual baseline committed at `c22ec04`; Phase 0 complete in `docs(plan): FEAT-004 phase 0 - documents and baseline` (`feabe48`); Phase 1 complete in `docs(plan): FEAT-004 phase 1 - place book builder` (`1dec458`); Phase 2 complete in `docs(plan): FEAT-004 phase 2 - place book in the app` (`6683783`); Phase 3 complete in `docs(plan): FEAT-004 phase 3 - places table and migration` (`899ccef`); Phase 4 complete in `docs(plan): FEAT-004 phase 4 - categories and glyphs` (`30d5d31`); Phase 5 complete in `docs(plan): FEAT-004 phase 5 - place picker and capture suggestion` (`7ab55a5`); Phase 6 complete in `docs(plan): FEAT-004 phase 6 - map search and category filter` (`deb18a9`, pushed to GitHub); Phase 7 complete in `docs(plan): FEAT-004 phase 7 - category stamps` (`175d80a`); Phase 8 complete in `docs(plan): FEAT-004 phase 8 - polish and documents` (`7d6703f`; 329 tests passing, 58 PNGs at 200% text in `docs/evidence/FEAT-001/feat-004-phase-8-text-2x/` with 0 overflows).
-AUDIT-001 (audited commit `7d6703f`, Flutter 3.44.7 / Dart 3.12.2, zero product files changed): Phase 0 complete in `docs(audit): AUDIT-001 phase 0 - baseline and inventory` (`17dcddb`); Phase 1 complete in `docs(audit): AUDIT-001 phase 1 - automated scans` (`9448f82`); Phase 2 complete in `docs(audit): AUDIT-001 phase 2 - manual review` (`081d32d`); Phase 3 complete in `docs(audit): AUDIT-001 phase 3 - verified candidates` (`4437761`); Phase 4 complete in `docs(audit): AUDIT-001 phase 4 - quality report` (50 verified findings: 32 Confirmed, 18 Plausible; 12 rejected in appendix; 306 removable code lines; 0 problems from `check_report.py`; not pushed).
-Top five AUDIT-001 findings to fix first: `AUD-001` (release builds omit `android.permission.INTERNET`), `AUD-002` (fresh map tiles revalidate on every view with unbounded per-tile HTTP clients and full-table FIFO eviction), `AUD-003` (25.96 MB place book install and open run on the UI isolate with non-atomic replacement), `AUD-004` (photo decode/resize/encode runs synchronously on the UI isolate before 30 MP cap check), `AUD-005` (system Back dismisses capture and trip forms mid-save and drops error feedback).
+AUDIT-001 (audited commit `7d6703f`, Flutter 3.44.7 / Dart 3.12.2, zero product files changed): Phase 0 complete in `docs(audit): AUDIT-001 phase 0 - baseline and inventory` (`17dcddb`); Phase 1 complete in `docs(audit): AUDIT-001 phase 1 - automated scans` (`9448f82`); Phase 2 complete in `docs(audit): AUDIT-001 phase 2 - manual review` (`081d32d`); Phase 3 complete in `docs(audit): AUDIT-001 phase 3 - verified candidates` (`4437761`); Phase 4 complete in `docs(audit): AUDIT-001 phase 4 - quality report` (`946b3d7`; 50 findings, not pushed).
+Report revision 2 in the commit `docs(audit): AUDIT-001 report revision 2 - review corrections` applies the Claude Code review: 3 false sub-claims withdrawn (R8 in `AUD-042`, the Undo part of `AUD-009`, the trip form step 0 part of `AUD-005`), wrong names or code descriptions corrected in 9 findings, 7 severities lowered, `AUD-001` proof strengthened with `aapt2` on the built release APKs, and new `AUD-051` (archive scripts archive stale APKs); totals are 51 findings, 32 Confirmed and 19 Plausible, 259 removable lines, `check_report.py` `0 problems`, and the new `check_identifiers.py` leaves only external API and lint names.
+Top five AUDIT-001 findings to fix first (revision 2): `AUD-001` (release APKs omit `android.permission.INTERNET`), `AUD-002` (fresh map tiles revalidate on every view with no HTTP timeout), `AUD-004` (photo processing on the UI isolate, with unbounded avatar picks), `AUD-005` (Back and Close mid-save on capture and the trip form), `AUD-006` (multi-step moment edits outside one transaction).
 Preserve the existing untracked paths: `.agents/skills/*`, `.agents/templates/`, `.claude/`, `CLAUDE.md`, `releases/`, and `scripts/`.
 
 ## Checks and evidence
 
 Baseline on 2026-11-24 at `7d6703f` (verified again at `081d32d` after deleting temporary V3 probes): `flutter analyze` reported `No issues found!`, `flutter test` passed 329 tests (0 failed), `python docs/audits/AUDIT-001/scripts/check_report.py` printed `0 problems`, and `git diff --stat 7d6703f -- lib test tool android ios assets design pubspec.yaml pubspec.lock analysis_options.yaml` printed nothing.
-AUDIT-001 report and evidence: [docs/audits/AUDIT-001-code-quality-report.md](docs/audits/AUDIT-001-code-quality-report.md), [docs/evidence/AUDIT-001-verification.md](docs/evidence/AUDIT-001-verification.md), and scans `00` to `22` under `docs/audits/AUDIT-001/scans/`.
+AUDIT-001 report and evidence: [docs/audits/AUDIT-001-code-quality-report.md](docs/audits/AUDIT-001-code-quality-report.md), [docs/evidence/AUDIT-001-verification.md](docs/evidence/AUDIT-001-verification.md), and scans `00` to `23` under `docs/audits/AUDIT-001/scans/`.
 Baseline on 2026-11-21 at `a85a915`: `flutter test` passed 96 tests, and `flutter analyze` reported `No issues found!`.
 FEAT-004 evidence: [docs/evidence/FEAT-004-verification.md](docs/evidence/FEAT-004-verification.md), with baseline screenshots under `docs/evidence/FEAT-001/feat-004-baseline/`.
 FEAT-003 evidence: [docs/evidence/FEAT-003-verification.md](docs/evidence/FEAT-003-verification.md), with screenshots under `docs/evidence/FEAT-001/feat-003-*`.
@@ -86,7 +88,8 @@ FEAT-001 evidence: [docs/evidence/FEAT-001-verification.md](docs/evidence/FEAT-0
 
 ## Next action
 
-000. **AUDIT-001 (primary):** Len reviews [docs/audits/AUDIT-001-code-quality-report.md](docs/audits/AUDIT-001-code-quality-report.md) and picks remediation batches (starting with Batch 1 for the critical `AUD-001` missing `INTERNET` permission in release builds) to turn into approved feature specs with GPT.
+000. **AUDIT-001 (primary):** Gemini re-verifies report revision 2 against the code, starting with [Appendix: revision 2 corrections](docs/audits/AUDIT-001-code-quality-report.md#appendix-revision-2-corrections) and the "Revision 2 review" section of [docs/evidence/AUDIT-001-verification.md](docs/evidence/AUDIT-001-verification.md), and reruns `check_report.py` and `check_identifiers.py`; the V3 probe sources were not saved, so rerunning those proofs means rewriting the probes under `test/_audit_probe/` and deleting them afterwards.
+    Then Len reviews [docs/audits/AUDIT-001-code-quality-report.md](docs/audits/AUDIT-001-code-quality-report.md) and picks remediation batches (starting with Batch 1 for the critical `AUD-001` missing `INTERNET` permission in release builds) to turn into approved feature specs with GPT.
 00. **FEAT-004:** Phases 0-8 complete (`docs(plan): FEAT-004 phase 8 - polish and documents`). Waiting on Len for the 5-item physical-device checklist in [docs/evidence/FEAT-004-verification.md](docs/evidence/FEAT-004-verification.md) (and optional push of Phase 7-8 commits to GitHub).
 0. **FEAT-003:** implemented through Phase 10. Waiting on Len for physical-device checks (REQ-023 steps are in the evidence log) and the layered maya art (D-2).
 1. **Claude UI screenshot capture (requested 2026-11-21):** capture fresh UI screenshots from the current codebase (`ba0c56a`) using [tool/ux_screenshots_test.dart](tool/ux_screenshots_test.dart).

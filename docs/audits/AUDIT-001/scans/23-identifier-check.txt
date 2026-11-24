@@ -1,0 +1,33 @@
+# Command: python docs/audits/AUDIT-001/scripts/check_identifiers.py
+# Run at 2026-11-24T08:19:00+08:00 on revision 2 of docs/audits/AUDIT-001-code-quality-report.md.
+# Every remaining name is a Dart, Flutter, or Android API name, a lint rule name, or a historical class name (TravelbookService, removed by FEAT-002).
+
+AUD-008: TypeError
+AUD-009: TickerFuture
+AUD-013: cacheHeight
+AUD-020: TypeError
+AUD-024: TravelbookService
+AUD-025: avoid_redundant_argument_values
+AUD-036: discarded_futures
+AUD-038: TypeError
+AUD-042: NullPointerException, isMinifyEnabled, isShrinkResources
+11 unresolved identifiers in 9 findings
+
+# Command: python docs/audits/AUDIT-001/scripts/check_identifiers.py <revision 1 from git show 946b3d7:docs/audits/AUDIT-001-code-quality-report.md>
+# Revision 1 for comparison; the extra names are the wrong names revision 2 corrected.
+
+AUD-003: quick_check
+AUD-004: _decodeAndFit
+AUD-006: attachMomentPlace, setMomentCategory, setMomentPlace
+AUD-008: TypeError
+AUD-013: cacheHeight
+AUD-018: PhotoTooLargeException, maxPixels
+AUD-020: TypeError
+AUD-024: TravelbookService
+AUD-025: avoid_redundant_argument_values
+AUD-036: discarded_futures
+AUD-037: WarangSpace
+AUD-038: TypeError
+AUD-042: NullPointerException, isMinifyEnabled, isShrinkResources
+AUD-046: _locateUser, defaultLocationReader
+20 unresolved identifiers in 14 findings

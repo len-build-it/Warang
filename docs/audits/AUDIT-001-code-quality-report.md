@@ -1,27 +1,31 @@
 # AUDIT-001: Code quality audit
 
 Created: 2026-11-24T07:13:00+08:00
-Updated: 2026-11-24T07:38:00+08:00
+Updated: 2026-11-24T08:19:00+08:00
+Revision: 2 (corrections from a Claude Code review of revision 1 at `946b3d7`; Gemini re-verification pending)
 Audited commit: `7d6703f` (`docs(plan): FEAT-004 phase 8 - polish and documents`)
 Flutter version: `Flutter 3.44.7` (channel stable, revision `84fc5cbb22`, `Dart 3.12.2`)
 
 ## Summary
 
-This audit reviewed all 49 hand-written Dart files under `lib/` (15080 lines), all tests under `test/` and `tool/ux_screenshots_test.dart`, Android Gradle and manifest configs, `tool/place_book/`, `scripts/build-and-archive.*`, and tracked assets.
+This audit reviewed all 49 hand-written Dart files under `lib/` (15080 lines), all tests under `test/` and `tool/ux_screenshots_test.dart`, Android Gradle and manifest configs, `tool/place_book/`, `scripts/build-and-archive.*` (untracked in Git), and tracked assets.
 Zero application files were edited.
 Of 77 raw candidates logged across automated scans and full manual reading, 15 merged into findings with the same root cause, 50 survived as verified findings (`AUD-001` to `AUD-050`), and 12 were rejected in the appendix.
+Revision 2 added `AUD-051`, found during the review, for 51 findings.
+Revision 2 also withdrew three false sub-claims, corrected wrong names or code descriptions in nine findings, and lowered seven severities; [Appendix: revision 2 corrections](#appendix-revision-2-corrections) lists every change.
+Finding IDs stay stable, so after the severity changes the findings inside each section are no longer strictly ranked by severity.
 
 | Category | Critical | High | Medium | Low | Total |
 | --- | --- | --- | --- | --- | --- |
-| Dangerous | 1 | 5 | 13 | 3 | 22 |
-| Unnecessary | 0 | 0 | 4 | 3 | 7 |
+| Dangerous | 1 | 4 | 11 | 7 | 23 |
+| Unnecessary | 0 | 0 | 2 | 5 | 7 |
 | Sloppy | 0 | 0 | 6 | 15 | 21 |
-| Total | 1 | 5 | 23 | 21 | 50 |
+| Total | 1 | 4 | 19 | 27 | 51 |
 
-- Verified status breakdown: 32 `Confirmed`, 18 `Plausible`.
-- Total removable code lines: 306 lines across 7 findings (plus 17 undeclared binary and HTML files totaling about 3.0 MB in `AUD-026`).
+- Verified status breakdown: 32 `Confirmed`, 19 `Plausible`.
+- Total removable code lines: 259 lines across 7 findings (plus 17 undeclared binary and HTML files totaling about 3.0 MB of checkout size in `AUD-026`).
 - Removable direct dependencies: 0 (all 13 direct non-SDK dependencies in `pubspec.yaml` are in use, though `sqlite3_flutter_libs` is marked end-of-life in `AUD-019`).
-- Five findings to fix first: `AUD-001` (release builds omit `INTERNET` permission), `AUD-002` (fresh map tiles revalidate on every view with unbounded per-tile HTTP clients and full-table eviction), `AUD-003` (25.96 MB place book install and open block the UI isolate with non-atomic replacement), `AUD-004` (full-image photo decoding and JPEG encoding run on the UI isolate), and `AUD-005` (system Back dismisses capture and trip forms mid-save and drops error feedback).
+- Five findings to fix first: `AUD-001` (release APKs omit the `INTERNET` permission, so the map cannot load tiles), `AUD-002` (fresh map tiles revalidate on every view with no HTTP timeout and a full-table size query per write), `AUD-004` (photo decode, resize, and encode run on the UI isolate, and avatar picks are decoded at full resolution), `AUD-005` (system Back and Close leave the capture and trip forms mid-save), and `AUD-006` (multi-step moment edits and pin placement write outside one transaction).
 
 ## How findings were verified
 
@@ -64,6 +68,7 @@ Scan artifacts committed under `docs/audits/AUDIT-001/scans/`:
 - [20-tooling.txt](AUDIT-001/scans/20-tooling.txt): `tool/place_book/` and `scripts/build-and-archive.*` review.
 - [21-tests.txt](AUDIT-001/scans/21-tests.txt): tests without direct `expect()`, real-time delays, and long fixed pumps.
 - [22-report-check.txt](AUDIT-001/scans/22-report-check.txt): automated validation of this report from `check_report.py`.
+- [23-identifier-check.txt](AUDIT-001/scans/23-identifier-check.txt): revision 2 check from `check_identifiers.py` that lists every code identifier a finding names but the repository does not contain, for review by hand.
 
 ## Dangerous
 
@@ -79,8 +84,9 @@ Scan artifacts committed under `docs/audits/AUDIT-001/scans/`:
 
 The main Android manifest declares `ACCESS_FINE_LOCATION` and `ACCESS_COARSE_LOCATION` but omits `android.permission.INTERNET`.
 Only the debug and profile manifests declare `INTERNET`, and inspecting all nine Android plugins in `.flutter-plugins-dependencies` confirms none of them merges `INTERNET` either.
-Any signed release APK built for a physical Android phone fails every OpenStreetMap tile download and leaves the map permanently blank unless tiles were pre-cached.
-A V3 runtime probe was skipped because building a signed release APK requires untracked `android/key.properties` and an Android device.
+The release APKs already built on this machine confirm it: `aapt2` lists no `INTERNET` permission in either the 2026-11-23 release build or the 2026-09-12 archived release, while the debug APK has it.
+Any release APK installed on a physical Android phone fails every OpenStreetMap tile download and leaves the map permanently blank unless tiles were pre-cached.
+Severity note: the plan defines critical as data loss or a security hole; this finding is rated critical instead as a release blocker that breaks the map on every release install.
 
 Proof (V1, V2):
 
@@ -89,10 +95,19 @@ Proof (V1, V2):
     android/app/src/profile/AndroidManifest.xml:6:    <uses-permission android:name="android.permission.INTERNET"/>
     # Plugin manifest check over all 9 Android plugins in .flutter-plugins-dependencies:
     # flutter_plugin_android_lifecycle, geolocator_android, image_picker_android, jni, jni_flutter, package_info_plus, path_provider_android, sqflite_android, sqlite3_flutter_libs -> INTERNET=False for all 9.
+    "$LOCALAPPDATA/Android/Sdk/build-tools/37.0.0/aapt2.exe" dump permissions build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+    package: ph.warang.app
+    uses-permission: name='android.permission.ACCESS_FINE_LOCATION'
+    uses-permission: name='android.permission.ACCESS_COARSE_LOCATION'
+    permission: ph.warang.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+    uses-permission: name='ph.warang.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'
+    # Same command on releases/latest/warang-latest-arm64-v8a.apk (built 2026-09-12 at 2d3386a): CAMERA and location only, no INTERNET.
+    # Same command on build/app/outputs/flutter-apk/app-debug.apk: uses-permission: name='android.permission.INTERNET'.
+    # Merged release manifest build/app/intermediates/merged_manifests/release/processReleaseManifest/arm64-v8a/AndroidManifest.xml: 0 matches for permission.INTERNET.
 
 Fix: Add `<uses-permission android:name="android.permission.INTERNET" />` to `android/app/src/main/AndroidManifest.xml` (see https://developer.android.com/reference/android/Manifest.permission#INTERNET) and assert its presence in `test/android_hardening_test.dart`.
 
-### AUD-002: Map tile cache revalidates fresh tiles on every view, allocates unbounded HTTP clients, and runs full-table FIFO eviction per write
+### AUD-002: Map tile cache revalidates fresh tiles on every view, opens a new HTTP client per tile with no timeout, and runs a full-table size query per write
 
 - Category: dangerous
 - Severity: high
@@ -103,8 +118,9 @@ Fix: Add `<uses-permission android:name="android.permission.INTERNET" />` to `an
 - Lines removable: 0
 
 `CachedTileProvider.loadBytes` calls `unawaited(_revalidate(...))` on every cache hit, even when a tile was fetched one minute ago and `mapTileMaxAge` is 30 days.
-Every revalidation and cache miss opens a brand new `HttpClient()` with no connection or request timeout, risking socket exhaustion and hung requests on flaky mobile networks.
-On every tile write, `MapTileStore.put` runs a full-table `SUM(length(bytes))` and an unserialized per-row delete loop ordered by `fetchedAt ASC` (FIFO rather than LRU) without a transaction.
+Every revalidation and cache miss opens a new `HttpClient()` and closes it in `finally` at line 411, so tile requests never reuse a connection and have no connection or request timeout, which leaves requests hanging on flaky mobile networks.
+A `304 Not Modified` answer at line 376 still rewrites the full cached blob through `put`.
+On every tile write, `MapTileStore.put` runs a full-table `SUM(length(bytes))` and, once over `mapTileMaxBytes`, an unserialized per-row delete loop ordered by `fetchedAt ASC` (FIFO rather than LRU) without a transaction.
 Note that a separate V3 probe disproved the earlier suspicion of a missing OpenStreetMap `User-Agent`: `flutter_map` `TileLayer` mutates `provider.headers` to `User-Agent: flutter_map (ph.warang.app)`.
 
 Proof (V3, V4):
@@ -112,82 +128,88 @@ Proof (V3, V4):
     flutter test -j 1 -r expanded test/_audit_probe/map_tile_probe_test.dart
     PROBE_FRESH_HIT_HTTP_REQUESTS=1 paths=[/10/1/2.png] ua=[flutter_map (ph.warang.app)]
     PROBE_TILELAYER_PROVIDER_HEADERS={User-Agent: flutter_map (ph.warang.app)} receivedCount=0 firstUA=null
-    V4 chain: MapTileStore.put (lib/features/map/map_tile_store.dart:172) -> _evictToLimit (line 182, SUM(length(bytes)) + unserialized delete loop); _fetch (line 368, new HttpClient(), no connectionTimeout/timeout).
+    V4 chain: MapTileStore.put (lib/features/map/map_tile_store.dart:172) -> evictToLimit (line 182, totalBytes SUM(length(bytes)) at line 201 + unserialized delete loop at lines 192-196); _fetchAndStore (line 368, new HttpClient(), no connectionTimeout or request timeout; closed with close(force: true) at line 411); 304 path rewrites cached bytes via put at lines 376-387.
 
 Fix: Skip `_revalidate` in `CachedTileProvider.loadBytes` when `cached` is fresher than `mapTileMaxAge` (matching `docs/REMEDIATION_IMPLEMENTATION_PLAN.md` Phase 5), share one bounded `HttpClient` with `connectionTimeout` and request timeout, track last-access time for LRU eviction, and serialize eviction inside a `sqflite` transaction when cached bytes exceed `mapTileMaxBytes`.
 
-### AUD-003: Place book install and database open run on the UI isolate with non-atomic replacement and byte-count-only validation
+### AUD-003: Place book queries run synchronously on the UI isolate, and first-launch install buffers the full 25.96 MB asset in memory
 
 - Category: dangerous
-- Severity: high
+- Severity: medium
 - Status: Plausible
-- Locations: `lib/data/places/place_book.dart:80`, `lib/data/places/place_book_installer.dart:55`, `lib/data/places/place_book_installer.dart:78`, `lib/data/places/place_book_installer.dart:147`
+- Locations: `lib/data/places/place_book.dart:80`, `lib/data/places/place_book_installer.dart:55`, `lib/data/places/place_book_installer.dart:68`, `lib/data/places/place_book_installer.dart:147`
 - Conflicts with: none
 - Effort: M (1 to 4 hours)
 - Lines removable: 0
 
-`PlaceBook.openFile` opens the 25.96 MB SQLite database with `NativeDatabase(file)` on the UI isolate instead of `NativeDatabase.createInBackground(file)` used by `WarangDatabase.open`.
-During first launch, `PlaceBookInstaller.ensureInstalled` buffers the full 25.96 MB asset in memory on the UI isolate, deletes `target` before renaming `tmp` (leaving no database if interrupted between lines 78 and 81), and accepts any file matching hardcoded `expectedBytes` (`25964544`) without checking SQLite `meta` or `PRAGMA quick_check`.
-`PlaceBookNotifier.ensureReady` also updates `state` after `await` without checking whether the provider was disposed.
-A V3 probe was skipped because simulating mid-copy power loss or measuring UI-isolate frame drops requires device instrumentation.
+`PlaceBook.openFile` opens the 25.96 MB SQLite database with `NativeDatabase(file)` instead of `NativeDatabase.createInBackground(file)` used by `WarangDatabase.open`, so every place search and nearby lookup runs its SQLite work synchronously on the UI isolate while the user types or captures.
+During first launch, `PlaceBookInstaller.ensureInstalled` loads the full 25.96 MB asset into memory at line 68 before writing it, and accepts any existing file whose length equals the hardcoded `expectedBytes` (`25964544`) without checking SQLite `meta`.
+An interrupted copy repairs itself: if the app stops between `target.delete()` at line 79 and `tmp.rename` at line 81, the next launch finds no `target` and copies the bundled asset again; the `delete` is needed because `File.rename` does not overwrite on Windows, where the tests run.
+`PlaceBookNotifier.ensureReady` updates `state` after `await` without checking whether the provider was disposed, but `placeBookProvider` is never disposed in the app.
+A V3 probe was skipped because measuring UI-isolate frame drops requires device profiling.
 
 Proof (V4, V5):
 
-    lib/data/places/place_book_installer.dart:147 (ensureReady, no disposal guard after await)
-    -> lib/data/places/place_book_installer.dart:55 (exists + length == expectedBytes only)
+    lib/data/places/place_book_installer.dart:147 (ensureReady) -> line 154 (await installer.ensureInstalled())
+    -> lib/data/places/place_book_installer.dart:55-66 (exists + length == expectedBytes only)
     -> lib/data/places/place_book_installer.dart:68 (rootBundle.load 25.96 MB into RAM)
-    -> lib/data/places/place_book_installer.dart:78-81 (target.delete() then tmp.rename(target.path))
-    -> lib/data/places/place_book.dart:80 (NativeDatabase(file) on UI isolate)
-    V5: Isolate.run https://api.dart.dev/dart-isolate/Isolate/run.html; NativeDatabase.createInBackground (already used at lib/data/db/database.dart:33).
+    -> lib/data/places/place_book_installer.dart:74-81 (tmp written, target.delete(), tmp.rename(target.path); a missing target on the next launch reruns the copy)
+    -> lib/data/places/place_book_installer.dart:155 -> lib/data/places/place_book.dart:80 (NativeDatabase(file): queries run on the calling isolate)
+    V5: NativeDatabase.createInBackground (already used at lib/data/db/database.dart:33); Isolate.run https://api.dart.dev/dart-isolate/Isolate/run.html
 
-Fix: Open `PlaceBook` with `NativeDatabase.createInBackground(file)`, stream-copy the asset in chunks inside `Isolate.run`, validate `meta.version` and `PRAGMA quick_check` on the temp file before replacing `target` atomically, and check `ref.mounted` before setting `state` in `PlaceBookNotifier.ensureReady`.
+Fix: Open `PlaceBook` with `NativeDatabase.createInBackground(file)` so queries leave the UI isolate, copy the asset in chunks (for example with `Isolate.run`) to avoid the 25.96 MB peak, and read `meta.schema_version` from the copied file before trusting it.
 
-### AUD-004: Photo import decodes full images and runs resizing and JPEG encoding synchronously on the UI isolate
+### AUD-004: Photo import decodes, resizes, and encodes on the UI isolate, and avatar picks are decoded at full resolution
 
 - Category: dangerous
 - Severity: high
 - Status: Plausible
-- Locations: `lib/data/files/photo_store.dart:54`, `lib/data/files/photo_store.dart:180`, `lib/data/files/photo_store.dart:224`
+- Locations: `lib/data/files/photo_store.dart:54`, `lib/data/files/photo_store.dart:180`, `lib/data/files/photo_store.dart:223`, `lib/app/shell/you_sheet.dart:348`, `lib/app/device_providers.dart:28`
 - Conflicts with: none
 - Effort: M (1 to 4 hours)
 - Lines removable: 0
 
 `PhotoStore.importAvatar` and `PhotoStore._storeDecoded` run `img.decodeImage`, `img.bakeOrientation`, `img.copyResize`, and `img.encodeJpg` synchronously on the UI isolate.
-`_decodeAndFit` calls `img.decodeImage(bytes)` before checking the 30-megapixel cap at line 231, so a 48 MP or 108 MP phone JPEG allocates its entire uncompressed RGBA bitmap in memory before rejection.
-Users capturing photos or picking an avatar on mid-range Android phones experience multi-second UI freezes and out-of-memory kills.
-A V3 probe was skipped because proving real frame jank and OOM kills requires physical-device camera JPEGs and memory profiling.
+Camera captures arrive bounded, because `cameraPickerProvider` calls `pickImage(maxWidth: 2000, imageQuality: 85)` at `device_providers.dart:28-31`, so the capture path costs UI jank on a roughly 2000-pixel image rather than an out-of-memory risk.
+The avatar path is unbounded: `pickProfilePhoto` at `you_sheet.dart:348` calls `pickImage` with only `imageQuality: 88`, and `_decode` at `photo_store.dart:223` calls `img.decodeImage(bytes)` before the 30-megapixel check at line 231, so a 48 MP or 108 MP gallery photo allocates its full uncompressed bitmap before rejection.
+Users picking an avatar from a high-resolution gallery photo on a mid-range Android phone can see a long UI freeze or an out-of-memory kill.
+A V3 probe was skipped because proving real frame jank and OOM kills requires physical-device photos and memory profiling.
 
 Proof (V4, V5):
 
     lib/features/capture/capture_screen.dart:131 -> WarangRepository.captureMoment (lib/data/repository.dart:96)
-    -> PhotoStore.storePhoto -> _storeDecoded (lib/data/files/photo_store.dart:180)
-    -> _decodeAndFit (lib/data/files/photo_store.dart:224-236: img.decodeImage runs on UI isolate before width * height > maxPixels check).
-    Same path via PhotoStore.importAvatar (lib/data/files/photo_store.dart:54).
+    -> PhotoStore._storeDecoded (lib/data/files/photo_store.dart:180)
+    -> _decode (lib/data/files/photo_store.dart:223-235: img.decodeImage runs on the UI isolate before the 30 * 1000 * 1000 pixel check at line 231).
+    Camera input is bounded at lib/app/device_providers.dart:28-31 (maxWidth: 2000, imageQuality: 85).
+    Avatar input is unbounded: lib/app/shell/you_sheet.dart:348-351 (pickImage(source: ImageSource.gallery, imageQuality: 88)) -> WarangRepository.setAvatar (lib/data/repository.dart:129) -> PhotoStore.importAvatar (lib/data/files/photo_store.dart:54-55) -> _decode.
     V5: Isolate.run https://api.dart.dev/dart-isolate/Isolate/run.html
 
-Fix: Inspect image dimensions from the header via `img.findDecoderForData(bytes)?.startDecode(bytes)` before full decoding, and run decode, EXIF orientation bake, resize, and JPEG encode inside `Isolate.run`.
+Fix: Pass `maxWidth: 2000` and `maxHeight: 2000` to the avatar `pickImage` call, read image dimensions from the header via `img.findDecoderForData(bytes)?.startDecode(bytes)` before full decoding, and run decode, EXIF orientation bake, resize, and JPEG encode inside `Isolate.run`.
 
-### AUD-005: System Back and Close dismiss capture and trip forms mid-save and drop save feedback
+### AUD-005: System Back dismisses capture mid-save, and the trip form steps back or closes mid-save, dropping save feedback
 
 - Category: dangerous
 - Severity: high
 - Status: Confirmed
-- Locations: `lib/features/capture/capture_screen.dart:231`, `lib/features/home_tab/trip_form_screen.dart:196`
+- Locations: `lib/features/capture/capture_screen.dart:231`, `lib/features/home_tab/trip_form_screen.dart:196`, `lib/features/home_tab/trip_form_screen.dart:209`
 - Conflicts with: none
 - Effort: S (under 1 hour)
 - Lines removable: 0
 
 `CaptureScreen` has no `PopScope(canPop: !_saving)`, so pressing Android system Back while `captureMoment` is running dismisses the screen immediately and returns `null` to the caller.
 If the in-flight save fails after dismissal, `if (!mounted) return;` at line 151 silently discards the retry snackbar and the user loses the moment without any message.
-`TripFormScreen` wraps its body in `PopScope(canPop: _step == 0)` and renders a Close button that pops the route without checking `_saving`, creating the same mid-save dismissal gap on step 0.
+`TripFormScreen` only saves on its last question (`_last` at line 106), so its save can never be in flight on step 0.
+On the last question, system Back during a save reaches `PopScope(canPop: _step == 0)` at line 196, and `onPopInvokedWithResult` runs `_step--` at line 200, so the form jumps back a question while the save keeps running and then pops.
+The `CloseButton` at line 209 is never disabled, so Close during a save pops the route, and a failed save then drops its error snackbar the same way as capture.
 
 Proof (V3, V4):
 
     flutter test -j 1 -r expanded test/_audit_probe/capture_back_probe_test.dart
     PROBE_CAPTURE_BACK_MID_SAVE: poppedMidSave=true routeReturned=true poppedResult=null snackBarShown=false momentsInDb=0
-    V4: lib/features/home_tab/trip_form_screen.dart:196 sets PopScope(canPop: _step == 0) without guarding !_saving.
+    V4: lib/features/home_tab/trip_form_screen.dart:106-107 (_next calls _save only when _last) -> line 118 (_saving = true) -> system Back -> line 198 (canPop: _step == 0 is false) -> line 200 (setState(() => _step--) while saving).
+    V4: lib/features/home_tab/trip_form_screen.dart:209 (CloseButton(onPressed: () => Navigator.of(context).pop()) with no _saving check) -> line 141 (if (!mounted) return; drops the failure snackbar).
 
-Fix: Wrap `CaptureScreen` in `PopScope(canPop: !_saving)` (see https://api.flutter.dev/flutter/widgets/PopScope-class.html), disable the Back/Close actions while `_saving` is true, and update `TripFormScreen` to `PopScope(canPop: !_saving && _step == 0)` with Close disabled while `_saving`.
+Fix: Wrap `CaptureScreen` in `PopScope(canPop: !_saving)` (see https://api.flutter.dev/flutter/widgets/PopScope-class.html), and in `TripFormScreen` set `canPop: !_saving && _step == 0`, skip `_step--` in `onPopInvokedWithResult` while `_saving`, and pass `onPressed: _saving ? null : ...` to the `CloseButton`.
 
 ### AUD-006: Multi-step moment edits and map placement writes run outside a single database transaction
 
@@ -199,24 +221,24 @@ Fix: Wrap `CaptureScreen` in `PopScope(canPop: !_saving)` (see https://api.flutt
 - Effort: M (1 to 4 hours)
 - Lines removable: 0
 
-`MomentEditSheet._save` executes up to three independent repository writes in sequence: `updateMoment`, `setMomentPlace` or `attachMomentPlace`, and `setMomentCategory`.
+`MomentEditSheet._save` executes up to three independent repository writes in sequence: `updateMoment`, then one of `clearPlace`, `attachBookPlace`, or `attachUserPlace`, then `setPlaceCategory`.
 If the second or third write fails, the first write remains committed in SQLite while the sheet reports an error, leaving a partially updated moment.
-`TravelModeScreen._confirmPlacement` similarly calls `attachMomentPlace` and `setMomentCategory` in two separate writes with no transaction, no re-entry `_saving` guard, and no `try/catch` error feedback.
+`TravelModeScreen._confirmPlacement` similarly calls `setMomentLocation` and then `attachBookPlace` in two separate writes with no transaction, no re-entry `_saving` guard, and no `try/catch` error feedback.
 A V3 probe was skipped because injecting a failure between internal DAO calls without editing `lib/` would only test a mock subclass rather than the real Drift transaction boundary.
 
 Proof (V4):
 
     lib/features/travel_mode/moment_edit_sheet.dart:107 (await widget.repository.updateMoment)
-    -> line 117 or 121 (await widget.repository.setMomentPlace / attachMomentPlace)
-    -> line 130 (await widget.repository.setMomentCategory)
-    lib/features/travel_mode/travel_mode_screen.dart:192 (_confirmPlacement: await repo.attachMomentPlace at line 198, then await repo.setMomentCategory at line 201, no try/catch or _saving guard).
+    -> line 114, 117, or 123 (await widget.repository.clearPlace / attachBookPlace / attachUserPlace)
+    -> line 134 (await widget.repository.setPlaceCategory)
+    lib/features/travel_mode/travel_mode_screen.dart:192 (_confirmPlacement: await repository.setMomentLocation at line 198, then await repository.attachBookPlace at line 200, no try/catch or _saving guard).
 
-Fix: Add a single `WarangRepository.editMomentDetails(...)` method that executes caption, trip, place, and category updates inside one `database.transaction(() async { ... })` block, and guard `_confirmPlacement` with a `_saving` flag and error snackbar.
+Fix: Add a single `WarangRepository.editMomentDetails(...)` method that executes caption, trip, place, and category updates inside one `database.transaction(() async { ... })` block, do the same for location plus place in `_confirmPlacement`, and guard `_confirmPlacement` with a `_saving` flag and error snackbar.
 
 ### AUD-007: `main.dart` overrides `mapTileStoreProvider` with `overrideWithValue`, bypassing `ref.onDispose(store.close)`
 
 - Category: dangerous
-- Severity: medium
+- Severity: low
 - Status: Confirmed
 - Locations: `lib/main.dart:32`, `lib/app/app_state.dart:15`
 - Conflicts with: none
@@ -225,7 +247,8 @@ Fix: Add a single `WarangRepository.editMomentDetails(...)` method that executes
 
 `lib/app/app_state.dart:15-19` defines `mapTileStoreProvider` to construct `MapTileStore()` and register `ref.onDispose(store.close)`.
 `lib/main.dart:32` replaces it with `mapTileStoreProvider.overrideWithValue(MapTileStore())`, which creates the exact same default store but bypasses the provider factory and its `onDispose` hook.
-The `sqflite` database handle inside `MapTileStore` is never closed when the `ProviderScope` disposes.
+The `sqflite` database handle inside `MapTileStore` is never closed when the container disposes.
+The practical effect is small: the app's `ProviderContainer` at `lib/main.dart:29` is never disposed while the process runs, so the default hook would not run in production either, and the override is mainly redundant code.
 
 Proof (V1, V4):
 
@@ -238,7 +261,7 @@ Fix: Delete the redundant `mapTileStoreProvider.overrideWithValue(MapTileStore()
 ### AUD-008: Unchecked JSON decoding and casts on persisted `milestonesShown` and bundled assets crash on malformed data
 
 - Category: dangerous
-- Severity: medium
+- Severity: low
 - Status: Confirmed
 - Locations: `lib/data/repository.dart:345`, `lib/core/stamps.dart:33`, `lib/features/maya/maya_companion.dart:74`, `lib/features/news_tab/news_tab_screen.dart:31`
 - Conflicts with: none
@@ -247,6 +270,7 @@ Fix: Delete the redundant `mapTileStoreProvider.overrideWithValue(MapTileStore()
 
 `WarangRepository._claimMilestones` parses `app_meta.milestonesShown` with `jsonDecode(raw) as List` without a `try/catch` or type check, so any corrupt row in SQLite throws an unhandled `FormatException` or `TypeError` every time a user saves a moment.
 Bundled JSON parsers in `stamps.dart:33`, `maya_companion.dart:74`, and `news_tab_screen.dart:31-35` also cast decoded values directly with `as Map<String, dynamic>`, `as String`, and `DateTime.parse` without defensive fallback handling.
+The trigger is rare: `milestonesShown` is written only by the app itself, and the bundled parsers fail only if a broken asset ships with the app.
 
 Proof (V3, V4):
 
@@ -257,32 +281,34 @@ Proof (V3, V4):
 
 Fix: Wrap `jsonDecode` in `WarangRepository._claimMilestones` with a `try/catch` that resets invalid JSON to an empty set, and validate JSON field types with safe pattern matching (`if (decoded is Map<String, Object?>)`) in `stamps.dart`, `maya_companion.dart`, and `news_tab_screen.dart`.
 
-### AUD-009: Missing `mounted` checks after async gaps and animation listeners can call `setState` or `ref` on disposed widgets
+### AUD-009: A missing `mounted` check after the date picker, and Maya drag-return listeners that pile up on repeated drags
 
 - Category: dangerous
 - Severity: medium
 - Status: Plausible
-- Locations: `lib/features/home_tab/trip_form_screen.dart:98`, `lib/features/maya/maya_companion.dart:255`, `lib/features/travel_mode/travel_mode_screen.dart:152`
+- Locations: `lib/features/home_tab/trip_form_screen.dart:98`, `lib/features/maya/maya_companion.dart:255`
 - Conflicts with: none
 - Effort: S (under 1 hour)
 - Lines removable: 0
 
 `TripFormScreen._pickDates` calls `setState` at line 98 after `await showDateRangePicker(...)` without checking `if (!mounted) return;`.
-`MayaCompanion._onDragEnd` attaches a status/value listener to a spring animation that calls `setState` at line 255 without checking `mounted` and can race if the user starts a second drag before the animation settles.
-The Undo snackbar action in `TravelModeScreen` calls `ref.read(repositoryProvider)` at line 152 without checking `mounted`, which throws if the user switched tabs or disposed the screen while the snackbar remained open.
+`MayaCompanion._onDragEnd` adds a `back` listener at line 256 and removes it only in `whenComplete` on the spring's `TickerFuture` at line 257.
+If the user drags again before the spring settles, the next `_onDragEnd` sets `_drag.value = 1` at line 254, which calls `AnimationController.stop()` with `canceled: true`; a canceled `TickerFuture` never completes, so the old `back` listener is never removed and keeps overwriting `_offset` from a stale start position.
+During that second drag, `_onDragUpdate` (line 241) also fights the still-running return spring, because nothing stops it when a pan starts.
+The disposed-widget case is covered, because disposing `_drag` at line 168 stops its ticks.
 
-Proof (V4):
+Proof (V4, V5):
 
-    lib/features/home_tab/trip_form_screen.dart:89 (_pickDates) -> line 90 (await showDateRangePicker) -> line 98 (setState without mounted check).
-    lib/features/maya/maya_companion.dart:248 (_onDragEnd) -> line 255 (listener calls setState without mounted check).
-    lib/features/travel_mode/travel_mode_screen.dart:148-152 (SnackBarAction onPressed calls ref.read without mounted check).
+    lib/features/home_tab/trip_form_screen.dart:89 (_pickDates) -> line 91 (await showDateRangePicker) -> line 98 (setState without mounted check).
+    lib/features/maya/maya_companion.dart:248 (_onDragEnd) -> line 254 (_drag.value = 1 stops any running spring as canceled) -> line 256 (_drag.addListener(back)) -> line 257 (whenComplete removes back only on normal completion).
+    V5: TickerFuture https://api.flutter.dev/flutter/scheduler/TickerFuture-class.html ("if it is stopped with canceled set to true, then this Future will never complete"; whenCompleteOrCancel covers both cases).
 
-Fix: Add `if (!mounted) return;` before `setState` in `TripFormScreen._pickDates` and `MayaCompanion._onDragEnd`, cancel any prior return listener when a new drag begins, and capture the `WarangRepository` reference before showing the Undo snackbar in `TravelModeScreen`.
+Fix: Add `if (!mounted) return;` before `setState` in `TripFormScreen._pickDates`, and in `MayaCompanion._onDragEnd` replace `whenComplete` with `whenCompleteOrCancel` so `back` is always removed, and stop `_drag` when a new pan starts.
 
 ### AUD-010: `MayaLines.load` and `StampTitles.load` permanently cache rejected futures, and static caches leak across tests
 
 - Category: dangerous
-- Severity: medium
+- Severity: low
 - Status: Confirmed
 - Locations: `lib/features/maya/maya_companion.dart:70`, `lib/features/stamps/stamp_titles.dart:10`, `lib/app/theme/clay_components.dart:383`
 - Conflicts with: none
@@ -291,6 +317,7 @@ Fix: Add `if (!mounted) return;` before `setState` in `TripFormScreen._pickDates
 
 `MayaLines.load` stores the in-flight `Future` in static `_lines` and never clears it if asset loading fails, so one transient error permanently breaks Maya copy for the entire app process.
 `StampTitles.load` repeats the same pattern in static `_loading`.
+The trigger is rare, because loading a bundled asset seldom fails on a device, and the repository already catches a `StampTitles.load` failure at `lib/data/repository.dart:359-363` and falls back to `const {}`.
 Global mutable static fields in `WarangStamp` (`_stampsShown`), `MayaCompanionState.clock`, `MayaLines._lines`, and `StampTitles._cached` also require manual resets across widget tests.
 
 Proof (V3, V4):
@@ -332,15 +359,19 @@ Fix: Delete the new avatar file in `setAvatar` if `updateProfile` fails, delete 
 - Effort: S (under 1 hour)
 - Lines removable: 0
 
+Both scripts are untracked in Git (`scripts/` is a preserved untracked path), so these fixes edit files outside version control.
 `scripts/build-and-archive.sh` does not fail if zero release APKs exist in the output directory, interpolates `GIT_BRANCH` directly into a JSON heredoc at lines 91-100 without escaping quotes or slashes, and parses `pubspec.yaml` with `grep | awk` that breaks on inline comments.
-`scripts/build-and-archive.ps1` suppresses `git` stderr at lines 63-64 without verifying exit codes, and neither script runs `apksigner verify` to confirm the archived APK carries the production release certificate before archiving.
+`scripts/build-and-archive.ps1` already stops on zero APKs (`$ErrorActionPreference = "Stop"` at line 32 and `Write-Error` at line 123), but suppresses `git` stderr at lines 63-64 without verifying exit codes.
+Neither script runs `apksigner verify` to confirm the archived APK carries the production release certificate before archiving.
 
 Proof (V4):
 
     scripts/build-and-archive.sh:13-14 (grep/awk pubspec parser), lines 50-88 (no error when 0 APKs matched), lines 91-100 (raw JSON heredoc with ${GIT_BRANCH}).
+    scripts/build-and-archive.ps1:32 ($ErrorActionPreference = "Stop") and lines 122-124 (Write-Error when $apkFiles.Count -eq 0).
     scripts/build-and-archive.ps1:63-64 (git rev-parse 2>$null without $LASTEXITCODE check); neither script invokes apksigner verify.
+    git ls-files scripts -> no output (untracked).
 
-Fix: Fail both scripts if zero APKs are found, run `apksigner verify --print-certs` on every archived APK, serialize manifest JSON with Python `json.dumps` or PowerShell `ConvertTo-Json`, and check `$LASTEXITCODE` after `git` calls.
+Fix: Fail `build-and-archive.sh` if zero APKs are found, run `apksigner verify --print-certs` on every archived APK in both scripts, serialize the `.sh` manifest JSON with a real serializer (Python `json.dumps`, as the `.ps1` already does with `ConvertTo-Json` at line 179), and check `$LASTEXITCODE` after `git` calls; decide whether `scripts/` should be committed so these fixes are tracked.
 
 ### AUD-013: Capture preview and moment polaroids decode full-resolution `Image.file` bitmaps without `cacheWidth`, and polaroid builds call `existsSync()`
 
@@ -352,7 +383,7 @@ Fix: Fail both scripts if zero APKs are found, run `apksigner verify --print-cer
 - Effort: S (under 1 hour)
 - Lines removable: 0
 
-`CaptureScreen` at line 211 and `_MomentPolaroid` at line 1157 render `Image.file` without passing `cacheWidth` or `cacheHeight`, causing Flutter's image cache to decode full camera-resolution bitmaps even for small preview cards.
+`CaptureScreen` at line 211 and `_MomentPolaroid` at line 1157 render `Image.file` without passing `cacheWidth` or `cacheHeight`, causing Flutter's image cache to decode each photo at its full stored size (up to 2000 pixels on the long edge, from `pickImage(maxWidth: 2000)` and `PhotoStore.maxLongEdge`) even for small preview cards.
 `_MomentPolaroid.build` also calls synchronous `file.existsSync()` on the UI thread during every rebuild, adding synchronous disk I/O to frame rendering.
 
 Proof (V4, V5):
@@ -386,7 +417,7 @@ Fix: Wrap both `book.nearby` and `book.search` calls in `PlacePickerSheet._runQu
 ### AUD-015: `ClayDiscCache.image` uses colliding `Object.hash` keys and drops evicted `ui.Image` handles without calling `dispose()`
 
 - Category: dangerous
-- Severity: medium
+- Severity: low
 - Status: Plausible
 - Locations: `lib/app/theme/clay.dart:541`, `lib/app/theme/clay.dart:578`
 - Conflicts with: none
@@ -394,6 +425,7 @@ Fix: Wrap both `book.nearby` and `book.search` calls in `PlacePickerSheet._runQu
 - Lines removable: 0
 
 `ClayDiscCache.image` keys its static cache map with an `int` from `Object.hash(...)` at line 541, unlike `_ClayGeometry.of` at line 406 which uses a value-equal Dart record tuple, creating a silent hash-collision hazard where one disc renders another disc's bitmap.
+A collision is very unlikely with at most 48 cached entries, so this is a correctness trap rather than an observed failure.
 When the cache exceeds 48 entries at line 578, `_images.remove(_images.keys.first)` drops the evicted `ui.Image` reference without calling `evicted.dispose()`, delaying release of GPU texture memory until GC finalization.
 
 Proof (V4, V5):
@@ -434,12 +466,14 @@ Fix: Expose a monotonic `int revision` counter on `WarangRepository` incremented
 - Effort: S (under 1 hour)
 - Lines removable: 0
 
-In `WarangDatabase.migration.onUpgrade`, the `from < 2` block at lines 65-68 calls `m.addColumn(trips, trips.colour)` and `await _colourExistingTrips()` outside a Drift `transaction`, whereas `from < 3` at lines 69-94 runs inside `transaction`.
+In `WarangDatabase.migration.onUpgrade`, the `from < 2` block at lines 65-68 calls `m.addColumn(trips, trips.colorKey)` and `await _colourExistingTrips()` outside a Drift `transaction`, whereas `from < 3` at lines 69-73 runs inside `transaction`.
+Drift writes the new `user_version` only after every migration step succeeds, so if `_colourExistingTrips` throws after `addColumn` commits, the next launch reruns `addColumn` on a column that already exists, and the database likely fails to open on every launch after that.
 `test/migration_test.dart` tests v2-to-v3 and v1-to-v3 upgrades with data, leaving v1-to-v2 atomicity and rollback untested.
 
 Proof (V4):
 
     lib/data/db/database.dart:65-68 (if (from < 2) runs addColumn + _colourExistingTrips outside transaction, unlike if (from < 3) at line 69).
+    drift 2.34.4 lib/src/runtime/executor/helpers/engines.dart:557-562 (user.beforeOpen runs the migration, then setSchemaVersion runs only after it returns; no transaction wraps onUpgrade).
     test/migration_test.dart:222-306 tests v2->v3 and v1->v3 only.
 
 Fix: Wrap the `if (from < 2)` upgrade steps in `await transaction(() async { ... })` in `lib/data/db/database.dart:65-68` and add an isolated v1-to-v2 test in `test/migration_test.dart`.
@@ -455,14 +489,15 @@ Fix: Wrap the `if (from < 2)` upgrade steps in `await transaction(() async { ...
 - Lines removable: 0
 
 `pickProfilePhoto` creates `ImagePicker()` directly inside the function rather than reading an injectable provider, and calls `await repository.setAvatar(File(picked.path))` at line 352 without `try/catch`.
-If the user picks a corrupt file or an image larger than `PhotoStore.maxPixels` (30 MP), `PhotoStore` throws `FormatException` or `PhotoTooLargeException` unhandled with no user feedback.
+If the user picks a corrupt file or an image over the 30-megapixel cap (the literal `30 * 1000 * 1000` at `lib/data/files/photo_store.dart:231`), `PhotoStore._decode` throws `FormatException`, which escapes unhandled with no user feedback.
 A V3 probe was skipped because `ImagePicker()` is constructed inline and cannot be stubbed without editing `lib/`.
 
 Proof (V4):
 
-    lib/app/shell/you_sheet.dart:347 (pickProfilePhoto) -> line 349 (ImagePicker().pickImage) -> line 352 (await repository.setAvatar(File(picked.path)), no try/catch or snackbar).
+    lib/app/shell/you_sheet.dart:347 (pickProfilePhoto) -> line 348 (ImagePicker().pickImage) -> line 352 (await repository.setAvatar(File(picked.path)), no try/catch or snackbar)
+    -> lib/data/repository.dart:129 (setAvatar) -> lib/data/files/photo_store.dart:55 (_decode) -> lines 228, 230, 232 (throw FormatException).
 
-Fix: Inject `imagePickerProvider` from `lib/app/device_providers.dart` into `pickProfilePhoto`, wrap `setAvatar` in `try/catch`, and show `showWarangSnackBar` on failure (matching `CaptureScreen._save`).
+Fix: Add a gallery picker provider next to `cameraPickerProvider` in `lib/app/device_providers.dart` and read it in `pickProfilePhoto`, wrap `setAvatar` in `try/catch`, and show `showWarangSnackBar` on failure (matching `CaptureScreen._save`).
 
 ### AUD-019: `sqlite3_flutter_libs` is marked end-of-life (`0.6.0+eol`) in `flutter pub outdated`
 
@@ -551,6 +586,30 @@ Proof (V4):
 
 Fix: Build into `out_path.with_suffix('.sqlite.tmp')` and `os.replace` on success, catch specific `osmium` geometry exceptions with a skipped-area counter, use a regex or flag for FTS prefix configuration, and document verifying `philippines-latest.osm.pbf.md5` in `README.md`.
 
+### AUD-051: Release archive scripts archive stale APKs left from earlier builds under the new version and Git hash
+
+- Category: dangerous
+- Severity: medium
+- Status: Plausible
+- Locations: `scripts/build-and-archive.sh:56`, `scripts/build-and-archive.sh:62`, `scripts/build-and-archive.ps1:114`
+- Conflicts with: none
+- Effort: S (under 1 hour)
+- Lines removable: 0
+
+Added in revision 2 from the review of revision 1.
+Both scripts archive every non-debug `*.apk` they find in `build/app/outputs/flutter-apk`, and `flutter build apk` does not delete outputs from earlier builds.
+A build without `--split-per-abi` therefore archives the new `app-release.apk` together with any per-ABI APKs left from an earlier split build, and names every copy with the current version, timestamp, and Git hash.
+That folder holds three per-ABI release APKs from 2026-11-23 today, so the next non-split run would archive them as if they were built from the new commit, and `releases/latest/` could then serve an old build.
+A V3 probe was skipped because it requires a full release build, and both scripts are untracked in Git.
+
+Proof (V4):
+
+    scripts/build-and-archive.sh:50 (APK_DIR=build/app/outputs/flutter-apk) -> line 56 (APKS=("${APK_DIR}"/*.apk)) -> lines 62-66 (skips only names containing "debug") -> lines 73-75 (copies each APK as ${APP_NAME}-v${VERSION}-release-${abi}-${TIMESTAMP}-${GIT_HASH}.apk and into releases/latest).
+    scripts/build-and-archive.ps1:106-117 (Get-ChildItem -Filter "*.apk" | Where-Object { $_.Name -notlike "*debug*" }) -> line 139 (same versioned name).
+    ls build/app/outputs/flutter-apk -> app-arm64-v8a-release.apk, app-armeabi-v7a-release.apk, app-x86_64-release.apk (2026-11-23 22:51), app-debug.apk (2026-11-24 06:35).
+
+Fix: Delete `build/app/outputs/flutter-apk/*.apk` (or run `flutter clean`) before `flutter build apk` in both scripts, or archive only the exact file names the chosen mode produces (`app-release.apk`, or the three `app-<abi>-release.apk` files), and fail if an expected file is missing.
+
 ## Unnecessary
 
 ### AUD-023: `WarangToggle` has zero callers in `lib/`
@@ -603,15 +662,18 @@ Fix: Delete `upsertImportedTrip` (`lib/data/repository.dart:555-629`).
 ### AUD-025: 74 mechanical `dart fix` simplifications across 30 files
 
 - Category: unnecessary (shrink)
-- Severity: medium
+- Severity: low
 - Status: Confirmed
 - Locations: `lib/app/app.dart:22`, `lib/app/shell/you_sheet.dart:242`, `lib/app/theme/clay.dart:746`, `lib/app/theme/clay_components.dart:898`, `lib/app/theme/components.dart:159`, `lib/data/repository.dart:414`, `lib/features/capture/capture_screen.dart:115`, `lib/features/home_tab/trip_detail_screen.dart:127`, `lib/features/map/warang_map.dart:440`, `lib/features/maya/maya_companion.dart:390`, `lib/features/news_tab/news_tab_screen.dart:160`, `lib/features/places/place_picker_sheet.dart:136`, `lib/features/search/search_tab_screen.dart:279`, `lib/features/stamps/stamp_page_sheet.dart:90`, `lib/features/travel_mode/moment_edit_sheet.dart:69`, `lib/features/travel_mode/travel_mode_screen.dart:131`, `test/migration_test.dart:217`
 - Conflicts with: none
 - Effort: S (under 1 hour)
-- Lines removable: 74
+- Lines removable: 27
 
-Running `dart fix --dry-run` under the strict lint set reports 74 purely syntactic simplifications across 30 files: 70 redundant default arguments (`avoid_redundant_argument_values`, 31 in `lib/`), 1 unnecessary `!` (`lib/app/theme/clay.dart:746`), 2 verbose `== true` checks on nullable booleans (`lib/data/repository.dart:414`, `lib/features/home_tab/trip_detail_screen.dart:127`), and 1 unnecessary closure (`test/migration_test.dart:217`).
-Applying these edits changes no screen behavior and no test semantics.
+Running `dart fix --dry-run` under the strict lint set reports 74 purely syntactic fixes across 30 files: 70 redundant default arguments (`avoid_redundant_argument_values`), 1 unnecessary `!` (`lib/app/theme/clay.dart:746`), 2 verbose `== true` checks on nullable booleans (`lib/data/repository.dart:414`, `lib/features/home_tab/trip_detail_screen.dart:127`), and 1 unnecessary closure (`test/migration_test.dart:217`).
+The strict analyzer pass lists 64 redundant-argument hits, 32 of them in `lib/`.
+Only 27 of those hits (20 in `lib/`) sit alone on their own line, such as `depth: ClayDepth.clay1,`, so the fixes remove 27 lines; the rest shorten a line without removing it.
+24 of the hits are default-valued arguments inside `DateTime(...)` literals in `test/` and `tool/`, such as the day in `DateTime(2026, 3, 1)` or the minute in `DateTime(2026, 9, 5, 12, 0)`, where dropping the argument makes the date harder to read.
+Applying the remaining edits changes no screen behavior and no test semantics.
 
 Proof (V2):
 
@@ -619,30 +681,32 @@ Proof (V2):
     dart fix --dry-run
     74 proposed fixes in 30 files.
     # Breakdown: avoid_redundant_argument_values (70), use_if_null_to_convert_nulls_to_bools (2), unnecessary_null_checks (1), unnecessary_lambdas (1).
+    # docs/audits/AUDIT-001/scans/01-strict-lints.txt: 64 avoid_redundant_argument_values hits (32 in lib/); 27 hit lines match the pattern "name: value," alone on the line (20 in lib/); 24 hit lines contain DateTime(.
 
-Fix: Apply `dart fix --apply` for those four rules (or enable `avoid_redundant_argument_values`, `unnecessary_null_checks`, and `unnecessary_lambdas` in `analysis_options.yaml`); examples of the shorter form:
+Fix: Apply only the readable fixes, file by file, with `dart fix --apply --code=unnecessary_null_checks`, `--code=unnecessary_lambdas`, and `--code=use_if_null_to_convert_nulls_to_bools`, and remove redundant arguments by hand outside `DateTime(...)` literals; do not run a blanket `dart fix --apply`.
+Shorter forms for the three cited lines:
 
 ```dart
 // Before (lib/app/theme/clay.dart:746):
-final c = color!;
+result = Tooltip(message: widget.tooltip!, child: result);
 // After:
-final c = color;
+result = Tooltip(message: widget.tooltip, child: result);
 
 // Before (lib/data/repository.dart:414):
-if (flag == true) ...
+place: Value(place?.trim().isEmpty == true ? null : place?.trim()),
 // After:
-if (flag ?? false) ...
+place: Value((place?.trim().isEmpty ?? false) ? null : place?.trim()),
 
 // Before (lib/features/places/place_picker_sheet.dart:136):
-book.nearby(lat: lat, lon: lon, limit: 20) // when 20 is the default
+final nearby = await book.nearby(widget.near!, 150, limit: 8);
 // After:
-book.nearby(lat: lat, lon: lon)
+final nearby = await book.nearby(widget.near!, 150);
 ```
 
 ### AUD-026: Undeclared, unreferenced logo PNGs and legacy design assets tracked in Git
 
 - Category: unnecessary (delete)
-- Severity: medium
+- Severity: low
 - Status: Confirmed
 - Locations: `assets/Logo.png:1`, `assets/Logo2.png:1`, `design/warang-canvas.html:1`, `design/ui-update/baseline/home_dark.png:1`
 - Conflicts with: none
@@ -650,7 +714,8 @@ book.nearby(lat: lat, lon: lon)
 - Lines removable: 0
 
 Two large logo images (`assets/Logo.png` at 1134 KB and `assets/Logo2.png` at 1089 KB), one legacy design mockup (`design/warang-canvas.html` at 796 KB), and 14 pre-redesign screenshots under `design/ui-update/baseline/` are tracked in Git even though `pubspec.yaml` does not declare them and zero code or tests reference them.
-Together these 17 orphaned files add about 3.0 MB of dead weight to the repository.
+Together these 17 files add about 3.0 MB to every checkout; deleting them does not shrink the existing Git history.
+`assets/Logo.png` and `design/warang-canvas.html` may be brand and design source files (archived `docs/archive/DESIGN_SPEC-r1.md` names the canvas as its source of truth), the same reason C-013 kept `design/icons/`, so Len decides whether they stay.
 Deleting them changes no screen, build, or test.
 
 Proof (V1):
@@ -661,7 +726,7 @@ Proof (V1):
     git grep -n "ui-update" -- lib test tool -> 0 hits
     # docs/audits/AUDIT-001/scans/04-asset-use.txt confirms none are declared in pubspec.yaml.
 
-Fix: Remove `assets/Logo.png`, `assets/Logo2.png`, `design/warang-canvas.html`, and `design/ui-update/baseline/` from Git (keeping `assets/logo_icon.png` and `design/icons/` which are actively used).
+Fix: Remove `assets/Logo2.png` and `design/ui-update/baseline/` from Git, and remove `assets/Logo.png` and `design/warang-canvas.html` only if Len confirms they are not brand or design sources (keeping `assets/logo_icon.png` and `design/icons/`, which are actively used).
 
 ### AUD-027: Unused theme colour tokens and unused component constructors and parameters
 
@@ -852,14 +917,14 @@ Fix: Convert referenced paths to a `Set<String>`, batch soft-delete updates insi
 - Lines removable: 0
 
 `test/android_hardening_test.dart` reads raw XML and Gradle source files with `contains(...)` checks rather than inspecting a merged manifest or release build output.
-All three tests in the file pass at `7d6703f` even while the main manifest lacks `android.permission.INTERNET` (`AUD-001`) and the release build leaves R8 shrinking off (`AUD-042`).
+All three tests in the file pass at `7d6703f` even while the main manifest lacks `android.permission.INTERNET` (`AUD-001`).
 
 Proof (V4):
 
     test/android_hardening_test.dart:5-58 checks only allowBackup="false", cleartextTrafficPermitted="false", and key.properties presence via raw String.contains.
     flutter test test/android_hardening_test.dart -> +3: All tests passed! despite AUD-001.
 
-Fix: Add manifest checks for required release permissions (`INTERNET`, location) and Gradle release shrinking flags in `test/android_hardening_test.dart`, and verify the merged release manifest via `aapt2 dump badging` / `xmltree` inside `scripts/build-and-archive.*`.
+Fix: Add manifest checks for required release permissions (`INTERNET`, location) in `test/android_hardening_test.dart`, and verify the built release APK with `aapt2 dump permissions` inside `scripts/build-and-archive.*`.
 
 ### AUD-036: 29 unawaited futures in non-async functions without explicit `unawaited(...)` markers
 
@@ -891,7 +956,8 @@ Fix: Wrap intentional fire-and-forget calls with `unawaited(...)` from `dart:asy
 - Effort: S (under 1 hour)
 - Lines removable: 0
 
-Thirty styling literals (`EdgeInsets`, `Duration`, and `Colors.transparent`) appear in feature files outside `lib/app/theme/`, bypassing `WarangSpace` and `WarangMotion` tokens.
+Thirty styling literals (`EdgeInsets`, `Duration`, and `Colors.transparent`) appear in feature files outside `lib/app/theme/`, bypassing `WarangMotion` durations and the theme generally.
+No spacing token class exists today; `WarangLayout` at `lib/app/theme/tokens.dart:155` holds only dock and rail sizes.
 Scattering raw spacing and animation durations makes global layout or motion tuning error-prone.
 
 Proof (V2):
@@ -899,7 +965,7 @@ Proof (V2):
     # docs/audits/AUDIT-001/scans/15-hardcoded-style.txt
     # 30 matches across 12 files outside lib/app/theme/.
 
-Fix: Replace hardcoded `EdgeInsets` and `Duration` literals in feature screens with constants from `WarangSpace` (`lib/app/theme/tokens.dart`) and `WarangMotion` (`lib/app/theme/motion.dart`).
+Fix: Replace hardcoded `Duration` literals in feature screens with `WarangMotion` constants (`lib/app/theme/motion.dart`), and add a spacing scale to `lib/app/theme/tokens.dart` for the repeated `EdgeInsets` values only if Len approves a new token set under FEAT-003.
 
 ### AUD-038: 19 untyped `catch` blocks in `lib/` catch `Error` alongside `Exception`
 
@@ -984,27 +1050,28 @@ Proof (V1, V2):
 
 Fix: Build `_categoryNameCaseSql` dynamically from `PlaceCategories.all` (escaping single quotes) and add a unit test asserting every `PlaceCategory.key` and `label` appears in the generated SQL `CASE`.
 
-### AUD-042: Release Gradle config omits R8 code and resource shrinking, keeps template `TODO`, and casts `keystoreProperties` with `as String`
+### AUD-042: Release Gradle config keeps the template `TODO` and casts `keystoreProperties` with `as String`
 
 - Category: sloppy
 - Severity: low
 - Status: Confirmed
-- Locations: `android/app/build.gradle.kts:36`, `android/app/build.gradle.kts:49`, `android/app/build.gradle.kts:57`
+- Locations: `android/app/build.gradle.kts:36`, `android/app/build.gradle.kts:49`
 - Conflicts with: none
 - Effort: S (under 1 hour)
 - Lines removable: 0
 
-`android/app/build.gradle.kts:57-63` configures only `signingConfig` on the `release` build type and leaves `isMinifyEnabled` and `isShrinkResources` unset, shipping unshrunk bytecode and unused resources in release APKs.
-Line 36 still contains Flutter's boilerplate `TODO: Specify your own unique Application ID`, and lines 49-52 cast `keystoreProperties[...]` with `as String`, throwing an unclear `NullPointerException` if any property key is missing from `android/key.properties`.
+Line 36 still contains Flutter's boilerplate `TODO: Specify your own unique Application ID` although `applicationId` is already `ph.warang.app`, and lines 49-52 cast `keystoreProperties[...]` with `as String`, throwing an unclear `NullPointerException` if any property key is missing from `android/key.properties`.
+Release shrinking is not a problem: the `release` block at lines 57-63 sets only `signingConfig`, but the Flutter Gradle plugin turns on `isMinifyEnabled` and `isShrinkResources` for release builds by default, and the 2026-11-23 release build wrote an R8 mapping file.
 
 Proof (V2):
 
     # docs/audits/AUDIT-001/scans/19-android.txt
     android/app/build.gradle.kts:36: // TODO: Specify your own unique Application ID
     android/app/build.gradle.kts:49-52: keyAlias = keystoreProperties["keyAlias"] as String (4 unchecked casts)
-    android/app/build.gradle.kts:57-63: buildTypes.release omits isMinifyEnabled / isShrinkResources.
+    # Flutter SDK packages/flutter_tools/gradle/src/main/kotlin/FlutterPlugin.kt:217-218: releaseBuildType.isMinifyEnabled = true; releaseBuildType.isShrinkResources = FlutterPluginUtils.isBuiltAsApp(project)
+    # build/app/outputs/mapping/release/mapping.txt exists (6209270 bytes, 2026-11-23 21:15).
 
-Fix: Enable `isMinifyEnabled = true` and `isShrinkResources = true` on `release` (testing ProGuard rules for SQLite/Drift/JNI), remove the stale `TODO` at line 36, and validate all four `keystoreProperties` keys with `requireNotNull(keystoreProperties.getProperty(key))`.
+Fix: Remove the stale `TODO` at line 36, and validate all four `keystoreProperties` keys with `requireNotNull(keystoreProperties.getProperty(key))`.
 
 ### AUD-043: Amber text tokens diverge between `WarangColors` and `WarangKeepsake.amber`, and `ColorScheme.error` hardcodes raw colours
 
@@ -1077,13 +1144,13 @@ Fix: Pass the version from `scripts/build-and-archive.*` via `--dart-define=APP_
 - Effort: S (under 1 hour)
 - Lines removable: 0
 
-`defaultLocationReader` in `lib/app/device_providers.dart:35-42` checks `Geolocator.checkPermission()` without calling `Geolocator.isLocationServiceEnabled()` and without displaying a rationale dialog.
-`WarangMapSurface._locateUser` in `lib/features/map/warang_map.dart:526-557` checks both service status and permission and shows an explanation dialog, creating two inconsistent GPS experiences between capture and map recentering.
+`locationPermissionProvider` in `lib/app/device_providers.dart:35-42`, used by `locationReaderProvider` at lines 45-69 for capture, checks `Geolocator.checkPermission()` without calling `Geolocator.isLocationServiceEnabled()` and without displaying a rationale dialog.
+`_refreshLocation` in `lib/features/map/warang_map.dart:526-575` checks both service status and permission and shows an explanation dialog, creating two inconsistent GPS experiences between capture and map recentering.
 
 Proof (V4):
 
-    lib/app/device_providers.dart:35-42 (no isLocationServiceEnabled check, no rationale UI)
-    lib/features/map/warang_map.dart:526-557 (calls isLocationServiceEnabled and shows explanation dialog)
+    lib/app/device_providers.dart:35-42 (locationPermissionProvider: no isLocationServiceEnabled check, no rationale UI) -> lines 45-69 (locationReaderProvider)
+    lib/features/map/warang_map.dart:526 (_refreshLocation) -> line 528 (isLocationServiceEnabled) -> line 532 (showDialog explanation)
 
 Fix: Extract one shared location-access helper in `lib/app/device_providers.dart` that checks `isLocationServiceEnabled()` and permission status consistently across capture and map recentering.
 
@@ -1158,6 +1225,7 @@ Fix: Construct and cache `final SpringSimulation _simulation` in `_SpringCurve` 
 
 `coversDay` in `lib/core/trip_rules.dart:38-42` computes date boundaries via `.add(const Duration(days: 1))` without `.toLocal()` normalization or calendar-day construction (`DateTime(y, m, d + 1)`), diverging from `lib/core/stamps.dart:114`.
 On devices in time zones observing daylight saving time, adding 24 hours can land at 23:00 of the same day or 01:00 of the next day.
+The Philippines does not observe daylight saving time, so this affects only travellers whose device is set to a zone that does.
 
 Proof (V4):
 
@@ -1167,14 +1235,14 @@ Fix: Normalize timestamps with `.toLocal()` and compare calendar days using `Dat
 
 ## Remediation batches
 
-These batches group all 50 findings into actionable future features Len can approve independently.
+These batches group all 51 findings into actionable future features Len can approve independently.
 
 ### Batch 1: Release blocker and Android hardening
 
-- Findings: `AUD-001`, `AUD-012`, `AUD-035`, `AUD-042`, `AUD-045`
+- Findings: `AUD-001`, `AUD-012`, `AUD-035`, `AUD-042`, `AUD-045`, `AUD-051`
 - Total effort: M (2 to 4 hours)
-- Risk to working features: Low; adds the missing `INTERNET` permission, tightens release build/archive checks, and enables R8 shrinking (verify Drift/JNI/SQLite keep rules on a release APK).
-- Guarding tests: Expanded `test/android_hardening_test.dart`, release APK `aapt2`/`apksigner verify` check, and Len's physical-device check loading map tiles in a signed release build.
+- Risk to working features: Low; adds the missing `INTERNET` permission and tightens the release build and archive checks (R8 shrinking is already on through the Flutter Gradle plugin and needs no change).
+- Guarding tests: Expanded `test/android_hardening_test.dart`, release APK `aapt2 dump permissions` and `apksigner verify` checks, and Len's physical-device check loading map tiles in a signed release build.
 - Approved decisions needing change: none.
 
 ### Batch 2: Offline map tile store and map surface stability
@@ -1189,8 +1257,8 @@ These batches group all 50 findings into actionable future features Len can appr
 
 - Findings: `AUD-003`, `AUD-004`, `AUD-013`, `AUD-015`, `AUD-034`, `AUD-049`
 - Total effort: L (6 to 10 hours)
-- Risk to working features: Medium; moves photo decoding, place book install, and orphan sweep off the UI isolate and adds `ui.Image` disposal.
-- Guarding tests: `test/photo_store_test.dart`, `test/place_book_test.dart`, `test/capture_flow_test.dart`, `test/clay_components_test.dart`, plus physical-device test with a 48 MP camera photo and cold first launch.
+- Risk to working features: Medium; moves photo decoding, place book queries, and orphan sweep off the UI isolate, bounds avatar picks, and adds `ui.Image` disposal.
+- Guarding tests: `test/photo_store_test.dart`, `test/place_book_test.dart`, `test/capture_flow_test.dart`, `test/clay_components_test.dart`, plus a physical-device test picking a 48 MP gallery photo as the avatar and a cold first launch.
 - Approved decisions needing change: none.
 
 ### Batch 4: Save integrity, transactions, and UI state safety
@@ -1205,9 +1273,9 @@ These batches group all 50 findings into actionable future features Len can appr
 
 - Findings: `AUD-023`, `AUD-024`, `AUD-025`, `AUD-026`, `AUD-027`, `AUD-028`, `AUD-029`, `AUD-036`, `AUD-038`, `AUD-047`
 - Total effort: M (2 to 4 hours)
-- Risk to working features: Low; deletes dead code/assets and applies mechanical lint fixes with zero intended UI change.
+- Risk to working features: Low; deletes dead code and assets and applies selected lint fixes (not a blanket `dart fix --apply`, see `AUD-025`) with zero intended UI change.
 - Guarding tests: Full `flutter analyze` and `flutter test` suite (329 tests) plus golden visual regression check.
-- Approved decisions needing change: `docs/features/FEAT-003-clay-keepsake-redesign.md` C11 (`WarangToggle`) and M4 (`MayaPose.footTap`) if Len approves deleting them.
+- Approved decisions needing change: `docs/features/FEAT-003-clay-keepsake-redesign.md` C11 (`WarangToggle`) and M4 (`MayaPose.footTap`) if Len approves deleting them, and Len's call on keeping `assets/Logo.png` and `design/warang-canvas.html` as sources (`AUD-026`).
 
 ### Batch 6: Structural maintainability, repository performance, and tooling hygiene
 
@@ -1220,9 +1288,12 @@ These batches group all 50 findings into actionable future features Len can appr
 ## Limitations
 
 - Strict lint deprecation: `use_if_null_to_convert_nulls_to_bools` emitted 1 `deprecated_lint` warning in Dart 3.12.2 during the Phase 1 detached-worktree run; no rule had to be dropped because the analyzer still executed all 20 extra rules cleanly.
-- Probes not possible without `lib/` edits or physical devices: `AUD-001` (requires building a signed release APK with untracked `android/key.properties` on a device), `AUD-003` and `AUD-004` (require real device frame-timing/memory profiling and power-loss simulation), `AUD-006` (injecting a fault between sequential Drift calls inside `MomentEditSheet` requires altering internal DAO wiring), and `AUD-018` (`ImagePicker()` is instantiated inline inside `pickProfilePhoto`).
-- Areas checked by reading and static scans only: `android/` Gradle and XML configs, `scripts/build-and-archive.*`, `tool/place_book/build_place_book.py`, and `lib/app/theme/warang_icons.dart` (generated icon codepoints).
-- Physical-device validation remains pending and owned by Len: verifying OSM tile loading on a signed release APK, camera capture with >30 MP photos, cold-start place book installation timing, GPS permission dialogs, and offline airplane-mode behavior.
+- Probes not possible without `lib/` edits or physical devices: `AUD-003` and `AUD-004` (require real device frame-timing and memory profiling), `AUD-006` (injecting a fault between sequential Drift calls inside `MomentEditSheet` requires altering internal DAO wiring), `AUD-018` (`ImagePicker()` is instantiated inline inside `pickProfilePhoto`), and `AUD-051` (requires a full release build).
+- Revision 1 listed `AUD-001` here; revision 2 removed it, because `android/key.properties` is present locally and the existing release APKs were inspected with `aapt2` instead.
+- The V3 probe sources under `test/_audit_probe/` were deleted after Phase 3 without a saved copy, so the probe outputs quoted in `AUD-002`, `AUD-005`, `AUD-008`, `AUD-010`, `AUD-011`, `AUD-014`, and `AUD-016` cannot be rerun from the repository; a re-verification has to rewrite those probes.
+- `check_report.py` checks field format and that each `path:line` exists, but not that the functions and code a finding names exist; revision 2 adds `check_identifiers.py` (scan `23-identifier-check.txt`) for that.
+- Areas checked by reading and static scans only: `android/` Gradle and XML configs, `scripts/build-and-archive.*` (untracked in Git), `tool/place_book/build_place_book.py`, and `lib/app/theme/warang_icons.dart` (generated icon codepoints).
+- Physical-device validation remains pending and owned by Len: verifying OSM tile loading on a signed release APK, picking a >30 MP gallery photo as the avatar, cold-start place book installation timing, GPS permission dialogs, and offline airplane-mode behavior.
 
 ## Appendix: rejected candidates
 
@@ -1242,3 +1313,52 @@ Twelve of the 62 unique evaluated candidates (after merging 15 duplicate candida
 | C-028 | `lib/features/places/place_picker_sheet.dart:156` | `setState(() => _loading = true)` appears after an `await` in `_runQuery` | False positive from regex scan: line 156 runs synchronously before `await book.search` at line 157; the earlier `await` at line 136 is inside an early-returning `if (query.isEmpty)` branch. |
 | C-029 | `lib/app/theme/clay_components.dart:229` | Lazily created `_ownFocus` and scan-10 lifecycle resources may leak | Manual review of every controller, `FocusNode`, `StreamSubscription`, and `Timer` in `10-lifecycle.txt` confirmed matching `dispose()`/`cancel()` calls (`_ownFocus?.dispose()` at line 257). |
 | C-045 | `test/icon_semantics_test.dart:112` (12 tests) | Twelve `testWidgets` blocks contain no direct `expect()` call | `icon_semantics_test.dart` delegates to `expectLabelledIcons()`, `maya_test.dart` delegates to `expectMaya()`, and `tool/ux_screenshots_test.dart` is a golden generator using `matchesGoldenFile`. |
+
+## Appendix: revision 2 corrections
+
+Revision 2 applies a Claude Code review of revision 1 (`946b3d7`), requested by Len on 2026-11-24 ("Yes make the corrections, Ill have gemini re verify it").
+Every correction below was checked against the code at `946b3d7`, which matches `7d6703f` for all product paths; the commands and outputs are in `docs/evidence/AUDIT-001-verification.md` under "Revision 2 review".
+Gemini re-verification of revision 2 is pending.
+
+### Withdrawn sub-claims
+
+| Finding | Revision 1 claim | Why it was withdrawn |
+| --- | --- | --- |
+| `AUD-042` (and `AUD-035`, Batch 1) | Release builds leave R8 code and resource shrinking off. | The Flutter Gradle plugin sets `isMinifyEnabled = true` and `isShrinkResources` for release (`FlutterPlugin.kt:217-218`), and `build/app/outputs/mapping/release/mapping.txt` exists from the 2026-11-23 release build. |
+| `AUD-009` | The Undo snackbar calls `ref.read(repositoryProvider)` at `travel_mode_screen.dart:152` without a `mounted` check. | `_delete` already reads `repository` and `selection` at lines 137-138 before the snackbar; line 152 is `selection.select(restored)`. |
+| `AUD-005` | `TripFormScreen` has a mid-save dismissal gap on step 0. | The form saves only on its last question (`_last`, line 106); the real gap is `_step--` on Back and the always-enabled Close button during a last-step save, now described in the finding. |
+
+### Wrong names and invented code corrected
+
+| Finding | Revision 1 text | Code at HEAD |
+| --- | --- | --- |
+| `AUD-004` | `_decodeAndFit`, `maxPixels`; 48 MP camera photos | `_decode` (`photo_store.dart:223`) and the literal `30 * 1000 * 1000` (line 231); camera input is already bounded by `pickImage(maxWidth: 2000)` (`device_providers.dart:28-31`), and only the avatar picker (`you_sheet.dart:348`) is unbounded. |
+| `AUD-006` | `setMomentPlace`, `attachMomentPlace`, `setMomentCategory` | `updateMoment`, then `clearPlace`, `attachBookPlace`, or `attachUserPlace`, then `setPlaceCategory` (`moment_edit_sheet.dart:107-134`); `_confirmPlacement` calls `setMomentLocation` and `attachBookPlace` (lines 198, 200). |
+| `AUD-017` | `trips.colour`; `from < 3` at lines 69-94 | `trips.colorKey` (line 66); `from < 3` runs at lines 69-73. |
+| `AUD-018` | `PhotoStore.maxPixels`, `PhotoTooLargeException`, `imagePickerProvider` | None of the three exist; the cap throws `FormatException`, and the existing provider is `cameraPickerProvider`. |
+| `AUD-025` | Before and after examples `final c = color!;`, `if (flag == true)`, `book.nearby(lat: lat, lon: lon, limit: 20)`; 74 lines removable | The real lines are `widget.tooltip!` (`clay.dart:746`), `place?.trim().isEmpty == true` (`repository.dart:414`), and `book.nearby(widget.near!, 150, limit: 8)` (`place_picker_sheet.dart:136`); only 27 hits remove a whole line. |
+| `AUD-037` | `WarangSpace` | No such class; `WarangLayout` (`tokens.dart:155`) holds only dock and rail sizes. |
+| `AUD-046` | `defaultLocationReader`, `_locateUser` | `locationPermissionProvider` and `locationReaderProvider` (`device_providers.dart:35-69`); `_refreshLocation` (`warang_map.dart:526`). |
+| `AUD-002` | Unbounded HTTP clients risking socket exhaustion | Each client is closed in `finally` (`map_tile_store.dart:411`); the cost is no connection reuse and no timeout. |
+| `AUD-012` | Both scripts should start failing on zero APKs and use a JSON serializer | `build-and-archive.ps1` already stops on zero APKs (lines 32, 122-124) and already uses `ConvertTo-Json` (line 179); both scripts are untracked. |
+
+### Severity changes
+
+| Finding | Revision 1 | Revision 2 | Reason |
+| --- | --- | --- | --- |
+| `AUD-003` | high | medium | An interrupted copy repairs itself on the next launch; the real cost is place book queries on the UI isolate. |
+| `AUD-007` | medium | low | The app's `ProviderContainer` (`main.dart:29`) is never disposed, so the bypassed hook would not run in production either. |
+| `AUD-008` | medium | low | Fails only on corrupted app-written JSON or a broken bundled asset. |
+| `AUD-010` | medium | low | Bundled asset loads seldom fail, and `StampTitles.load` failures are already caught at `repository.dart:359-363`. |
+| `AUD-015` | medium | low | A hash collision among at most 48 entries is very unlikely. |
+| `AUD-025` | medium | low | 27 removable lines, under the plan's 50-line medium threshold. |
+| `AUD-026` | medium | low | 0 removable lines; deleting files does not shrink Git history, and two files may be design sources. |
+| `AUD-001` | critical | critical (kept) | Kept as a release blocker, with a note that it does not match the plan's data-loss or security definition of critical. |
+
+### Added finding and stronger proof
+
+- `AUD-051` (new): both archive scripts archive stale APKs left from earlier builds under the new version and Git hash.
+- `AUD-001`: `aapt2 dump permissions` on the 2026-11-23 release APK and the 2026-09-12 archived release shows no `INTERNET` permission; the debug APK has it.
+- `AUD-009`: the Maya part now names the actual cause, a canceled `TickerFuture` that never completes, so `back` listeners pile up.
+- `AUD-017`: Drift writes `user_version` only after every migration step succeeds (drift 2.34.4 `engines.dart:557-562`), so a failure after `addColumn` likely leaves the database unable to open.
+- `check_identifiers.py` and scan `23-identifier-check.txt` list every code identifier the report names that the repository does not contain.
