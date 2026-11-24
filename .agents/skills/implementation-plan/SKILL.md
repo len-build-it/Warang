@@ -136,6 +136,36 @@ git commit -m "feat(<scope>): phase 2 - <short summary>"
 
 ---
 
+## Claim integrity
+
+These rules apply to every plan, evidence log, report, review, and handoff written under this skill.
+An agent working fast can write names and code from memory that sound right but do not exist, so every claim must trace back to something read in this session.
+
+- Copy, never recall: write a file path, line number, symbol, or code snippet only after copying it from tool output in this session, such as a file read, a search, or a command's output.
+  If you have not seen it in tool output, look it up first or leave it out.
+- Quote what you claim: when a document says what code does, quote at least one line verbatim in the `path:line: text` form that `git grep -n` prints.
+  Never write paraphrased code in that form; end a shortened quote with `...`.
+- Declare names that are not in the code: list names the work will add on a `New names:` line, and SDK, platform, or tool names on an `External names:` line, in the same document.
+- Cite framework behavior: a claim about a framework, SDK, platform, or tool default, such as a build flag, a lifecycle rule, or a permission, needs the SDK source path or the official documentation page opened in this session.
+  Without that citation, mark the claim unverified.
+- Trace before you claim a defect: a claim that code fails, crashes, loses data, or is unused names where the input comes from and what each caller already does, with a `path:line` for each step.
+- Say when it is unverified: label a claim unverified or Plausible and state the missing check, rather than wording it as fact.
+- Keep evidence reproducible: before deleting a temporary probe or test, save its source under the evidence folder, for example `docs/evidence/<ID>/probes/<name>.txt`, and record the exact command and output.
+- Keep batches small: a phase whose output is a list of claims, such as findings, verified items, or review notes, covers at most 10 claims or one code area, and records its start and end time.
+- Run the claim check in every phase gate, from the repository root, on each Markdown file the phase created or changed, and require `0 problems`:
+  `python .agents/skills/implementation-plan/scripts/check_claims.py <files>` (use `.claude/skills/...` where the project keeps skills there).
+  The script checks that each `path:line` exists, that each `path:line: text` quote matches the file, and that each code name in backticks exists in the code or is declared.
+
+## Independent verification
+
+Every plan ends with an independent verification phase, executed by an agent or session that did not write the work, such as a different model or a fresh session.
+The implementing agent finishes its approved phases, sets the handoff's next action to this phase, and never marks its own work independently verified.
+The verifier rereads the approved documents and the code, tries to disprove each claim in the plan, evidence, handoff, and any report, and records each claim as Confirmed, Corrected, or Withdrawn with its proof.
+The verifier corrects documents only; a product change it finds necessary goes back to Len as new work.
+The plan is complete only when this phase is recorded in the evidence and committed.
+
+---
+
 ## Guidelines
 
 - Never use the em dash "—".
