@@ -1,7 +1,7 @@
 # Specification index
 
 Created: 2026-10-16T22:55:00+08:00
-Updated: 2026-11-24T08:19:00+08:00
+Updated: 2026-11-24T08:27:00+08:00
 
 | Category | ID | Current path | Revision | Status | Replaces |
 | --- | --- | --- | --- | --- | --- |
@@ -24,6 +24,6 @@ Updated: 2026-11-24T08:19:00+08:00
 | Evidence | FEAT-004 | [docs/evidence/FEAT-004-verification.md](evidence/FEAT-004-verification.md) | - | Phases 0-8 recorded; physical-device checks pending | - |
 | Research | RES-002 | [docs/research/RES-002-place-search-categories-progression.md](research/RES-002-place-search-categories-progression.md) | decided | Background research; recommendations accepted by Len 2026-11-23; behaviour lives in FEAT-004 | - |
 | Plan | AUDIT-001 | [docs/plans/AUDIT-001-implementation.md](plans/AUDIT-001-implementation.md) | 1 | Complete | - |
-| Audit report | AUDIT-001 | [docs/audits/AUDIT-001-code-quality-report.md](audits/AUDIT-001-code-quality-report.md) | Revision 2 (audits `7d6703f`) | Revision 2 corrections applied; 51 findings across 6 remediation batches (changes no app code); Gemini re-verification pending | - |
-| Evidence | AUDIT-001 | [docs/evidence/AUDIT-001-verification.md](evidence/AUDIT-001-verification.md) | - | Phases 0-4 and the revision 2 review recorded; physical-device checks remain with Len | - |
+| Audit report | AUDIT-001 | [docs/audits/AUDIT-001-code-quality-report.md](audits/AUDIT-001-code-quality-report.md) | Revision 2 (audits `7d6703f`) | Complete and re-verified by Gemini; 51 findings across 6 remediation batches (changes no app code) | - |
+| Evidence | AUDIT-001 | [docs/evidence/AUDIT-001-verification.md](evidence/AUDIT-001-verification.md) | - | Phases 0-4, revision 2 review, and Gemini re-verification recorded; physical-device checks remain with Len | - |
 | Handoff | - | [HANDOFF.md](../HANDOFF.md) | - | Current | - |

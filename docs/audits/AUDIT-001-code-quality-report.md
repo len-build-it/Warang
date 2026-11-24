@@ -1,8 +1,8 @@
 # AUDIT-001: Code quality audit
 
 Created: 2026-11-24T07:13:00+08:00
-Updated: 2026-11-24T08:19:00+08:00
-Revision: 2 (corrections from a Claude Code review of revision 1 at `946b3d7`; Gemini re-verification pending)
+Updated: 2026-11-24T08:27:00+08:00
+Revision: 2 (corrections from a Claude Code review of revision 1 at `946b3d7`; re-verified by Gemini on 2026-11-24)
 Audited commit: `7d6703f` (`docs(plan): FEAT-004 phase 8 - polish and documents`)
 Flutter version: `Flutter 3.44.7` (channel stable, revision `84fc5cbb22`, `Dart 3.12.2`)
 
@@ -466,7 +466,7 @@ Fix: Expose a monotonic `int revision` counter on `WarangRepository` incremented
 - Effort: S (under 1 hour)
 - Lines removable: 0
 
-In `WarangDatabase.migration.onUpgrade`, the `from < 2` block at lines 65-68 calls `m.addColumn(trips, trips.colorKey)` and `await _colourExistingTrips()` outside a Drift `transaction`, whereas `from < 3` at lines 69-73 runs inside `transaction`.
+In `WarangDatabase.migration.onUpgrade`, the `from < 2` block at lines 65-68 calls `m.addColumn(trips, trips.colorKey)` and `await _colourExistingTrips()` outside a Drift `transaction`, whereas `from < 3` at lines 69-133 runs inside `transaction` (lines 70-132).
 Drift writes the new `user_version` only after every migration step succeeds, so if `_colourExistingTrips` throws after `addColumn` commits, the next launch reruns `addColumn` on a column that already exists, and the database likely fails to open on every launch after that.
 `test/migration_test.dart` tests v2-to-v3 and v1-to-v3 upgrades with data, leaving v1-to-v2 atomicity and rollback untested.
 
@@ -1317,8 +1317,8 @@ Twelve of the 62 unique evaluated candidates (after merging 15 duplicate candida
 ## Appendix: revision 2 corrections
 
 Revision 2 applies a Claude Code review of revision 1 (`946b3d7`), requested by Len on 2026-11-24 ("Yes make the corrections, Ill have gemini re verify it").
-Every correction below was checked against the code at `946b3d7`, which matches `7d6703f` for all product paths; the commands and outputs are in `docs/evidence/AUDIT-001-verification.md` under "Revision 2 review".
-Gemini re-verification of revision 2 is pending.
+Every correction below was checked against the code at `946b3d7`, which matches `7d6703f` for all product paths; the commands and outputs are in `docs/evidence/AUDIT-001-verification.md` under "Revision 2 review" and "Gemini re-verification of revision 2".
+Gemini re-verified revision 2 against the codebase, local build artifacts, Flutter SDK, and Drift pub cache on 2026-11-24 and corrected one line-range typo in `AUD-017` (`from < 3` spans `database.dart:69-133`, not `69-73`).
 
 ### Withdrawn sub-claims
 
@@ -1334,7 +1334,7 @@ Gemini re-verification of revision 2 is pending.
 | --- | --- | --- |
 | `AUD-004` | `_decodeAndFit`, `maxPixels`; 48 MP camera photos | `_decode` (`photo_store.dart:223`) and the literal `30 * 1000 * 1000` (line 231); camera input is already bounded by `pickImage(maxWidth: 2000)` (`device_providers.dart:28-31`), and only the avatar picker (`you_sheet.dart:348`) is unbounded. |
 | `AUD-006` | `setMomentPlace`, `attachMomentPlace`, `setMomentCategory` | `updateMoment`, then `clearPlace`, `attachBookPlace`, or `attachUserPlace`, then `setPlaceCategory` (`moment_edit_sheet.dart:107-134`); `_confirmPlacement` calls `setMomentLocation` and `attachBookPlace` (lines 198, 200). |
-| `AUD-017` | `trips.colour`; `from < 3` at lines 69-94 | `trips.colorKey` (line 66); `from < 3` runs at lines 69-73. |
+| `AUD-017` | `trips.colour`; `from < 3` at lines 69-94 | `trips.colorKey` (line 66); `from < 3` runs at lines 69-133 (`transaction` lines 70-132; initial rev 2 text wrote `69-73`, fixed during Gemini re-verification). |
 | `AUD-018` | `PhotoStore.maxPixels`, `PhotoTooLargeException`, `imagePickerProvider` | None of the three exist; the cap throws `FormatException`, and the existing provider is `cameraPickerProvider`. |
 | `AUD-025` | Before and after examples `final c = color!;`, `if (flag == true)`, `book.nearby(lat: lat, lon: lon, limit: 20)`; 74 lines removable | The real lines are `widget.tooltip!` (`clay.dart:746`), `place?.trim().isEmpty == true` (`repository.dart:414`), and `book.nearby(widget.near!, 150, limit: 8)` (`place_picker_sheet.dart:136`); only 27 hits remove a whole line. |
 | `AUD-037` | `WarangSpace` | No such class; `WarangLayout` (`tokens.dart:155`) holds only dock and rail sizes. |

@@ -1,7 +1,7 @@
 # Verification: AUDIT-001
 
 Created: 2026-11-24T07:13:00+08:00
-Updated: 2026-11-24T08:19:00+08:00
+Updated: 2026-11-24T08:27:00+08:00
 
 | Requirement / phase | Check or scenario | Environment and conditions | Actual result | When run | Evidence / limitations |
 | --- | --- | --- | --- | --- | --- |
@@ -369,3 +369,15 @@ Candidate accounting after revision 2: 77 Phase 1 and Phase 2 candidates plus `C
 The three withdrawn sub-claims (R8 in `AUD-042`, the Undo part of `AUD-009`, and the trip form step 0 part of `AUD-005`) were parts of reported findings, not separate candidates, so the rejected count stays 12.
 Severity changes: `AUD-003` high to medium; `AUD-007`, `AUD-008`, `AUD-010`, `AUD-015`, `AUD-025`, and `AUD-026` medium to low.
 The revision 1 rows above, including the disposition table, are kept as written; the report appendix "revision 2 corrections" supersedes them where they differ.
+
+
+## Gemini re-verification of revision 2
+
+Gemini independently re-verified commit `944beac` (`docs(audit): AUDIT-001 report revision 2 - review corrections`) against the repository at HEAD, local Android build artifacts, Flutter 3.44.7 SDK sources, and Drift 2.34.4 pub-cache sources on 2026-11-24.
+
+| Check | Command or source inspected | Environment and conditions | Actual result | When run | Evidence / notes |
+| --- | --- | --- | --- | --- | --- |
+| Product immutability | `git diff --stat 7d6703f HEAD -- lib test tool android ios assets design pubspec.yaml pubspec.lock analysis_options.yaml` | Windows 11, `Warang` at `944beac` | Passed under stated conditions: empty output (zero product changes across revisions 1 and 2) | 2026-11-24T08:25:35+08:00 | All product code matches audited baseline `7d6703f` |
+| Report & identifier scripts | `python docs/audits/AUDIT-001/scripts/check_report.py`; `python docs/audits/AUDIT-001/scripts/check_identifiers.py`; Python stat recount and em/en-dash check | Windows 11, Python 3 stdlib | Passed under stated conditions: `check_report.py` -> `0 problems`; `check_identifiers.py` -> `11 unresolved identifiers in 9 findings` (all external Dart/Flutter/Android API names, lint names, or historical `TravelbookService`); 51 findings (dangerous 1/4/11/7, unnecessary 0/0/2/5, sloppy 0/0/6/15), 32 Confirmed and 19 Plausible, 259 removable lines, 51/51 in batches, 0 em/en dashes, 0 vague `robust`/`various` | 2026-11-24T08:23:20+08:00 and 2026-11-24T08:24:25+08:00 | Matches revision 2 summary tables |
+| `AUD-001` & `AUD-042` build artifacts | `aapt2.exe dump permissions` on `build/app/outputs/flutter-apk/app-arm64-v8a-release.apk`, `releases/latest/warang-latest-arm64-v8a.apk`, and `build/app/outputs/flutter-apk/app-debug.apk`; merged release manifest grep; `FlutterPlugin.kt:215-223`; `build/app/outputs/mapping/release/mapping.txt`; `android/key.properties` existence | Windows 11, Android build-tools 37.0.0, Flutter 3.44.7 | Passed under stated conditions: both release APKs omit `INTERNET` while debug APK declares `android.permission.INTERNET`; all 3 merged release manifests have `0` matches; `android/key.properties` exists locally; `FlutterPlugin.kt:217-218` enables `isMinifyEnabled = true` and `isShrinkResources`; `mapping.txt` exists (6209270 bytes) | 2026-11-24T08:24:25+08:00 | Confirms `AUD-001` and withdrawal of R8 sub-claim in `AUD-042` |
+| Code reads & SDK / Drift checks | Direct line reads for `AUD-002`, `003`, `004`, `005`, `006`, `007`, `009`, `010`, `012`, `017`, `018`, `025`, `026`, `037`, `046`, `051`; Flutter `ticker.dart:409-425` and `animation_controller.dart:372-377,891-896`; Drift `engines.dart:549-566`; `AUD-025` recount on `01-strict-lints.txt` vs `02-dart-fix.txt` | Windows 11, `Warang` at `944beac`, Flutter 3.44.7, drift 2.34.4 | Passed with 1 line-range correction found: every symbol correction, withdrawal, and `AUD-051` verified; `AUD-025` recount matched (`64` hits in `01-strict-lints.txt`, `32` in `lib/`, `27` whole-line, `20` in `lib/`, `24` `DateTime(`, while `02-dart-fix.txt` reports `70` due to iterative multi-pass fixes on `DateTime` literals); found and fixed 1 line-range typo in `AUD-017` (`if (from < 3)` in `lib/data/db/database.dart` spans lines `69-133` with `transaction` at `70-132`, not `69-73`) | 2026-11-24T08:25:49+08:00 | Correction applied to `docs/audits/AUDIT-001-code-quality-report.md` |
