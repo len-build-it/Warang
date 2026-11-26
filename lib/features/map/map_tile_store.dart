@@ -14,6 +14,9 @@ import 'package:sqflite/sqflite.dart' as sqflite;
 
 const mapTileMaxAge = Duration(days: 30);
 const mapTileMaxBytes = 200 * 1024 * 1024;
+const _tileAccessTouchInterval = Duration(days: 1);
+const _tileConnectTimeout = Duration(seconds: 10);
+const _tileRequestTimeout = Duration(seconds: 15);
 
 /// Slippy-map Web Mercator tile coordinates for [point] at zoom [z].
 ({int x, int y}) tileCoordsForLatLng(LatLng point, int z) {
@@ -37,6 +40,7 @@ class MapTileRecord {
     required this.layerId,
     required this.bytes,
     required this.fetchedAt,
+    this.lastAccessedAt,
     this.etag,
   });
 
@@ -46,9 +50,10 @@ class MapTileRecord {
   final String layerId;
   final Uint8List bytes;
   final DateTime fetchedAt;
+  final DateTime? lastAccessedAt;
   final String? etag;
 
-  bool get isStale => DateTime.now().difference(fetchedAt) > mapTileMaxAge;
+  bool get isStale => DateTime.now().difference(fetchedAt) >= mapTileMaxAge;
 }
 
 class MapTileStore {
@@ -56,6 +61,7 @@ class MapTileStore {
   final String? databasePath;
   sqflite.Database? _database;
   Future<sqflite.Database>? _opening;
+  Future<void>? _evicting;
 
   bool _closed = false;
 
@@ -85,12 +91,27 @@ class MapTileStore {
               layerId TEXT NOT NULL,
               bytes BLOB NOT NULL,
               fetchedAt INTEGER NOT NULL,
+              lastAccessedAt INTEGER,
               etag TEXT,
               PRIMARY KEY (z, x, y, layerId)
             )
           ''');
+          final columns = await db.rawQuery('PRAGMA table_info(tiles)');
+          final hasLastAccessed = columns.any(
+            (col) => col['name'] == 'lastAccessedAt',
+          );
+          if (!hasLastAccessed) {
+            await db.execute(
+              'ALTER TABLE tiles ADD COLUMN lastAccessedAt INTEGER',
+            );
+            await db.execute('UPDATE tiles SET lastAccessedAt = fetchedAt');
+          }
           await db.execute(
             'CREATE INDEX IF NOT EXISTS tiles_fetched_at ON tiles (fetchedAt)',
+          );
+          await db.execute(
+            'CREATE INDEX IF NOT EXISTS tiles_last_accessed_at '
+            'ON tiles (lastAccessedAt)',
           );
           await db.execute('''
             CREATE TABLE IF NOT EXISTS map_camera (
@@ -132,7 +153,8 @@ class MapTileStore {
         limit: 1,
       );
       return rows.isNotEmpty;
-    } catch (_) {
+    } on Exception catch (e) {
+      if (!_closed && kDebugMode) debugPrint('MapTileStore.hasTile failed: $e');
       return false;
     }
   }
@@ -145,7 +167,8 @@ class MapTileStore {
   }) async {
     if (_closed) return null;
     try {
-      final rows = await (await _db).query(
+      final db = await _db;
+      final rows = await db.query(
         'tiles',
         where: 'z = ? AND x = ? AND y = ? AND layerId = ?',
         whereArgs: [z, x, y, layerId],
@@ -153,47 +176,146 @@ class MapTileStore {
       );
       if (rows.isEmpty) return null;
       final row = rows.single;
-      return MapTileRecord(
-        z: row['z']! as int,
-        x: row['x']! as int,
-        y: row['y']! as int,
-        layerId: row['layerId']! as String,
-        bytes: Uint8List.fromList((row['bytes']! as List<int>)),
-        fetchedAt: DateTime.fromMillisecondsSinceEpoch(
-          row['fetchedAt']! as int,
-        ),
-        etag: row['etag'] as String?,
-      );
-    } catch (_) {
+      if (row case {
+        'z': final int tileZ,
+        'x': final int tileX,
+        'y': final int tileY,
+        'layerId': final String tileLayerId,
+        'bytes': final List<int> rawBytes,
+        'fetchedAt': final int fetchedMs,
+      }) {
+        final fetchedAt = DateTime.fromMillisecondsSinceEpoch(fetchedMs);
+        final lastAccessedMs = row['lastAccessedAt'] as int?;
+        final lastAccessedAt = lastAccessedMs == null
+            ? fetchedAt
+            : DateTime.fromMillisecondsSinceEpoch(lastAccessedMs);
+        final now = DateTime.now();
+        if (lastAccessedMs == null ||
+            now.difference(lastAccessedAt) > _tileAccessTouchInterval) {
+          unawaited(
+            _touchLastAccessed(
+              db,
+              z: tileZ,
+              x: tileX,
+              y: tileY,
+              layerId: tileLayerId,
+              at: now,
+            ),
+          );
+        }
+        return MapTileRecord(
+          z: tileZ,
+          x: tileX,
+          y: tileY,
+          layerId: tileLayerId,
+          bytes: Uint8List.fromList(rawBytes),
+          fetchedAt: fetchedAt,
+          lastAccessedAt: lastAccessedAt,
+          etag: row['etag'] as String?,
+        );
+      }
+      return null;
+    } on Exception catch (e) {
+      if (!_closed && kDebugMode) debugPrint('MapTileStore.get failed: $e');
       return null;
     }
   }
 
+  Future<void> _touchLastAccessed(
+    sqflite.Database db, {
+    required int z,
+    required int x,
+    required int y,
+    required String layerId,
+    required DateTime at,
+  }) async {
+    if (_closed || !db.isOpen) return;
+    try {
+      await db.update(
+        'tiles',
+        {'lastAccessedAt': at.millisecondsSinceEpoch},
+        where: 'z = ? AND x = ? AND y = ? AND layerId = ?',
+        whereArgs: [z, x, y, layerId],
+      );
+    } on Exception catch (e) {
+      if (kDebugMode) debugPrint('MapTileStore._touchLastAccessed failed: $e');
+    }
+  }
+
   Future<void> put(MapTileRecord tile) async {
+    final fetchedMs = tile.fetchedAt.millisecondsSinceEpoch;
+    final accessedMs =
+        (tile.lastAccessedAt ?? tile.fetchedAt).millisecondsSinceEpoch;
     await (await _db).insert('tiles', {
       'z': tile.z,
       'x': tile.x,
       'y': tile.y,
       'layerId': tile.layerId,
       'bytes': tile.bytes,
-      'fetchedAt': tile.fetchedAt.millisecondsSinceEpoch,
+      'fetchedAt': fetchedMs,
+      'lastAccessedAt': accessedMs,
       'etag': tile.etag,
     }, conflictAlgorithm: sqflite.ConflictAlgorithm.replace);
     await evictToLimit(mapTileMaxBytes);
   }
 
-  Future<void> evictToLimit(int maxBytes) async {
-    final db = await _db;
-    var remaining = await totalBytes();
-    if (remaining <= maxBytes) return;
-    final rows = await db.rawQuery(
-      'SELECT rowid, length(bytes) AS size FROM tiles ORDER BY fetchedAt ASC',
+  Future<void> refreshMetadata({
+    required int z,
+    required int x,
+    required int y,
+    required String layerId,
+    required DateTime fetchedAt,
+    String? etag,
+  }) async {
+    if (_closed) return;
+    final ms = fetchedAt.millisecondsSinceEpoch;
+    await (await _db).update(
+      'tiles',
+      {'fetchedAt': ms, 'lastAccessedAt': ms, 'etag': etag},
+      where: 'z = ? AND x = ? AND y = ? AND layerId = ?',
+      whereArgs: [z, x, y, layerId],
     );
-    for (final row in rows) {
-      if (remaining <= maxBytes) break;
-      await db.delete('tiles', where: 'rowid = ?', whereArgs: [row['rowid']]);
-      remaining -= (row['size'] as num?)?.toInt() ?? 0;
+  }
+
+  Future<void> evictToLimit(int maxBytes) async {
+    final pending = _evicting;
+    if (pending != null) {
+      await pending;
     }
+    final task = _evictToLimitSerialized(maxBytes);
+    _evicting = task;
+    try {
+      await task;
+    } finally {
+      if (identical(_evicting, task)) {
+        _evicting = null;
+      }
+    }
+  }
+
+  Future<void> _evictToLimitSerialized(int maxBytes) async {
+    if (_closed) return;
+    final db = await _db;
+    await db.transaction((txn) async {
+      final totalRows = await txn.rawQuery(
+        'SELECT COALESCE(SUM(length(bytes)), 0) AS total FROM tiles',
+      );
+      var remaining = (totalRows.single['total'] as num?)?.toInt() ?? 0;
+      if (remaining <= maxBytes) return;
+      final rows = await txn.rawQuery(
+        'SELECT rowid, length(bytes) AS size FROM tiles '
+        'ORDER BY COALESCE(lastAccessedAt, fetchedAt) ASC, fetchedAt ASC',
+      );
+      for (final row in rows) {
+        if (remaining <= maxBytes) break;
+        await txn.delete(
+          'tiles',
+          where: 'rowid = ?',
+          whereArgs: [row['rowid']],
+        );
+        remaining -= (row['size'] as num?)?.toInt() ?? 0;
+      }
+    });
   }
 
   Future<int> totalBytes() async {
@@ -211,14 +333,19 @@ class MapTileStore {
       final rows = await (await _db).query('map_camera', limit: 1);
       if (rows.isEmpty) return null;
       final row = rows.single;
-      return MapCameraSnapshot(
-        center: LatLng(
-          (row['latitude']! as num).toDouble(),
-          (row['longitude']! as num).toDouble(),
-        ),
-        zoom: (row['zoom']! as num).toDouble(),
-      );
-    } catch (_) {
+      if (row case {
+        'latitude': final num lat,
+        'longitude': final num lon,
+        'zoom': final num zoom,
+      }) {
+        return MapCameraSnapshot(
+          center: LatLng(lat.toDouble(), lon.toDouble()),
+          zoom: zoom.toDouble(),
+        );
+      }
+      return null;
+    } on Exception catch (e) {
+      if (kDebugMode) debugPrint('MapTileStore.loadCamera failed: $e');
       return null;
     }
   }
@@ -232,7 +359,9 @@ class MapTileStore {
         'longitude': center.longitude,
         'zoom': zoom,
       }, conflictAlgorithm: sqflite.ConflictAlgorithm.replace);
-    } catch (_) {}
+    } on Exception catch (e) {
+      if (kDebugMode) debugPrint('MapTileStore.saveCamera failed: $e');
+    }
   }
 
   Future<MapLocationSnapshot?> loadLocation() async {
@@ -241,17 +370,20 @@ class MapTileStore {
       final rows = await (await _db).query('map_location', limit: 1);
       if (rows.isEmpty) return null;
       final row = rows.single;
-      return MapLocationSnapshot(
-        center: LatLng(
-          (row['latitude']! as num).toDouble(),
-          (row['longitude']! as num).toDouble(),
-        ),
-        accuracy: (row['accuracy'] as num?)?.toDouble(),
-        updatedAt: DateTime.fromMillisecondsSinceEpoch(
-          row['updatedAt']! as int,
-        ),
-      );
-    } catch (_) {
+      if (row case {
+        'latitude': final num lat,
+        'longitude': final num lon,
+        'updatedAt': final int updatedMs,
+      }) {
+        return MapLocationSnapshot(
+          center: LatLng(lat.toDouble(), lon.toDouble()),
+          accuracy: (row['accuracy'] as num?)?.toDouble(),
+          updatedAt: DateTime.fromMillisecondsSinceEpoch(updatedMs),
+        );
+      }
+      return null;
+    } on Exception catch (e) {
+      if (kDebugMode) debugPrint('MapTileStore.loadLocation failed: $e');
       return null;
     }
   }
@@ -269,11 +401,19 @@ class MapTileStore {
         'accuracy': accuracy,
         'updatedAt': DateTime.now().millisecondsSinceEpoch,
       }, conflictAlgorithm: sqflite.ConflictAlgorithm.replace);
-    } catch (_) {}
+    } on Exception catch (e) {
+      if (kDebugMode) debugPrint('MapTileStore.saveLocation failed: $e');
+    }
   }
 
   Future<void> close() async {
     _closed = true;
+    final pending = _evicting;
+    if (pending != null) {
+      try {
+        await pending;
+      } on Exception catch (_) {}
+    }
     final db = _database ?? await _opening;
     _database = null;
     _opening = null;
@@ -306,6 +446,7 @@ class CachedTileProvider extends TileProvider {
     required this.layerId,
     this.client,
     this.onStaleTile,
+    this.requestTimeout = _tileRequestTimeout,
     super.headers,
   });
 
@@ -313,6 +454,22 @@ class CachedTileProvider extends TileProvider {
   final String layerId;
   final HttpClient? client;
   final ValueChanged<DateTime>? onStaleTile;
+  final Duration requestTimeout;
+
+  HttpClient? _httpClient;
+
+  HttpClient _ensureHttpClient() {
+    if (client != null) return client!;
+    return _httpClient ??= HttpClient()
+      ..connectionTimeout = _tileConnectTimeout;
+  }
+
+  @override
+  void dispose() {
+    _httpClient?.close(force: true);
+    _httpClient = null;
+    super.dispose();
+  }
 
   @override
   ImageProvider getImage(TileCoordinates coordinates, TileLayer options) {
@@ -333,13 +490,15 @@ class CachedTileProvider extends TileProvider {
   }) async {
     final cached = await store.get(z: z, x: x, y: y, layerId: layerId);
     if (cached != null) {
-      if (cached.isStale) onStaleTile?.call(cached.fetchedAt);
-      unawaited(_revalidate(z: z, x: x, y: y, url: url, cached: cached));
+      if (DateTime.now().difference(cached.fetchedAt) >= mapTileMaxAge) {
+        onStaleTile?.call(cached.fetchedAt);
+        unawaited(_revalidate(z: z, x: x, y: y, url: url, cached: cached));
+      }
       return cached.bytes;
     }
     try {
       return await _fetchAndStore(z: z, x: x, y: y, url: url, cached: null);
-    } catch (_) {
+    } on Exception catch (_) {
       return _placeholderBytes;
     }
   }
@@ -353,7 +512,7 @@ class CachedTileProvider extends TileProvider {
   }) async {
     try {
       await _fetchAndStore(z: z, x: x, y: y, url: url, cached: cached);
-    } catch (_) {
+    } on Exception catch (_) {
       // Stale bytes remain available when the device is offline.
     }
   }
@@ -365,51 +524,48 @@ class CachedTileProvider extends TileProvider {
     required String url,
     required MapTileRecord? cached,
   }) async {
-    final httpClient = client ?? HttpClient();
-    try {
-      final request = await httpClient.getUrl(Uri.parse(url));
-      headers.forEach(request.headers.set);
-      if (cached?.etag != null) {
-        request.headers.set(HttpHeaders.ifNoneMatchHeader, cached!.etag!);
-      }
-      final response = await request.close();
-      if (response.statusCode == HttpStatus.notModified && cached != null) {
-        await store.put(
-          MapTileRecord(
-            z: z,
-            x: x,
-            y: y,
-            layerId: layerId,
-            bytes: cached.bytes,
-            fetchedAt: DateTime.now(),
-            etag: cached.etag,
-          ),
-        );
-        return cached.bytes;
-      }
-      if (response.statusCode != HttpStatus.ok) {
-        throw HttpException('Tile request failed: ${response.statusCode}');
-      }
-      final builder = BytesBuilder(copy: false);
-      await for (final chunk in response) {
-        builder.add(chunk);
-      }
-      final bytes = builder.takeBytes();
-      await store.put(
-        MapTileRecord(
-          z: z,
-          x: x,
-          y: y,
-          layerId: layerId,
-          bytes: bytes,
-          fetchedAt: DateTime.now(),
-          etag: response.headers.value(HttpHeaders.etagHeader),
-        ),
-      );
-      return bytes;
-    } finally {
-      if (client == null) httpClient.close(force: true);
+    final httpClient = _ensureHttpClient();
+    final request = await httpClient
+        .getUrl(Uri.parse(url))
+        .timeout(requestTimeout);
+    headers.forEach(request.headers.set);
+    if (cached?.etag != null) {
+      request.headers.set(HttpHeaders.ifNoneMatchHeader, cached!.etag!);
     }
+    final response = await request.close().timeout(requestTimeout);
+    if (response.statusCode == HttpStatus.notModified && cached != null) {
+      await response.drain<void>().timeout(requestTimeout);
+      await store.refreshMetadata(
+        z: z,
+        x: x,
+        y: y,
+        layerId: layerId,
+        fetchedAt: DateTime.now(),
+        etag: response.headers.value(HttpHeaders.etagHeader) ?? cached.etag,
+      );
+      return cached.bytes;
+    }
+    if (response.statusCode != HttpStatus.ok) {
+      await response.drain<void>().timeout(requestTimeout);
+      throw HttpException('Tile request failed: ${response.statusCode}');
+    }
+    final builder = BytesBuilder(copy: false);
+    await for (final chunk in response.timeout(requestTimeout)) {
+      builder.add(chunk);
+    }
+    final bytes = builder.takeBytes();
+    await store.put(
+      MapTileRecord(
+        z: z,
+        x: x,
+        y: y,
+        layerId: layerId,
+        bytes: bytes,
+        fetchedAt: DateTime.now(),
+        etag: response.headers.value(HttpHeaders.etagHeader),
+      ),
+    );
+    return bytes;
   }
 }
 

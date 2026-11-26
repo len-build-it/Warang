@@ -1,7 +1,7 @@
 # Verification: AUDIT-001 remediation
 
 Created: 2026-11-27T07:42:00+08:00
-Updated: 2026-11-27T07:42:00+08:00
+Updated: 2026-11-27T07:49:00+08:00
 
 | Requirement / phase | Check or scenario | Environment and conditions | Actual result | When run | Evidence / limitations |
 | --- | --- | --- | --- | --- | --- |
@@ -9,6 +9,8 @@ Updated: 2026-11-27T07:42:00+08:00
 | REM-REQ-001 / Phase 1 | `flutter test test/android_hardening_test.dart test/utility_screens_test.dart` | Windows, Flutter 3.44.7, Dart 3.12.2 | Passed under stated conditions: 13 passed, 0 failed | 2026-11-27T07:41:37+08:00 | Verifies `INTERNET`, `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`, `requireNotNull(keystoreProperties.getProperty(...))`, and `AboutScreen` showing `Version 1.0.0` without `APP_VERSION`. |
 | REM-REQ-001 / Phase 1 | PowerShell syntax check on untracked `scripts/build-and-archive.ps1` | Windows PowerShell AST parser | Passed under stated conditions: `PS1 parse errors: 0` | 2026-11-27T07:40:03+08:00 | Untracked script per D-3; full release APK build and `aapt2`/`apksigner` run not executed here. |
 | REM-REQ-001 / Phase 1 | Physical-device map tile loading on a freshly built signed release APK | Physical Android phone | Not run | Pending (Len) | Owned by Len. |
+| REM-REQ-002 / Phase 2 | `flutter analyze` | Windows, Flutter 3.44.7, Dart 3.12.2 | Passed under stated conditions: `No issues found!` | 2026-11-27T07:48:44+08:00 | Static analysis only. |
+| REM-REQ-002 / Phase 2 | `flutter test test/map_tile_store_test.dart test/map_pins_test.dart test/map_places_test.dart test/map_clusters_and_credit_test.dart test/map_navigation_test.dart` | Windows, Flutter 3.44.7, Dart 3.12.2 | Passed under stated conditions: 42 passed, 0 failed | 2026-11-27T07:48:44+08:00 | Covers fresh-hit zero-HTTP, 304 metadata refresh, timeout/malformed-row resilience, legacy `lastAccessedAt` upgrade, serialized LRU eviction, map pins, places, clusters, credit, and navigation. |
 
 ## Phase 1 notes
 

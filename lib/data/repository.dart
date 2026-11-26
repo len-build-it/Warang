@@ -222,7 +222,11 @@ class WarangRepository extends ChangeNotifier {
       );
     });
     await _refreshAll();
-    return _placesById[placeId]!;
+    final attached = _placesById[placeId];
+    if (attached == null) {
+      throw StateError('Book place $placeId missing after refresh');
+    }
+    return attached;
   }
 
   /// Attaches a user-typed place name to [momentId], reusing any existing user

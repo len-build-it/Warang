@@ -366,7 +366,7 @@ class _ColourAnswer extends StatelessWidget {
     children: [
       for (final key in tripColorKeys)
         WarangChip(
-          label: tripColorNames[key]!,
+          label: tripColorNames[key] ?? key,
           tone: WarangKeepsake.byKey(key),
           selected: key == selected,
           onSelected: () => onSelected(key),

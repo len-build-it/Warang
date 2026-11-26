@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../app/theme/components.dart';
@@ -43,7 +44,10 @@ class _MomentPhotoState extends State<MomentPhoto> {
     try {
       final file = await widget.photoStore.resolve(path);
       return file.existsSync() ? file : null;
-    } catch (_) {
+    } on Exception catch (e) {
+      if (kDebugMode) {
+        debugPrint('MomentPhoto resolve failed: $e');
+      }
       return null;
     }
   }

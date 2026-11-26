@@ -1099,7 +1099,10 @@ class _MomentPolaroidState extends State<_MomentPolaroid> {
     if (relPath == null) return null;
     try {
       return await widget.photoStore.resolve(relPath);
-    } catch (_) {
+    } on Exception catch (e) {
+      if (kDebugMode) {
+        debugPrint('MomentPolaroid resolve failed: $e');
+      }
       return null;
     }
   }

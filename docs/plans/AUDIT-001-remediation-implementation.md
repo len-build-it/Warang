@@ -1,9 +1,9 @@
 # Implementation Plan: AUDIT-001 remediation (Ponytail and Clean Code)
 
 Created: 2026-11-24T21:40:00+08:00
-Updated: 2026-11-27T07:42:00+08:00
+Updated: 2026-11-27T07:49:00+08:00
 Revision: 2
-Status: In progress - Phase 1 complete
+Status: In progress - Phase 2 complete
 Feature spec and revision: None; this plan addresses the 51 findings in `docs/audits/AUDIT-001-code-quality-report.md` (revision 2, re-verified at `a8d3e68`) under requirements `REM-REQ-001` to `REM-REQ-006`, defined in this plan
 Approved baseline and architecture revisions: `docs/IMPLEMENTATION_PLAN.md` at `dc407c5` (T17 keeps `sqflite` for map tiles), `docs/REMEDIATION_IMPLEMENTATION_PLAN.md` at `dc407c5`, FEAT-001 to FEAT-004 revision 1 as listed in `docs/SPEC_INDEX.md`
 Len's chat approval: 2026-11-26T23:32:00+08:00 chat, plan revision 2: "Approve, run without stops"; D-1: "Delete it and amend FEAT-003"; D-2 and D-3: "Yes, as recommended" (recorded in `HANDOFF.md`)
@@ -118,48 +118,48 @@ Current code anchors:
 ## Phase 2: Offline map tile store and map surface stability
 
 Requirements: `REM-REQ-002` (`AUD-002`, `AUD-007`, `AUD-020`, `AUD-021`, `AUD-033`, `AUD-046`)
-State: Approved - not started
+State: Complete
 
 Current code anchors:
 
-    lib/features/map/map_tile_store.dart:76:       return _database = await sqflite.openDatabase(
-    lib/features/map/map_tile_store.dart:81:             CREATE TABLE IF NOT EXISTS tiles (
-    lib/features/map/map_tile_store.dart:172:   Future<void> put(MapTileRecord tile) async {
-    lib/features/map/map_tile_store.dart:337:       unawaited(_revalidate(z: z, x: x, y: y, url: url, cached: cached));
-    lib/features/map/map_tile_store.dart:368:     final httpClient = client ?? HttpClient();
-    lib/features/map/map_tile_store.dart:376:       if (response.statusCode == HttpStatus.notModified && cached != null) {
-    lib/main.dart:32:       mapTileStoreProvider.overrideWithValue(MapTileStore()),
-    lib/features/map/warang_map.dart:186:                 unawaited(_tileStore.saveCamera(camera.center, camera.zoom));
-    lib/features/map/warang_map.dart:197:                 tileProvider: CachedTileProvider(
-    lib/features/map/warang_map.dart:526:   Future<void> _refreshLocation({required bool moveToUser}) async {
+    lib/features/map/map_tile_store.dart:82:       return _database = await sqflite.openDatabase(
+    lib/features/map/map_tile_store.dart:87:             CREATE TABLE IF NOT EXISTS tiles (
+    lib/features/map/map_tile_store.dart:245:   Future<void> put(MapTileRecord tile) async {
+    lib/features/map/map_tile_store.dart:493:       if (DateTime.now().difference(cached.fetchedAt) >= mapTileMaxAge) {
+    lib/features/map/map_tile_store.dart:527:     final httpClient = _ensureHttpClient();
+    lib/features/map/map_tile_store.dart:536:     if (response.statusCode == HttpStatus.notModified && cached != null) {
+    lib/main.dart:29:     overrides: [repositoryProvider.overrideWithValue(repository)],
+    lib/features/map/warang_map.dart:255:                 _scheduleSaveCamera(camera.center, camera.zoom);
+    lib/features/map/warang_map.dart:266:                 tileProvider: _cachedTileProvider,
+    lib/features/map/warang_map.dart:588:   Future<void> _refreshLocation({required bool moveToUser}) async {
 
-The tile database is opened without a `version` or `onUpgrade`, and its tables are created in `onOpen` with `CREATE TABLE IF NOT EXISTS` (`lib/features/map/map_tile_store.dart:76-110`).
+The tile database is opened without a `version` or `onUpgrade`, and its tables are created in `onOpen` with `CREATE TABLE IF NOT EXISTS` (`lib/features/map/map_tile_store.dart:79-125`).
 Adding a column to that statement never reaches existing installs, so `lastAccessedAt` needs an explicit in-place upgrade.
 
 ### Tasks
 
-- [ ] In `lib/features/map/map_tile_store.dart` (`AUD-002`): skip `_revalidate` in `CachedTileProvider.loadBytes` when `DateTime.now().difference(cached.fetchedAt) < mapTileMaxAge`; reuse one `_httpClient` with `connectionTimeout` (`10s`) and request timeout (`15s`); on HTTP `304`, update `fetchedAt` and `etag` in place without rewriting `bytes`; serialize `evictToLimit` with an in-memory `_evicting` guard inside one `sqflite` transaction, ordered by `lastAccessedAt` (preserving `docs/IMPLEMENTATION_PLAN.md` T17).
-- [ ] Add `lastAccessedAt INTEGER` to the `tiles` table for new installs, and upgrade existing databases in `onOpen`: read `PRAGMA table_info(tiles)`, and when the column is missing run `ALTER TABLE tiles ADD COLUMN lastAccessedAt INTEGER` followed by `UPDATE tiles SET lastAccessedAt = fetchedAt`; add an index on `lastAccessedAt` (`AUD-002`).
-- [ ] Write `lastAccessedAt` on a cache hit only when the stored value is more than one day old, so viewing fresh tiles does not add a database write per tile (`AUD-002`).
-- [ ] Delete the redundant `mapTileStoreProvider.overrideWithValue(MapTileStore())` line at `lib/main.dart:32` (`AUD-007`).
-- [ ] Replace unchecked `! as` casts on raw `sqflite` maps (`map_tile_store.dart:157-164`, `216-219`, `246-251`) and the five map `!` lookups (`repository.dart:225`, `clay.dart:61` and `63`, `trip_form_screen.dart:369`, `warang_map.dart:115`) with pattern matching and null-safe lookups (`AUD-020`).
-- [ ] Narrow empty `catch (_) {}` blocks (`map_tile_store.dart:235`, `272`) and silent photo catches (`lib/app/shell/you_sheet.dart:459`, `lib/features/home_tab/trip_photo.dart:46`, `lib/features/travel_mode/travel_mode_screen.dart:1102`) to `on Exception` with debug-only `debugPrint` (`AUD-021`).
-- [ ] In `lib/features/map/warang_map.dart` (`AUD-033`): debounce `saveCamera` via a 400 ms `_cameraDebounce` timer flushed in `dispose()`; cache `_cachedTileProvider` in state instead of allocating inside `build()`; move `_returning`/`_landed`/`_landing` mutations into `didUpdateWidget`; prune `_photos` entries for removed moment IDs.
-- [ ] Extract one `checkLocationAccess` helper in `lib/app/device_providers.dart` that checks `isLocationServiceEnabled()` and permission status, and call it from both `locationReaderProvider` and `WarangMapSurface._refreshLocation` (`AUD-046`).
-- [ ] Add regression tests in `test/map_tile_store_test.dart` covering fresh-hit zero-HTTP behavior, `304` metadata-only refresh, timeout/malformed-row resilience, upgrade of a tile database created with the old schema (no `lastAccessedAt` column), and serialized least-recently-used eviction.
+- [x] In `lib/features/map/map_tile_store.dart` (`AUD-002`): skip `_revalidate` in `CachedTileProvider.loadBytes` when `DateTime.now().difference(cached.fetchedAt) < mapTileMaxAge`; reuse one `_httpClient` with `connectionTimeout` (`10s`) and request timeout (`15s`); on HTTP `304`, update `fetchedAt` and `etag` in place without rewriting `bytes`; serialize `evictToLimit` with an in-memory `_evicting` guard inside one `sqflite` transaction, ordered by `lastAccessedAt` (preserving `docs/IMPLEMENTATION_PLAN.md` T17).
+- [x] Add `lastAccessedAt INTEGER` to the `tiles` table for new installs, and upgrade existing databases in `onOpen`: read `PRAGMA table_info(tiles)`, and when the column is missing run `ALTER TABLE tiles ADD COLUMN lastAccessedAt INTEGER` followed by `UPDATE tiles SET lastAccessedAt = fetchedAt`; add an index on `lastAccessedAt` (`AUD-002`).
+- [x] Write `lastAccessedAt` on a cache hit only when the stored value is more than one day old, so viewing fresh tiles does not add a database write per tile (`AUD-002`).
+- [x] Delete the redundant `mapTileStoreProvider.overrideWithValue(MapTileStore())` line at `lib/main.dart:32` (`AUD-007`).
+- [x] Replace unchecked `! as` casts on raw `sqflite` maps (`map_tile_store.dart:157-164`, `216-219`, `246-251`) and the five map `!` lookups (`repository.dart:225`, `clay.dart:61` and `63`, `trip_form_screen.dart:369`, `warang_map.dart:115`) with pattern matching and null-safe lookups (`AUD-020`).
+- [x] Narrow empty `catch (_) {}` blocks (`map_tile_store.dart:235`, `272`) and silent photo catches (`lib/app/shell/you_sheet.dart:459`, `lib/features/home_tab/trip_photo.dart:46`, `lib/features/travel_mode/travel_mode_screen.dart:1102`) to `on Exception` with debug-only `debugPrint` (`AUD-021`).
+- [x] In `lib/features/map/warang_map.dart` (`AUD-033`): debounce `saveCamera` via a 400 ms `_cameraDebounce` timer flushed in `dispose()`; cache `_cachedTileProvider` in state instead of allocating inside `build()`; move `_returning`/`_landed`/`_landing` mutations into `didUpdateWidget`; prune `_photos` entries for removed moment IDs.
+- [x] Extract one `checkLocationAccess` helper in `lib/app/device_providers.dart` that checks `isLocationServiceEnabled()` and permission status, and call it from both `locationReaderProvider` and `WarangMapSurface._refreshLocation` (`AUD-046`).
+- [x] Add regression tests in `test/map_tile_store_test.dart` covering fresh-hit zero-HTTP behavior, `304` metadata-only refresh, timeout/malformed-row resilience, upgrade of a tile database created with the old schema (no `lastAccessedAt` column), and serialized least-recently-used eviction.
 
 ### Verification
 
-- [ ] `flutter analyze` prints `No issues found!`.
-- [ ] `flutter test test/map_tile_store_test.dart test/map_pins_test.dart test/map_places_test.dart test/map_clusters_and_credit_test.dart test/map_navigation_test.dart` passes.
-- [ ] `python .agents/skills/implementation-plan/scripts/check_claims.py docs/plans/AUDIT-001-remediation-implementation.md docs/evidence/AUDIT-001-remediation-verification.md HANDOFF.md` prints `0 problems`.
-- [ ] Probe or temporary test sources are saved under the evidence folder before they are deleted.
+- [x] `flutter analyze` prints `No issues found!`.
+- [x] `flutter test test/map_tile_store_test.dart test/map_pins_test.dart test/map_places_test.dart test/map_clusters_and_credit_test.dart test/map_navigation_test.dart` passes.
+- [x] `python .agents/skills/implementation-plan/scripts/check_claims.py docs/plans/AUDIT-001-remediation-implementation.md docs/evidence/AUDIT-001-remediation-verification.md HANDOFF.md` prints `0 problems`.
+- [x] Probe or temporary test sources are saved under the evidence folder before they are deleted.
 
 ### Review and checkpoint
 
-- [ ] Verify no regression to offline tile rendering or pin clustering.
-- [ ] Update plan, evidence, and `HANDOFF.md`; stage only Phase 2 paths and verify `git diff --cached --stat`.
-- [ ] Commit with `fix(map): AUDIT-001 phase 2 - tile cache, surface state, and location helper` and verify Git exit code.
+- [x] Verify no regression to offline tile rendering or pin clustering.
+- [x] Update plan, evidence, and `HANDOFF.md`; stage only Phase 2 paths and verify `git diff --cached --stat`.
+- [x] Commit with `fix(map): AUDIT-001 phase 2 - tile cache, surface state, and location helper` and verify Git exit code.
 
 ## Phase 3: Off-UI-isolate media, place book, and GPU image hygiene
 
@@ -174,8 +174,8 @@ Current code anchors:
     lib/data/files/photo_store.dart:223:   img.Image _decode(Uint8List bytes) {
     lib/app/shell/you_sheet.dart:348:   final picked = await ImagePicker().pickImage(
     lib/features/capture/capture_screen.dart:211:           : Image.file(
-    lib/features/travel_mode/travel_mode_screen.dart:1157:           if (file == null || !file.existsSync()) return placeholder;
-    lib/app/theme/clay.dart:541:     final key = Object.hash(
+    lib/features/travel_mode/travel_mode_screen.dart:1160:           if (file == null || !file.existsSync()) return placeholder;
+    lib/app/theme/clay.dart:547:     final key = Object.hash(
     lib/app/theme/motion.dart:24:   Curve get curve => _SpringCurve(this, clamp: false);
 
 ### Tasks
@@ -216,7 +216,7 @@ Current code anchors:
     lib/features/travel_mode/moment_edit_sheet.dart:107:       await widget.repository.updateMoment(
     lib/features/travel_mode/travel_mode_screen.dart:192:   Future<void> _confirmPlacement() async {
     lib/data/repository.dart:129:   Future<void> setAvatar(File source) async {
-    lib/data/repository.dart:345:         : (jsonDecode(raw) as List<dynamic>).cast<String>();
+    lib/data/repository.dart:349:         : (jsonDecode(raw) as List<dynamic>).cast<String>();
     lib/features/maya/maya_companion.dart:257:     _drag.animateWith(WarangMotion.release.simulate(1, 0)).whenComplete(() {
     lib/features/places/place_picker_sheet.dart:136:       final nearby = await book.nearby(widget.near!, 150, limit: 8);
     lib/features/search/search_tab_screen.dart:139:     if (widget.query != _query ||
@@ -256,7 +256,7 @@ State: Approved - not started
 
 Current code anchors:
 
-    lib/data/repository.dart:555:   Future<void> upsertImportedTrip(
+    lib/data/repository.dart:559:   Future<void> upsertImportedTrip(
     lib/app/theme/clay_components.dart:1147: class WarangToggle extends StatelessWidget {
     test/clay_components_test.dart:289:       testWidgets('toggles show state with a check and semantics ($variant)', (
     lib/features/news_tab/news_tab_screen.dart:11: sealed class NewsListEntry {
@@ -304,7 +304,7 @@ Current code anchors:
 
     lib/data/repository.dart:47:     _profileSubscription = database.profilesDao.watchActive().listen((row) {
     lib/data/places/place_book.dart:180:       rows = await _db
-    lib/features/travel_mode/travel_mode_screen.dart:1157:           if (file == null || !file.existsSync()) return placeholder;
+    lib/features/travel_mode/travel_mode_screen.dart:1160:           if (file == null || !file.existsSync()) return placeholder;
     tool/place_book/build_place_book.py:325:         except Exception:
     tool/place_book/build_place_book.py:423:         out_path.unlink()
     tool/place_book/build_place_book.py:427:         schema_sql = schema_sql.replace(",\n  prefix = '2 3'", "")

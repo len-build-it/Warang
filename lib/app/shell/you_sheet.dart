@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -456,7 +457,12 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
         : widget.photoStore
               .resolve(path)
               .then<File?>((file) async => await file.exists() ? file : null)
-              .catchError((_) => null);
+              .catchError((Object e) {
+                if (kDebugMode) {
+                  debugPrint('ProfileAvatar photo resolve failed: $e');
+                }
+                return null;
+              }, test: (e) => e is Exception);
   }
 
   @override

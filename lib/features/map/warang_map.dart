@@ -7,6 +7,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../../app/device_providers.dart';
 import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
 import '../../core/formatting.dart';
@@ -82,14 +83,18 @@ class WarangMapSurface extends StatefulWidget {
 
 class WarangMapSurfaceState extends State<WarangMapSurface>
     with SingleTickerProviderStateMixin {
-  late final MapTileStore _tileStore = widget.tileStore ?? MapTileStore();
+  late MapTileStore _tileStore = widget.tileStore ?? MapTileStore();
   late final PhotoStore _photoStore = widget.photoStore ?? PhotoStore();
+  late CachedTileProvider _cachedTileProvider;
   final _mapController = MapController();
   AnimationController? _moveAnim;
   Position? _position;
   DateTime? _staleSince;
   double _currentZoom = 5.8;
   Timer? _rest;
+  Timer? _cameraDebounce;
+  LatLng? _pendingCameraCenter;
+  double? _pendingCameraZoom;
   bool _markedPlaceUncached = false;
 
   /// Photo lookups, kept so panning never restarts them and pins never
@@ -103,22 +108,80 @@ class WarangMapSurfaceState extends State<WarangMapSurface>
   final _leaving = <String, Moment>{};
   final _returning = <String>{};
 
+  CachedTileProvider _createTileProvider() => CachedTileProvider(
+    store: _tileStore,
+    layerId: 'osm-standard',
+    onStaleTile: (fetchedAt) {
+      if (mounted) setState(() => _staleSince = fetchedAt);
+    },
+  );
+
+  void _scheduleSaveCamera(LatLng center, double zoom) {
+    _pendingCameraCenter = center;
+    _pendingCameraZoom = zoom;
+    _cameraDebounce?.cancel();
+    _cameraDebounce = Timer(const Duration(milliseconds: 400), _flushCamera);
+  }
+
+  void _flushCamera() {
+    _cameraDebounce?.cancel();
+    _cameraDebounce = null;
+    final center = _pendingCameraCenter;
+    final zoom = _pendingCameraZoom;
+    _pendingCameraCenter = null;
+    _pendingCameraZoom = null;
+    if (center != null && zoom != null) {
+      unawaited(_tileStore.saveCamera(center, zoom));
+    }
+  }
+
   @override
   void didUpdateWidget(covariant WarangMapSurface oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.tileStore != oldWidget.tileStore) {
+      _flushCamera();
+      _cachedTileProvider.dispose();
+      if (oldWidget.tileStore == null) {
+        unawaited(_tileStore.close());
+      }
+      _tileStore = widget.tileStore ?? MapTileStore();
+      _cachedTileProvider = _createTileProvider();
+    }
     final now = {for (final moment in widget.moments) moment.id};
     final before = {for (final moment in oldWidget.moments) moment.id: moment};
     final removedSelected = oldWidget.selectedId;
+    final removedMoment = removedSelected == null
+        ? null
+        : before[removedSelected];
     if (removedSelected != null &&
         !now.contains(removedSelected) &&
-        before[removedSelected]?.latitude != null) {
-      _leaving[removedSelected] = before[removedSelected]!;
+        removedMoment != null &&
+        removedMoment.latitude != null) {
+      _leaving[removedSelected] = removedMoment;
     }
     for (final id in now) {
       if (!before.containsKey(id) && _leaving.remove(id) != null) {
         _returning.add(id);
       }
     }
+    _returning.removeWhere(
+      (id) => !now.contains(id) || id == widget.selectedId,
+    );
+    final landingId = widget.landingId;
+    if (landingId != null &&
+        landingId != oldWidget.landingId &&
+        _landed.add(landingId)) {
+      _landing.add(landingId);
+    }
+    final activePaths = <String>{
+      for (final moment in widget.moments)
+        if ((moment.thumbRelPath ?? moment.relPath) case final String path)
+          path,
+      for (final moment in _leaving.values)
+        if ((moment.thumbRelPath ?? moment.relPath) case final String path)
+          path,
+    };
+    _photos.removeWhere((path, _) => !activePaths.contains(path));
     if (widget.markedPlace != oldWidget.markedPlace) {
       _checkMarkedPlaceTile();
     }
@@ -141,6 +204,11 @@ class WarangMapSurfaceState extends State<WarangMapSurface>
   @override
   void initState() {
     super.initState();
+    _cachedTileProvider = _createTileProvider();
+    final landingId = widget.landingId;
+    if (landingId != null && _landed.add(landingId)) {
+      _landing.add(landingId);
+    }
     if (widget.markedPlace != null) {
       _checkMarkedPlaceTile();
     }
@@ -150,7 +218,9 @@ class WarangMapSurfaceState extends State<WarangMapSurface>
   void dispose() {
     _moveAnim?.dispose();
     _rest?.cancel();
-    if (widget.tileStore == null) _tileStore.close();
+    _flushCamera();
+    _cachedTileProvider.dispose();
+    if (widget.tileStore == null) unawaited(_tileStore.close());
     super.dispose();
   }
 
@@ -183,7 +253,7 @@ class WarangMapSurfaceState extends State<WarangMapSurface>
                 _rest = Timer(const Duration(milliseconds: 180), () {
                   widget.moving?.value = false;
                 });
-                unawaited(_tileStore.saveCamera(camera.center, camera.zoom));
+                _scheduleSaveCamera(camera.center, camera.zoom);
                 if (mounted) setState(() {});
               }
             },
@@ -194,13 +264,7 @@ class WarangMapSurfaceState extends State<WarangMapSurface>
               child: TileLayer(
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 userAgentPackageName: 'ph.warang.app',
-                tileProvider: CachedTileProvider(
-                  store: _tileStore,
-                  layerId: 'osm-standard',
-                  onStaleTile: (fetchedAt) {
-                    if (mounted) setState(() => _staleSince = fetchedAt);
-                  },
-                ),
+                tileProvider: _cachedTileProvider,
                 maxZoom: 19,
                 // Tiles fade in, except under reduced motion (V6 rule 2).
                 tileDisplay: WarangMotion.reduced(context)
@@ -525,34 +589,33 @@ class WarangMapSurfaceState extends State<WarangMapSurface>
 
   Future<void> _refreshLocation({required bool moveToUser}) async {
     try {
-      if (!await Geolocator.isLocationServiceEnabled()) return;
-      var permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        if (!mounted) return;
-        final explain = await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Place moments on your map'),
-            content: const Text(
-              'Warang uses your location once to place a moment. It never tracks you in the background.',
+      final permission = await checkLocationAccess(
+        onRationale: () async {
+          if (!mounted) return false;
+          final explain = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Place moments on your map'),
+              content: const Text(
+                'Warang uses your location once to place a moment. It never tracks you in the background.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Not now'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text('Continue'),
+                ),
+              ],
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Not now'),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('Continue'),
-              ),
-            ],
-          ),
-        );
-        if (explain != true || !mounted) return;
-        permission = await Geolocator.requestPermission();
-      }
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
+          );
+          return explain == true && mounted;
+        },
+      );
+      if (permission != LocationPermission.whileInUse &&
+          permission != LocationPermission.always) {
         return;
       }
       final position = await Geolocator.getCurrentPosition(
@@ -628,12 +691,15 @@ class WarangMapSurfaceState extends State<WarangMapSurface>
         from: WarangPhotoPin.size / WarangPhotoPin.selectedSize,
         child: pin,
       );
-    } else if (_returning.remove(moment.id)) {
-      pin = _PinPop(key: ValueKey('return-${moment.id}'), from: 0, child: pin);
+    } else if (_returning.contains(moment.id)) {
+      pin = _PinPop(
+        key: ValueKey('return-${moment.id}'),
+        from: 0,
+        onDone: () => _returning.remove(moment.id),
+        child: pin,
+      );
     }
-    if (moment.id == widget.landingId &&
-        (_landed.add(moment.id) || _landing.contains(moment.id))) {
-      _landing.add(moment.id);
+    if (moment.id == widget.landingId && _landing.contains(moment.id)) {
       pin = LandingPin(
         key: ValueKey('land-${moment.id}'),
         onLanded: () => _landing.remove(moment.id),
@@ -789,9 +855,15 @@ class _LandingPinState extends State<LandingPin> with TickerProviderStateMixin {
 
 /// A pin growing into place with the `pop` spring, from [from] of its size.
 class _PinPop extends StatelessWidget {
-  const _PinPop({super.key, required this.from, required this.child});
+  const _PinPop({
+    super.key,
+    required this.from,
+    required this.child,
+    this.onDone,
+  });
   final double from;
   final Widget child;
+  final VoidCallback? onDone;
 
   @override
   Widget build(BuildContext context) {
@@ -800,6 +872,7 @@ class _PinPop extends StatelessWidget {
       tween: Tween(begin: reduced && from > 0 ? 1 : from, end: 1),
       duration: reduced ? WarangMotion.fade : WarangMotion.pop.duration,
       curve: reduced ? Curves.linear : WarangMotion.pop.curve,
+      onEnd: onDone,
       builder: (context, value, child) => reduced
           ? Opacity(opacity: value.clamp(0.0, 1.0), child: child)
           : Transform.scale(

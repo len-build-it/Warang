@@ -23,6 +23,30 @@ class LocationFix {
 
 typedef LocationReader = Future<LocationFix?> Function();
 
+/// Checks that device location services are enabled and permission is granted.
+/// Returns `null` when location services are disabled, or the resolved
+/// [LocationPermission] otherwise. When [onRationale] is provided and the
+/// current permission is [LocationPermission.denied], it is called before
+/// requesting permission; returning `false` cancels the request.
+Future<LocationPermission?> checkLocationAccess({
+  Future<bool> Function()? onRationale,
+  Future<bool> Function()? isServiceEnabled,
+  Future<LocationPermission> Function()? checkPermission,
+  Future<LocationPermission> Function()? requestPermission,
+}) async {
+  final serviceEnabled =
+      await (isServiceEnabled ?? Geolocator.isLocationServiceEnabled)();
+  if (!serviceEnabled) return null;
+  var permission = await (checkPermission ?? Geolocator.checkPermission)();
+  if (permission == LocationPermission.denied) {
+    if (onRationale != null && !await onRationale()) {
+      return LocationPermission.denied;
+    }
+    permission = await (requestPermission ?? Geolocator.requestPermission)();
+  }
+  return permission;
+}
+
 final cameraPickerProvider = Provider<CameraPicker>((ref) {
   final picker = ImagePicker();
   return () => picker.pickImage(
@@ -34,10 +58,8 @@ final cameraPickerProvider = Provider<CameraPicker>((ref) {
 
 final locationPermissionProvider = Provider<LocationPermissionCheck>(
   (ref) => () async {
-    final current = await Geolocator.checkPermission();
-    return current == LocationPermission.denied
-        ? Geolocator.requestPermission()
-        : current;
+    final permission = await checkLocationAccess();
+    return permission ?? LocationPermission.denied;
   },
 );
 
@@ -62,7 +84,7 @@ final locationReaderProvider = Provider<LocationReader>((ref) {
         longitude: position.longitude,
         accuracyM: position.accuracy.isFinite ? position.accuracy : null,
       );
-    } catch (_) {
+    } on Exception catch (_) {
       // Location is optional; a capture never waits for it or fails without it.
       return null;
     }

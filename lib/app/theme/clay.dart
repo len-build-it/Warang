@@ -58,9 +58,15 @@ class ClayDepthSpec {
     Brightness brightness, {
     KeepsakeTone? tone,
   }) {
-    final light = _light[depth]!;
+    final light = _light[depth];
+    if (light == null) {
+      throw StateError('Missing light clay depth spec for $depth');
+    }
     if (brightness == Brightness.light) return light;
-    final dark = _dark[depth]!;
+    final dark = _dark[depth];
+    if (dark == null) {
+      throw StateError('Missing dark clay depth spec for $depth');
+    }
     if (dark.inset || tone?.key != WarangKeepsake.amber.key) return dark;
     return ClayDepthSpec(
       shadowY: dark.shadowY,
