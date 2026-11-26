@@ -9,7 +9,10 @@ import '../maya/maya_companion.dart';
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
 
-  static const version = '1.0.0';
+  static const version = String.fromEnvironment(
+    'APP_VERSION',
+    defaultValue: '1.0.0',
+  );
 
   @override
   Widget build(BuildContext context) {

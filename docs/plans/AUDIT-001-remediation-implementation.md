@@ -1,9 +1,9 @@
 # Implementation Plan: AUDIT-001 remediation (Ponytail and Clean Code)
 
 Created: 2026-11-24T21:40:00+08:00
-Updated: 2026-11-26T23:32:00+08:00
+Updated: 2026-11-27T07:42:00+08:00
 Revision: 2
-Status: Approved - not started
+Status: In progress - Phase 1 complete
 Feature spec and revision: None; this plan addresses the 51 findings in `docs/audits/AUDIT-001-code-quality-report.md` (revision 2, re-verified at `a8d3e68`) under requirements `REM-REQ-001` to `REM-REQ-006`, defined in this plan
 Approved baseline and architecture revisions: `docs/IMPLEMENTATION_PLAN.md` at `dc407c5` (T17 keeps `sqflite` for map tiles), `docs/REMEDIATION_IMPLEMENTATION_PLAN.md` at `dc407c5`, FEAT-001 to FEAT-004 revision 1 as listed in `docs/SPEC_INDEX.md`
 Len's chat approval: 2026-11-26T23:32:00+08:00 chat, plan revision 2: "Approve, run without stops"; D-1: "Delete it and amend FEAT-003"; D-2 and D-3: "Yes, as recommended" (recorded in `HANDOFF.md`)
@@ -79,41 +79,41 @@ Run from `C:\Users\User\Desktop\PersonalProjects\04-FUN-STUFF\WARANG\Warang` bef
 ## Phase 1: Release blocker, Android hardening, and archive scripts
 
 Requirements: `REM-REQ-001` (`AUD-001`, `AUD-012`, `AUD-035`, `AUD-042`, `AUD-045`, `AUD-051`)
-State: Approved - not started
+State: Complete
 
 Current code anchors:
 
-    android/app/src/main/AndroidManifest.xml:2:     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    android/app/build.gradle.kts:36:         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-    android/app/build.gradle.kts:49:                 keyAlias = keystoreProperties["keyAlias"] as String
-    lib/features/settings/about_screen.dart:12:   static const version = '1.0.0';
-    lib/features/settings/about_screen.dart:52:                   'Version ${AboutScreen.version}',
-    scripts/build-and-archive.sh:56: APKS=("${APK_DIR}"/*.apk)
-    scripts/build-and-archive.ps1:114:         $found = Get-ChildItem -Path $dir -Filter "*.apk" | Where-Object { $_.Name -notlike "*debug*" }
+    android/app/src/main/AndroidManifest.xml:2:     <uses-permission android:name="android.permission.INTERNET" />
+    android/app/build.gradle.kts:25: fun requireKey(key: String): String {
+    android/app/build.gradle.kts:58:                 keyAlias = requireKey("keyAlias")
+    lib/features/settings/about_screen.dart:12:   static const version = String.fromEnvironment(
+    lib/features/settings/about_screen.dart:55:                   'Version ${AboutScreen.version}',
+    scripts/build-and-archive.sh:64: APKS=()
+    scripts/build-and-archive.ps1:148: $apkFiles = @()
 
 ### Tasks
 
-- [ ] Add `<uses-permission android:name="android.permission.INTERNET" />` to `android/app/src/main/AndroidManifest.xml` (`AUD-001`).
-- [ ] Expand `test/android_hardening_test.dart` to verify `INTERNET`, `ACCESS_FINE_LOCATION`, and `ACCESS_COARSE_LOCATION` in `android/app/src/main/AndroidManifest.xml` and reject unchecked `keystoreProperties[...]` casts (`AUD-035`).
-- [ ] Remove the stale `TODO` at `android/app/build.gradle.kts:36` and validate all four `keystoreProperties` entries at lines `49-52` via a small `requireKey` helper using `requireNotNull(keystoreProperties.getProperty(key))` (`AUD-042`).
-- [ ] Update `AboutScreen.version` at `lib/features/settings/about_screen.dart:12` to `String.fromEnvironment('APP_VERSION', defaultValue: '1.0.0')` so version matches release builds with zero new dependencies (`AUD-045`).
-- [ ] Add a widget test in `test/utility_screens_test.dart` that pumps `AboutScreen` and expects the text `Version 1.0.0` when no `APP_VERSION` define is passed (`AUD-045`).
-- [ ] Harden untracked `scripts/build-and-archive.sh` and `scripts/build-and-archive.ps1` (`AUD-012`, `AUD-051`): pass `--dart-define=APP_VERSION=$VERSION`, remove stale `build/app/outputs/flutter-apk/*.apk` before building (or archive only the exact expected filenames for split vs universal mode), fail on zero APKs in `.sh`, serialize `.sh` JSON via Python `json.dumps`, check `$LASTEXITCODE` after `git` calls in `.ps1`, and verify `INTERNET` via `aapt2` plus signature via `apksigner` when tools are present on PATH.
-- [ ] Create `docs/evidence/AUDIT-001-remediation-verification.md` from `.agents/templates/docs/VERIFICATION.md` and record Phase 1 results.
+- [x] Add `<uses-permission android:name="android.permission.INTERNET" />` to `android/app/src/main/AndroidManifest.xml` (`AUD-001`).
+- [x] Expand `test/android_hardening_test.dart` to verify `INTERNET`, `ACCESS_FINE_LOCATION`, and `ACCESS_COARSE_LOCATION` in `android/app/src/main/AndroidManifest.xml` and reject unchecked `keystoreProperties[...]` casts (`AUD-035`).
+- [x] Remove the stale `TODO` at `android/app/build.gradle.kts:36` and validate all four `keystoreProperties` entries at lines `49-52` via a small `requireKey` helper using `requireNotNull(keystoreProperties.getProperty(key))` (`AUD-042`).
+- [x] Update `AboutScreen.version` at `lib/features/settings/about_screen.dart:12` to `String.fromEnvironment('APP_VERSION', defaultValue: '1.0.0')` so version matches release builds with zero new dependencies (`AUD-045`).
+- [x] Add a widget test in `test/utility_screens_test.dart` that pumps `AboutScreen` and expects the text `Version 1.0.0` when no `APP_VERSION` define is passed (`AUD-045`).
+- [x] Harden untracked `scripts/build-and-archive.sh` and `scripts/build-and-archive.ps1` (`AUD-012`, `AUD-051`): pass `--dart-define=APP_VERSION=$VERSION`, remove stale `build/app/outputs/flutter-apk/*.apk` before building (or archive only the exact expected filenames for split vs universal mode), fail on zero APKs in `.sh`, serialize `.sh` JSON via Python `json.dumps`, check `$LASTEXITCODE` after `git` calls in `.ps1`, and verify `INTERNET` via `aapt2` plus signature via `apksigner` when tools are present on PATH.
+- [x] Create `docs/evidence/AUDIT-001-remediation-verification.md` from `.agents/templates/docs/VERIFICATION.md` and record Phase 1 results.
 
 ### Verification
 
-- [ ] `flutter analyze` prints `No issues found!`.
-- [ ] `flutter test test/android_hardening_test.dart test/utility_screens_test.dart` passes.
-- [ ] `python .agents/skills/implementation-plan/scripts/check_claims.py docs/plans/AUDIT-001-remediation-implementation.md docs/evidence/AUDIT-001-remediation-verification.md HANDOFF.md` prints `0 problems`.
-- [ ] Probe or temporary test sources are saved under the evidence folder before they are deleted.
-- [ ] Note: physical-device validation of tile loading on a freshly built signed release APK stays pending for Len.
+- [x] `flutter analyze` prints `No issues found!`.
+- [x] `flutter test test/android_hardening_test.dart test/utility_screens_test.dart` passes.
+- [x] `python .agents/skills/implementation-plan/scripts/check_claims.py docs/plans/AUDIT-001-remediation-implementation.md docs/evidence/AUDIT-001-remediation-verification.md HANDOFF.md` prints `0 problems`.
+- [x] Probe or temporary test sources are saved under the evidence folder before they are deleted.
+- [x] Note: physical-device validation of tile loading on a freshly built signed release APK stays pending for Len.
 
 ### Review and checkpoint
 
-- [ ] Review diff for minimal scope and confirm `scripts/` stays untracked per D-3.
-- [ ] Update plan, evidence, and `HANDOFF.md`; stage only reviewed tracked Phase 1 paths and verify `git diff --cached --stat`.
-- [ ] Commit with `fix(android): AUDIT-001 phase 1 - release manifest, gradle, and version` and verify Git exit code.
+- [x] Review diff for minimal scope and confirm `scripts/` stays untracked per D-3.
+- [x] Update plan, evidence, and `HANDOFF.md`; stage only reviewed tracked Phase 1 paths and verify `git diff --cached --stat`.
+- [x] Commit with `fix(android): AUDIT-001 phase 1 - release manifest, gradle, and version` and verify Git exit code.
 
 ## Phase 2: Offline map tile store and map surface stability
 

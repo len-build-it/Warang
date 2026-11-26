@@ -17,6 +17,7 @@ import 'package:warang/features/capture/capture_screen.dart';
 import 'package:warang/features/home_tab/home_tab_screen.dart';
 import 'package:warang/features/map/map_tile_store.dart';
 import 'package:warang/features/search/search_tab_screen.dart';
+import 'package:warang/features/settings/about_screen.dart';
 import 'package:warang/features/settings/settings_screen.dart';
 
 void main() {
@@ -369,4 +370,12 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     },
   );
+
+  testWidgets('AboutScreen shows Version 1.0.0 by default', (tester) async {
+    await tester.pumpWidget(app(const AboutScreen()));
+    await tester.pump();
+
+    expect(find.text('Version 1.0.0'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+  });
 }

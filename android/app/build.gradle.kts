@@ -22,6 +22,16 @@ if (releaseRequested && !keystorePropertiesFile.exists()) {
     )
 }
 
+fun requireKey(key: String): String {
+    val value = requireNotNull(keystoreProperties.getProperty(key)) {
+        "Missing required '$key' entry in android/key.properties."
+    }
+    require(value.isNotBlank()) {
+        "Blank '$key' entry in android/key.properties."
+    }
+    return value
+}
+
 android {
     namespace = "ph.warang.app"
     compileSdk = flutter.compileSdkVersion
@@ -33,7 +43,6 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "ph.warang.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
@@ -46,10 +55,10 @@ android {
     signingConfigs {
         if (keystorePropertiesFile.exists()) {
             create("release") {
-                keyAlias = keystoreProperties["keyAlias"] as String
-                keyPassword = keystoreProperties["keyPassword"] as String
-                storeFile = file(keystoreProperties["storeFile"] as String)
-                storePassword = keystoreProperties["storePassword"] as String
+                keyAlias = requireKey("keyAlias")
+                keyPassword = requireKey("keyPassword")
+                storeFile = file(requireKey("storeFile"))
+                storePassword = requireKey("storePassword")
             }
         }
     }

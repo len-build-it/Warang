@@ -1,8 +1,8 @@
 # Current handoff
 
 Created: 2026-10-16T22:55:00+08:00
-Updated: 2026-11-26T23:32:00+08:00
-State: AUDIT-001 remediation plan revision 2 approved, Phases 1-6 not started; AUDIT-001 Phases 0-4 complete and report revision 2 re-verified by Gemini (51 findings, 0 app files changed); FEAT-004 Phases 0-8 complete, physical-device checks pending; FEAT-003 Phases 1-10 complete, physical-device checks and D-2 art pending; FEAT-001 and FEAT-002 physical-device checks pending
+Updated: 2026-11-27T07:42:00+08:00
+State: AUDIT-001 remediation Phase 1 complete, Phases 2-6 in progress; AUDIT-001 Phases 0-4 complete and report revision 2 re-verified by Gemini (51 findings, 0 app files changed); FEAT-004 Phases 0-8 complete, physical-device checks pending; FEAT-003 Phases 1-10 complete, physical-device checks and D-2 art pending; FEAT-001 and FEAT-002 physical-device checks pending
 Feature: AUDIT-001 remediation (plan revision 2, approved); AUDIT-001 code quality audit report (plan revision 1, complete; report revision 2); FEAT-004 places, place search, and category stamps (spec and plan revision 1, approved); FEAT-003 clay keepsake redesign (spec and plan revision 1)
 
 ## Read first
@@ -77,7 +77,8 @@ Gemini re-verified revision 2 on 2026-11-24 against the code, local build output
 Top five AUDIT-001 findings to fix first (revision 2): `AUD-001` (release APKs omit `android.permission.INTERNET`), `AUD-002` (fresh map tiles revalidate on every view with no HTTP timeout), `AUD-004` (photo processing on the UI isolate, with unbounded avatar picks), `AUD-005` (Back and Close mid-save on capture and the trip form), `AUD-006` (multi-step moment edits outside one transaction).
 Preserve the existing untracked paths: `.agents/skills/*`, `.agents/templates/`, `.claude/`, `CLAUDE.md`, `docs/evidence/FEAT-001/claude-review/`, `releases/`, and `scripts/`.
 AUDIT-001 remediation plan revision 1 was drafted on 2026-11-24 and reviewed by Claude Code on 2026-11-26; revision 2 fixes the review findings (tile database upgrade for the new last-access column, no chunked place book copy, FEAT-003 C11 amendment, toggle test range 289-326, About version test, probe-source step, sourced execution mode).
-Remediation Phases 1-6 are not started; no product code has changed since `7d6703f`.
+AUDIT-001 remediation Phase 1 complete in the commit `fix(android): AUDIT-001 phase 1 - release manifest, gradle, and version` (13 targeted tests passed, `flutter analyze` clean, `scripts/` hardened in place and kept untracked per D-3).
+Remediation Phases 2-6 are in progress.
 
 ## Checks and evidence
 

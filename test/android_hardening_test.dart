@@ -44,11 +44,36 @@ void main() {
     expect(map, isNot(contains('http://tile.openstreetmap.org/')));
   });
 
+  test('Android main manifest declares required release permissions', () {
+    final manifest = File(
+      'android/app/src/main/AndroidManifest.xml',
+    ).readAsStringSync();
+
+    expect(
+      manifest,
+      contains('<uses-permission android:name="android.permission.INTERNET" />'),
+    );
+    expect(
+      manifest,
+      contains(
+        '<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />',
+      ),
+    );
+    expect(
+      manifest,
+      contains(
+        '<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />',
+      ),
+    );
+  });
+
   test('Android release builds refuse debug or missing signing', () {
     final gradle = File('android/app/build.gradle.kts').readAsStringSync();
     final gitignore = File('.gitignore').readAsStringSync();
 
     expect(gradle, isNot(contains('signingConfigs.getByName("debug")')));
+    expect(gradle, isNot(contains('keystoreProperties[')));
+    expect(gradle, contains('requireNotNull(keystoreProperties.getProperty('));
     expect(gradle, contains('Missing android/key.properties'));
     expect(gradle, contains('signingConfigs.getByName("release")'));
     expect(gitignore, contains('key.properties'));
