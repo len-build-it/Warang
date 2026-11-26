@@ -1,9 +1,9 @@
 # Current handoff
 
 Created: 2026-10-16T22:55:00+08:00
-Updated: 2026-11-24T08:27:00+08:00
-State: AUDIT-001 Phases 0-4 complete and report revision 2 re-verified by Gemini (51 findings, 0 app files changed); FEAT-004 Phases 0-8 complete, physical-device checks pending; FEAT-003 Phases 1-10 complete, physical-device checks and D-2 art pending; FEAT-001 and FEAT-002 physical-device checks pending
-Feature: AUDIT-001 code quality audit report (plan revision 1, complete; report revision 2); FEAT-004 places, place search, and category stamps (spec and plan revision 1, approved); FEAT-003 clay keepsake redesign (spec and plan revision 1)
+Updated: 2026-11-26T23:32:00+08:00
+State: AUDIT-001 remediation plan revision 2 approved, Phases 1-6 not started; AUDIT-001 Phases 0-4 complete and report revision 2 re-verified by Gemini (51 findings, 0 app files changed); FEAT-004 Phases 0-8 complete, physical-device checks pending; FEAT-003 Phases 1-10 complete, physical-device checks and D-2 art pending; FEAT-001 and FEAT-002 physical-device checks pending
+Feature: AUDIT-001 remediation (plan revision 2, approved); AUDIT-001 code quality audit report (plan revision 1, complete; report revision 2); FEAT-004 places, place search, and category stamps (spec and plan revision 1, approved); FEAT-003 clay keepsake redesign (spec and plan revision 1)
 
 ## Read first
 
@@ -16,7 +16,8 @@ Feature: AUDIT-001 code quality audit report (plan revision 1, complete; report 
 - [docs/research/RES-001-clay-motion-genz.md](docs/research/RES-001-clay-motion-genz.md) (background research, not a spec)
 - [docs/features/FEAT-002-ponytail-cleanup.md](docs/features/FEAT-002-ponytail-cleanup.md)
 - [docs/plans/FEAT-002-implementation.md](docs/plans/FEAT-002-implementation.md)
-- [docs/audits/AUDIT-001-code-quality-report.md](docs/audits/AUDIT-001-code-quality-report.md) and [docs/plans/AUDIT-001-implementation.md](docs/plans/AUDIT-001-implementation.md) (verified code quality audit report; 50 findings grouped into 6 remediation batches)
+- [docs/audits/AUDIT-001-code-quality-report.md](docs/audits/AUDIT-001-code-quality-report.md) and [docs/plans/AUDIT-001-implementation.md](docs/plans/AUDIT-001-implementation.md) (verified code quality audit report; 51 findings grouped into 6 remediation batches)
+- [docs/plans/AUDIT-001-remediation-implementation.md](docs/plans/AUDIT-001-remediation-implementation.md) (approved remediation plan revision 2; execute from Phase 1)
 
 Reread these files and inspect actual Git status before acting; prior chat memory is not authoritative.
 
@@ -38,6 +39,12 @@ Reread these files and inspect actual Git status before acting; prior chat memor
 | FEAT-004 Planned stop 2 visual approval & GitHub push | Phase 6 at `deb18a9` | 2026-11-24T06:09:23+08:00 chat: "push the changes to github, then proceed to phase 7" |
 | AUDIT-001 plan | Revision 1 | 2026-11-24T07:09:41+08:00 and 2026-11-24T07:10:47+08:00 chat: "read and execute:  docs/audits/AUDIT-001-code-quality-report.md." clarified as "docs/plans/AUDIT-001-implementation.md" |
 | AUDIT-001 report revision 2 corrections (editorial and severity corrections from the Claude Code review of `946b3d7`) | Report revision 2 | 2026-11-24 chat, answering the review: "Yes make the corrections, Ill have gemini re verify it" |
+| AUDIT-001 remediation plan, continuous execution | Revision 2, committed as `docs(plan): AUDIT-001 remediation plan revision 2` | 2026-11-26T23:32:00+08:00 Claude Code decision card: "Approve, run without stops" on "Do you approve it (revision 2, with the fixes I'm about to make) for Gemini to run?" |
+| AUDIT-001 remediation D-1 (delete `WarangToggle`, amend FEAT-003 C11 to revision 2, keep `MayaPose.footTap`) | Plan revision 2 | 2026-11-26T23:32:00+08:00 Claude Code decision card: "Delete it and amend FEAT-003" |
+| AUDIT-001 remediation D-2 and D-3 as recommended | Plan revision 2 | 2026-11-26T23:32:00+08:00 Claude Code decision card: "Yes, as recommended" |
+
+Allowed phases (AUDIT-001 remediation): Phases 1-6 of plan revision 2 continuously without approval stops, with every gate passing in every phase, then stop before Independent verification; never push and never add a dependency.
+This approval replaces directive 3 ("mandatory hard stops") in `AGENTS.md` for this plan only.
 
 Allowed phases (AUDIT-001, complete): Phases 0-4 continuously without hard stops (plan revision 1), never editing product code and never pushing.
 
@@ -68,7 +75,9 @@ AUDIT-001 (audited commit `7d6703f`, Flutter 3.44.7 / Dart 3.12.2, zero product 
 Report revision 2 in the commit `docs(audit): AUDIT-001 report revision 2 - review corrections` (`944beac`) applies the Claude Code review: 3 false sub-claims withdrawn (R8 in `AUD-042`, the Undo part of `AUD-009`, the trip form step 0 part of `AUD-005`), wrong names or code descriptions corrected in 9 findings, 7 severities lowered, `AUD-001` proof strengthened with `aapt2` on the built release APKs, and new `AUD-051` (archive scripts archive stale APKs); totals are 51 findings, 32 Confirmed and 19 Plausible, 259 removable lines, `check_report.py` `0 problems`, and `check_identifiers.py` leaves only external API, lint, and historical names.
 Gemini re-verified revision 2 on 2026-11-24 against the code, local build outputs, Flutter SDK, and Drift pub cache, confirming all corrections and fixing one line-range typo in `AUD-017` (`database.dart:69-133`, not `69-73`).
 Top five AUDIT-001 findings to fix first (revision 2): `AUD-001` (release APKs omit `android.permission.INTERNET`), `AUD-002` (fresh map tiles revalidate on every view with no HTTP timeout), `AUD-004` (photo processing on the UI isolate, with unbounded avatar picks), `AUD-005` (Back and Close mid-save on capture and the trip form), `AUD-006` (multi-step moment edits outside one transaction).
-Preserve the existing untracked paths: `.agents/skills/*`, `.agents/templates/`, `.claude/`, `CLAUDE.md`, `releases/`, and `scripts/`.
+Preserve the existing untracked paths: `.agents/skills/*`, `.agents/templates/`, `.claude/`, `CLAUDE.md`, `docs/evidence/FEAT-001/claude-review/`, `releases/`, and `scripts/`.
+AUDIT-001 remediation plan revision 1 was drafted on 2026-11-24 and reviewed by Claude Code on 2026-11-26; revision 2 fixes the review findings (tile database upgrade for the new last-access column, no chunked place book copy, FEAT-003 C11 amendment, toggle test range 289-326, About version test, probe-source step, sourced execution mode).
+Remediation Phases 1-6 are not started; no product code has changed since `7d6703f`.
 
 ## Checks and evidence
 
@@ -89,7 +98,7 @@ FEAT-001 evidence: [docs/evidence/FEAT-001-verification.md](docs/evidence/FEAT-0
 
 ## Next action
 
-000. **AUDIT-001 (primary):** Revision 2 is re-verified by Gemini. Len reviews [docs/audits/AUDIT-001-code-quality-report.md](docs/audits/AUDIT-001-code-quality-report.md) and picks remediation batches (starting with Batch 1 for the critical `AUD-001` missing `INTERNET` permission in release builds) to turn into approved feature specs with GPT.
+000. **AUDIT-001 remediation (primary):** Gemini executes [docs/plans/AUDIT-001-remediation-implementation.md](docs/plans/AUDIT-001-remediation-implementation.md) revision 2, Phases 1-6, continuously, then sets the next action to its Independent verification phase for a different agent or fresh session.
 00. **FEAT-004:** Phases 0-8 complete (`docs(plan): FEAT-004 phase 8 - polish and documents`). Waiting on Len for the 5-item physical-device checklist in [docs/evidence/FEAT-004-verification.md](docs/evidence/FEAT-004-verification.md) (and optional push of Phase 7-8 commits to GitHub).
 0. **FEAT-003:** implemented through Phase 10. Waiting on Len for physical-device checks (REQ-023 steps are in the evidence log) and the layered maya art (D-2).
 1. **Claude UI screenshot capture (requested 2026-11-21):** capture fresh UI screenshots from the current codebase (`ba0c56a`) using [tool/ux_screenshots_test.dart](tool/ux_screenshots_test.dart).
