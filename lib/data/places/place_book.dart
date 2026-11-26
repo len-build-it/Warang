@@ -78,7 +78,7 @@ class PlaceBook {
 
   /// Opens a copied place book file on disk in read-only mode.
   factory PlaceBook.openFile(File file) {
-    final executor = NativeDatabase(file);
+    final executor = NativeDatabase.createInBackground(file);
     return PlaceBook._(_PlaceBookDb(executor));
   }
 

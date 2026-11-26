@@ -157,6 +157,27 @@ void main() {
       }
     },
   );
+
+  test('rejects images over 30 MP from header before full decode', () async {
+    final tinyBmp = Uint8List.fromList(
+      img.encodeBmp(img.Image(width: 1, height: 1)),
+    );
+    // BMP DIB header width is bytes 18..21 and height is bytes 22..25 (LE).
+    final headerView = ByteData.sublistView(tinyBmp);
+    headerView.setInt32(18, 6000, Endian.little);
+    headerView.setInt32(22, 6000, Endian.little);
+
+    await expectLater(
+      store.storeBytesAsset(tinyBmp),
+      throwsA(
+        isA<FormatException>().having(
+          (e) => e.message,
+          'message',
+          'Image dimensions are too large',
+        ),
+      ),
+    );
+  });
 }
 
 List<int> _imageBytes({required int width, required int height}) {

@@ -1157,10 +1157,15 @@ class _MomentPolaroidState extends State<_MomentPolaroid> {
         future: _file,
         builder: (context, snapshot) {
           final file = snapshot.data;
-          if (file == null || !file.existsSync()) return placeholder;
+          if (file == null) return placeholder;
+          final cacheWidth =
+              (MediaQuery.sizeOf(context).width *
+                      MediaQuery.devicePixelRatioOf(context))
+                  .round();
           return Image.file(
             file,
             fit: BoxFit.cover,
+            cacheWidth: cacheWidth > 0 ? cacheWidth : null,
             frameBuilder: (context, child, frame, sync) =>
                 sync || frame != null ? child : placeholder,
             errorBuilder: (_, _, _) => placeholder,

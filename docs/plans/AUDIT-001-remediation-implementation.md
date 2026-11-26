@@ -1,9 +1,9 @@
 # Implementation Plan: AUDIT-001 remediation (Ponytail and Clean Code)
 
 Created: 2026-11-24T21:40:00+08:00
-Updated: 2026-11-27T07:49:00+08:00
+Updated: 2026-11-27T07:55:00+08:00
 Revision: 2
-Status: In progress - Phase 2 complete
+Status: In progress - Phase 3 complete
 Feature spec and revision: None; this plan addresses the 51 findings in `docs/audits/AUDIT-001-code-quality-report.md` (revision 2, re-verified at `a8d3e68`) under requirements `REM-REQ-001` to `REM-REQ-006`, defined in this plan
 Approved baseline and architecture revisions: `docs/IMPLEMENTATION_PLAN.md` at `dc407c5` (T17 keeps `sqflite` for map tiles), `docs/REMEDIATION_IMPLEMENTATION_PLAN.md` at `dc407c5`, FEAT-001 to FEAT-004 revision 1 as listed in `docs/SPEC_INDEX.md`
 Len's chat approval: 2026-11-26T23:32:00+08:00 chat, plan revision 2: "Approve, run without stops"; D-1: "Delete it and amend FEAT-003"; D-2 and D-3: "Yes, as recommended" (recorded in `HANDOFF.md`)
@@ -164,43 +164,43 @@ Adding a column to that statement never reaches existing installs, so `lastAcces
 ## Phase 3: Off-UI-isolate media, place book, and GPU image hygiene
 
 Requirements: `REM-REQ-003` (`AUD-003`, `AUD-004`, `AUD-013`, `AUD-015`, `AUD-034`, `AUD-049`)
-State: Approved - not started
+State: Complete
 
 Current code anchors:
 
     lib/data/places/place_book.dart:80:   factory PlaceBook.openFile(File file) {
-    lib/data/places/place_book_installer.dart:68:     final byteData = await _bundle.load(spec.assetKey);
-    lib/data/files/photo_store.dart:118:   Future<PhotoSweepResult> sweepOrphans(WarangDatabase database) async {
-    lib/data/files/photo_store.dart:223:   img.Image _decode(Uint8List bytes) {
-    lib/app/shell/you_sheet.dart:348:   final picked = await ImagePicker().pickImage(
-    lib/features/capture/capture_screen.dart:211:           : Image.file(
-    lib/features/travel_mode/travel_mode_screen.dart:1160:           if (file == null || !file.existsSync()) return placeholder;
-    lib/app/theme/clay.dart:547:     final key = Object.hash(
+    lib/data/places/place_book_installer.dart:67:     final byteData = await _bundle.load(spec.assetKey);
+    lib/data/files/photo_store.dart:119:   Future<PhotoSweepResult> sweepOrphans(WarangDatabase database) async {
+    lib/data/files/photo_store.dart:269: img.Image _decodeChecked(Uint8List bytes) {
+    lib/app/shell/you_sheet.dart:349:   final picked = await ImagePicker().pickImage(
+    lib/features/capture/capture_screen.dart:214:           : Image.file(
+    lib/features/travel_mode/travel_mode_screen.dart:1160:           if (file == null) return placeholder;
+    lib/app/theme/clay.dart:557:     final key = (
     lib/app/theme/motion.dart:24:   Curve get curve => _SpringCurve(this, clamp: false);
 
 ### Tasks
 
-- [ ] Open `PlaceBook.openFile` (`lib/data/places/place_book.dart:80`) with `NativeDatabase.createInBackground(file)`, and validate `meta.schema_version` on the installed database in `PlaceBookInstaller.ensureInstalled` (`lib/data/places/place_book_installer.dart:55-84`), reinstalling from the asset when it does not match (`AUD-003`).
-- [ ] Keep the single `_bundle.load` call in `PlaceBookInstaller.ensureInstalled`: the SDK cannot stream an asset (see Framework citations), so do not add a chunked copy; record the 25.96 MB first-install peak in the evidence log as a known limitation that needs a device memory check by Len (`AUD-003`).
-- [ ] Pass `maxWidth: 2000` and `maxHeight: 2000` to the avatar `pickImage` call (`lib/app/shell/you_sheet.dart:348`), inspect image header dimensions via `img.findDecoderForData(bytes)?.startDecode(bytes)` before full decode, and run decode, EXIF orientation bake, resize, and JPEG encode inside `Isolate.run` in `lib/data/files/photo_store.dart` (`AUD-004`).
-- [ ] Add `cacheWidth` to `Image.file` in `lib/features/capture/capture_screen.dart:211` and `lib/features/travel_mode/travel_mode_screen.dart:1157`, and replace `file.existsSync()` in `_MomentPolaroid.build` with `Image.file(..., errorBuilder: ...)` (`AUD-013`).
-- [ ] Replace `Object.hash(...)` keys in `ClayDiscCache._images` (`lib/app/theme/clay.dart:541`) with a value-equal Dart record tuple, and dispose evicted `ui.Image` handles safely in a post-frame callback (`AUD-015`).
-- [ ] In `PhotoStore.sweepOrphans` (`lib/data/files/photo_store.dart:118-178`), use a `Set<String>` for referenced-path checks and batch missing-file soft-deletes in one `database.transaction`; move `sweepOrphans` at `lib/main.dart:28` into the post-frame callback after `runApp` (`AUD-034`).
-- [ ] Precompute and cache `SpringSimulation` on `_SpringCurve` in `lib/app/theme/motion.dart:24-43` (`AUD-049`).
-- [ ] Add tests in `test/photo_store_test.dart`, `test/place_book_test.dart`, and `test/clay_components_test.dart` for header-level >30 MP rejection, `schema_version` validation, and `ClayDiscCache` eviction disposal.
+- [x] Open `PlaceBook.openFile` (`lib/data/places/place_book.dart:80`) with `NativeDatabase.createInBackground(file)`, and validate `meta.schema_version` on the installed database in `PlaceBookInstaller.ensureInstalled` (`lib/data/places/place_book_installer.dart:55-84`), reinstalling from the asset when it does not match (`AUD-003`).
+- [x] Keep the single `_bundle.load` call in `PlaceBookInstaller.ensureInstalled`: the SDK cannot stream an asset (see Framework citations), so do not add a chunked copy; record the 25.96 MB first-install peak in the evidence log as a known limitation that needs a device memory check by Len (`AUD-003`).
+- [x] Pass `maxWidth: 2000` and `maxHeight: 2000` to the avatar `pickImage` call (`lib/app/shell/you_sheet.dart:348`), inspect image header dimensions via `img.findDecoderForData(bytes)?.startDecode(bytes)` before full decode, and run decode, EXIF orientation bake, resize, and JPEG encode inside `Isolate.run` in `lib/data/files/photo_store.dart` (`AUD-004`).
+- [x] Add `cacheWidth` to `Image.file` in `lib/features/capture/capture_screen.dart:211` and `lib/features/travel_mode/travel_mode_screen.dart:1157`, and replace `file.existsSync()` in `_MomentPolaroid.build` with `Image.file(..., errorBuilder: ...)` (`AUD-013`).
+- [x] Replace `Object.hash(...)` keys in `ClayDiscCache._images` (`lib/app/theme/clay.dart:541`) with a value-equal Dart record tuple, and dispose evicted `ui.Image` handles safely in a post-frame callback (`AUD-015`).
+- [x] In `PhotoStore.sweepOrphans` (`lib/data/files/photo_store.dart:118-178`), use a `Set<String>` for referenced-path checks and batch missing-file soft-deletes in one `database.transaction`; move `sweepOrphans` at `lib/main.dart:28` into the post-frame callback after `runApp` (`AUD-034`).
+- [x] Precompute and cache `SpringSimulation` on `_SpringCurve` in `lib/app/theme/motion.dart:24-43` (`AUD-049`).
+- [x] Add tests in `test/photo_store_test.dart`, `test/place_book_test.dart`, and `test/clay_components_test.dart` for header-level >30 MP rejection, `schema_version` validation, and `ClayDiscCache` eviction disposal.
 
 ### Verification
 
-- [ ] `flutter analyze` prints `No issues found!`.
-- [ ] `flutter test test/photo_store_test.dart test/place_book_test.dart test/capture_flow_test.dart test/clay_components_test.dart test/reduced_motion_test.dart` passes.
-- [ ] `python .agents/skills/implementation-plan/scripts/check_claims.py docs/plans/AUDIT-001-remediation-implementation.md docs/evidence/AUDIT-001-remediation-verification.md HANDOFF.md` prints `0 problems`.
-- [ ] Probe or temporary test sources are saved under the evidence folder before they are deleted.
+- [x] `flutter analyze` prints `No issues found!`.
+- [x] `flutter test test/photo_store_test.dart test/place_book_test.dart test/capture_flow_test.dart test/clay_components_test.dart test/reduced_motion_test.dart` passes.
+- [x] `python .agents/skills/implementation-plan/scripts/check_claims.py docs/plans/AUDIT-001-remediation-implementation.md docs/evidence/AUDIT-001-remediation-verification.md HANDOFF.md` prints `0 problems`.
+- [x] Probe or temporary test sources are saved under the evidence folder before they are deleted.
 
 ### Review and checkpoint
 
-- [ ] Confirm `PlaceBook` tests still run cleanly on Windows without leaving background isolate handles open.
-- [ ] Update plan, evidence, and `HANDOFF.md`; stage only Phase 3 paths and verify `git diff --cached --stat`.
-- [ ] Commit with `perf(media): AUDIT-001 phase 3 - off-isolate media, place book, and image hygiene` and verify Git exit code.
+- [x] Confirm `PlaceBook` tests still run cleanly on Windows without leaving background isolate handles open.
+- [x] Update plan, evidence, and `HANDOFF.md`; stage only Phase 3 paths and verify `git diff --cached --stat`.
+- [x] Commit with `perf(media): AUDIT-001 phase 3 - off-isolate media, place book, and image hygiene` and verify Git exit code.
 
 ## Phase 4: Save integrity, transactions, and UI state safety
 
@@ -209,7 +209,7 @@ State: Approved - not started
 
 Current code anchors:
 
-    lib/features/capture/capture_screen.dart:231:       child: Scaffold(
+    lib/features/capture/capture_screen.dart:234:       child: Scaffold(
     lib/features/home_tab/trip_form_screen.dart:98:     if (picked != null) setState(() => _dates = picked);
     lib/features/home_tab/trip_form_screen.dart:196:     return PopScope(
     lib/features/home_tab/trip_form_screen.dart:209:           leading: CloseButton(onPressed: () => Navigator.of(context).pop()),
@@ -304,7 +304,7 @@ Current code anchors:
 
     lib/data/repository.dart:47:     _profileSubscription = database.profilesDao.watchActive().listen((row) {
     lib/data/places/place_book.dart:180:       rows = await _db
-    lib/features/travel_mode/travel_mode_screen.dart:1160:           if (file == null || !file.existsSync()) return placeholder;
+    lib/features/travel_mode/travel_mode_screen.dart:1160:           if (file == null) return placeholder;
     tool/place_book/build_place_book.py:325:         except Exception:
     tool/place_book/build_place_book.py:423:         out_path.unlink()
     tool/place_book/build_place_book.py:427:         schema_sql = schema_sql.replace(",\n  prefix = '2 3'", "")

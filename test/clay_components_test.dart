@@ -500,4 +500,34 @@ void main() {
       );
     }
   });
+
+  testWidgets('ClayDiscCache disposes evicted ui.Image handles after frame', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_host(const SizedBox()));
+    final first = ClayDiscCache.image(
+      diameter: 20,
+      fill: const Color(0xFF102030),
+      tone: null,
+      depth: ClayDepth.clay1,
+      brightness: Brightness.light,
+      neutrals: WarangNeutrals.light,
+      pixelRatio: 1,
+    );
+    expect(first.debugDisposed, isFalse);
+
+    for (var i = 1; i <= 65; i++) {
+      ClayDiscCache.image(
+        diameter: 20 + i.toDouble(),
+        fill: const Color(0xFF102030),
+        tone: null,
+        depth: ClayDepth.clay1,
+        brightness: Brightness.light,
+        neutrals: WarangNeutrals.light,
+        pixelRatio: 1,
+      );
+    }
+    await tester.pump();
+    expect(first.debugDisposed, isTrue);
+  });
 }

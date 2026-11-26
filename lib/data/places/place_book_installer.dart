@@ -55,11 +55,10 @@ class PlaceBookInstaller {
     if (await target.exists()) {
       final existingLength = await target.length();
       final expected = spec.expectedBytes;
-      if (expected != null && existingLength == expected) {
-        await _cleanupOldFiles(dir, keepName: spec.fileName);
-        return target;
-      }
-      if (expected == null && existingLength > 0 && !await tmp.exists()) {
+      final sizeMatches =
+          (expected != null && existingLength == expected) ||
+          (expected == null && existingLength > 0 && !await tmp.exists());
+      if (sizeMatches && await _hasValidSchemaVersion(target)) {
         await _cleanupOldFiles(dir, keepName: spec.fileName);
         return target;
       }
@@ -81,6 +80,19 @@ class PlaceBookInstaller {
     await tmp.rename(target.path);
     await _cleanupOldFiles(dir, keepName: spec.fileName);
     return target;
+  }
+
+  Future<bool> _hasValidSchemaVersion(File file) async {
+    PlaceBook? book;
+    try {
+      book = PlaceBook.openFile(file);
+      final meta = await book.readMeta();
+      return meta['schema_version'] == spec.schemaVersion;
+    } on Exception catch (_) {
+      return false;
+    } finally {
+      await book?.close();
+    }
   }
 
   Future<void> _cleanupOldFiles(

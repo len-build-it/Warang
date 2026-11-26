@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:path/path.dart' as p;
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:warang/data/db/database.dart';
 import 'package:warang/data/files/photo_store.dart';
 import 'package:warang/data/places/fts_query.dart';
@@ -30,6 +31,38 @@ class _FakeAssetBundle extends CachingAssetBundle {
     }
     return ByteData.sublistView(bytes);
   }
+}
+
+Future<Uint8List> _miniPlaceBookBytes(
+  Directory tempDir, {
+  String schemaVersion = '1',
+}) async {
+  sqfliteFfiInit();
+  final filePath = p.join(
+    tempDir.path,
+    'seed_${schemaVersion}_${DateTime.now().microsecondsSinceEpoch}.sqlite',
+  );
+  final db = await databaseFactoryFfi.openDatabase(
+    filePath,
+    options: OpenDatabaseOptions(
+      singleInstance: false,
+      onCreate: (db, _) async {
+        await db.execute(
+          'CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)',
+        );
+        await db.insert('meta', {
+          'key': 'schema_version',
+          'value': schemaVersion,
+        });
+      },
+      version: 1,
+    ),
+  );
+  await db.close();
+  final file = File(filePath);
+  final bytes = await file.readAsBytes();
+  await file.delete();
+  return bytes;
 }
 
 void main() {
@@ -214,7 +247,7 @@ void main() {
           }
         });
 
-        final payload = Uint8List.fromList(List<int>.generate(64, (i) => i));
+        final payload = await _miniPlaceBookBytes(tempDir, schemaVersion: '1');
         final bundle = _FakeAssetBundle({'test/book.sqlite': payload});
         final spec = PlaceBookAssetSpec(
           assetKey: 'test/book.sqlite',
@@ -253,6 +286,49 @@ void main() {
         await installer.ensureInstalled();
         expect(await installed.length(), payload.length);
         expect(bundle.loadCount, 2);
+      },
+    );
+
+    test(
+      'reinstalls when existing file has wrong schema_version',
+      () async {
+        final tempDir = await Directory.systemTemp.createTemp(
+          'warang_pb_schema_',
+        );
+        addTearDown(() async {
+          if (await tempDir.exists()) {
+            await tempDir.delete(recursive: true);
+          }
+        });
+
+        final validPayload = await _miniPlaceBookBytes(
+          tempDir,
+          schemaVersion: '1',
+        );
+        final wrongSchemaPayload = await _miniPlaceBookBytes(
+          tempDir,
+          schemaVersion: '999',
+        );
+        final bundle = _FakeAssetBundle({'test/book.sqlite': validPayload});
+        const spec = PlaceBookAssetSpec(
+          assetKey: 'test/book.sqlite',
+          schemaVersion: '1',
+          sourceDate: '2026-11-22',
+        );
+        final target = File(p.join(tempDir.path, spec.fileName));
+        await target.writeAsBytes(wrongSchemaPayload, flush: true);
+
+        final installer = PlaceBookInstaller(
+          spec: spec,
+          bundle: bundle,
+          supportDirectory: () async => tempDir,
+        );
+        final installed = await installer.ensureInstalled();
+        expect(bundle.loadCount, 1);
+        final book = PlaceBook.openFile(installed);
+        addTearDown(book.close);
+        final meta = await book.readMeta();
+        expect(meta['schema_version'], '1');
       },
     );
 

@@ -348,6 +348,8 @@ class _YouRow extends StatelessWidget {
 Future<void> pickProfilePhoto(WarangRepository repository) async {
   final picked = await ImagePicker().pickImage(
     source: ImageSource.gallery,
+    maxWidth: 2000,
+    maxHeight: 2000,
     imageQuality: 88,
   );
   if (picked != null) await repository.setAvatar(File(picked.path));

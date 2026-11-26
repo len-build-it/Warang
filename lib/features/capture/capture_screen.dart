@@ -199,8 +199,10 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
     final neutrals = WarangNeutrals.of(context);
     final topPadding = MediaQuery.paddingOf(context).top;
     final safeTop = math.max(topPadding, 12.0) + 8.0;
-    final screenHeight = MediaQuery.sizeOf(context).height;
-    final photoHeight = (screenHeight * 0.45).clamp(220.0, 480.0);
+    final screenSize = MediaQuery.sizeOf(context);
+    final photoHeight = (screenSize.height * 0.45).clamp(220.0, 480.0);
+    final photoCacheWidth =
+        (screenSize.width * MediaQuery.devicePixelRatioOf(context)).round();
     final trip = ref.watch(repositoryProvider).tripForCapture(_capturedAt);
     final photoArea = ColoredBox(
       color:
@@ -213,6 +215,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
               fit: BoxFit.cover,
               width: double.infinity,
               height: double.infinity,
+              cacheWidth: photoCacheWidth > 0 ? photoCacheWidth : null,
               errorBuilder: (context, _, _) =>
                   const Center(child: WarangIcon(WarangGlyphs.photo, size: 36)),
             ),

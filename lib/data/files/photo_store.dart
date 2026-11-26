@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:image/image.dart' as img;
@@ -7,6 +8,8 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../core/ids.dart';
 import '../db/database.dart';
+
+const _maxImagePixels = 30 * 1000 * 1000;
 
 class StoredPhoto {
   const StoredPhoto({
@@ -52,11 +55,8 @@ class PhotoStore {
   /// Stores a profile image outside the Photos tree so the photo orphan
   /// sweep does not mistake an active avatar for an unreferenced moment photo.
   Future<String> importAvatar(File source, {DateTime? now}) async {
-    final decoded = _decode(await source.readAsBytes());
-    final normalized = _resizeForLongEdge(decoded, maxLongEdge);
-    final bytes = Uint8List.fromList(
-      img.encodeJpg(normalized, quality: jpegQuality),
-    );
+    final rawBytes = await source.readAsBytes();
+    final bytes = await Isolate.run(() => _encodeAvatarBytes(rawBytes));
     final relative = _relativePath(
       p.posix.join('warang', 'profile', '${newId()}.jpg'),
     );
@@ -119,7 +119,7 @@ class PhotoStore {
     final activeRows = await database.photosDao.getActive();
     final liveRows = await database.photosDao.getLive();
     final liveIds = liveRows.map((row) => row.id).toSet();
-    final validRows = <String>[];
+    final validRows = <String>{};
     final invalidRows = <String>[];
 
     for (final row in activeRows) {
@@ -137,9 +137,13 @@ class PhotoStore {
       }
     }
 
-    final now = DateTime.now();
-    for (final id in invalidRows) {
-      await database.photosDao.softDelete(id, now);
+    if (invalidRows.isNotEmpty) {
+      final now = DateTime.now();
+      await database.transaction(() async {
+        for (final id in invalidRows) {
+          await database.photosDao.softDelete(id, now);
+        }
+      });
     }
 
     final referenced = <String>{};
@@ -150,9 +154,8 @@ class PhotoStore {
     }
 
     var deletedFiles = 0;
-    final photosRoot = Directory(
-      p.join((await _root).path, 'warang', 'photos'),
-    );
+    final root = await _root;
+    final photosRoot = Directory(p.join(root.path, 'warang', 'photos'));
     if (await photosRoot.exists()) {
       await for (final entity in photosRoot.list(
         recursive: true,
@@ -160,7 +163,7 @@ class PhotoStore {
       )) {
         if (entity is! File) continue;
         final relative = _relativePath(
-          p.relative(entity.path, from: (await _root).path),
+          p.relative(entity.path, from: root.path),
         );
         if (referenced.contains(relative)) continue;
         try {
@@ -178,15 +181,7 @@ class PhotoStore {
   }
 
   Future<StoredPhoto> _storeDecoded(Uint8List bytes, {DateTime? now}) async {
-    final decoded = _decode(bytes);
-    final normalized = _resizeForLongEdge(decoded, maxLongEdge);
-    final fullBytes = Uint8List.fromList(
-      img.encodeJpg(normalized, quality: jpegQuality),
-    );
-    final thumbnail = _resizeForLongEdge(normalized, thumbnailLongEdge);
-    final thumbBytes = Uint8List.fromList(
-      img.encodeJpg(thumbnail, quality: jpegQuality),
-    );
+    final encoded = await Isolate.run(() => _encodePhotoAndThumb(bytes));
     final date = now ?? DateTime.now();
     final id = newId();
     final directory = p.posix.join(
@@ -204,9 +199,9 @@ class PhotoStore {
     await destination.parent.create(recursive: true);
     await thumbDestination.parent.create(recursive: true);
     try {
-      await destination.writeAsBytes(fullBytes, flush: true);
-      await thumbDestination.writeAsBytes(thumbBytes, flush: true);
-    } catch (_) {
+      await destination.writeAsBytes(encoded.fullBytes, flush: true);
+      await thumbDestination.writeAsBytes(encoded.thumbBytes, flush: true);
+    } on Exception {
       await _deleteIfExists(destination);
       await _deleteIfExists(thumbDestination);
       rethrow;
@@ -214,35 +209,10 @@ class PhotoStore {
     return StoredPhoto(
       relPath: relative,
       thumbRelPath: thumbRelative,
-      width: normalized.width,
-      height: normalized.height,
-      bytes: fullBytes.length,
+      width: encoded.width,
+      height: encoded.height,
+      bytes: encoded.fullBytes.length,
     );
-  }
-
-  img.Image _decode(Uint8List bytes) {
-    img.Image? decoded;
-    try {
-      decoded = img.decodeImage(bytes);
-    } catch (_) {
-      throw const FormatException('Unsupported image file');
-    }
-    if (decoded == null) throw const FormatException('Unsupported image file');
-    if (decoded.width * decoded.height > 30 * 1000 * 1000) {
-      throw const FormatException('Image dimensions are too large');
-    }
-    return img.bakeOrientation(decoded);
-  }
-
-  img.Image _resizeForLongEdge(img.Image source, int longEdge) {
-    final currentLongEdge = source.width > source.height
-        ? source.width
-        : source.height;
-    if (currentLongEdge <= longEdge) return source.clone();
-    if (source.width >= source.height) {
-      return img.copyResize(source, width: longEdge);
-    }
-    return img.copyResize(source, height: longEdge);
   }
 
   Future<File?> _tryResolve(String path) async {
@@ -264,4 +234,68 @@ class PhotoStore {
   }
 
   String _relativePath(String path) => validateRelativePath(path);
+}
+
+Uint8List _encodeAvatarBytes(Uint8List bytes) {
+  final decoded = _decodeChecked(bytes);
+  final normalized = _resizeForLongEdge(decoded, PhotoStore.maxLongEdge);
+  return Uint8List.fromList(
+    img.encodeJpg(normalized, quality: PhotoStore.jpegQuality),
+  );
+}
+
+({Uint8List fullBytes, Uint8List thumbBytes, int width, int height})
+_encodePhotoAndThumb(Uint8List bytes) {
+  final decoded = _decodeChecked(bytes);
+  final normalized = _resizeForLongEdge(decoded, PhotoStore.maxLongEdge);
+  final fullBytes = Uint8List.fromList(
+    img.encodeJpg(normalized, quality: PhotoStore.jpegQuality),
+  );
+  final thumbnail = _resizeForLongEdge(
+    normalized,
+    PhotoStore.thumbnailLongEdge,
+  );
+  final thumbBytes = Uint8List.fromList(
+    img.encodeJpg(thumbnail, quality: PhotoStore.jpegQuality),
+  );
+  return (
+    fullBytes: fullBytes,
+    thumbBytes: thumbBytes,
+    width: normalized.width,
+    height: normalized.height,
+  );
+}
+
+img.Image _decodeChecked(Uint8List bytes) {
+  img.DecodeInfo? info;
+  try {
+    info = img.findDecoderForData(bytes)?.startDecode(bytes);
+  } on Exception {
+    throw const FormatException('Unsupported image file');
+  }
+  if (info != null && info.width * info.height > _maxImagePixels) {
+    throw const FormatException('Image dimensions are too large');
+  }
+  img.Image? decoded;
+  try {
+    decoded = img.decodeImage(bytes);
+  } on Exception {
+    throw const FormatException('Unsupported image file');
+  }
+  if (decoded == null) throw const FormatException('Unsupported image file');
+  if (decoded.width * decoded.height > _maxImagePixels) {
+    throw const FormatException('Image dimensions are too large');
+  }
+  return img.bakeOrientation(decoded);
+}
+
+img.Image _resizeForLongEdge(img.Image source, int longEdge) {
+  final currentLongEdge = source.width > source.height
+      ? source.width
+      : source.height;
+  if (currentLongEdge <= longEdge) return source.clone();
+  if (source.width >= source.height) {
+    return img.copyResize(source, width: longEdge);
+  }
+  return img.copyResize(source, height: longEdge);
 }

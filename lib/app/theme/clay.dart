@@ -524,10 +524,20 @@ class _ClayPainter extends CustomPainter {
       old.bottomSheet != bottomSheet;
 }
 
+typedef _ClayDiscKey = (
+  double diameter,
+  Color fill,
+  String? toneKey,
+  ClayDepth depth,
+  Brightness brightness,
+  Color shadowTint,
+  double pixelRatio,
+);
+
 /// Clay discs painted once into images, for map pins (Q-1): the map then
 /// draws plain images while it pans, never live blurs.
 abstract final class ClayDiscCache {
-  static final _images = <Object, ui.Image>{};
+  static final _images = <_ClayDiscKey, ui.Image>{};
 
   /// Room around the disc for its outer shadow.
   static double margin(ClayDepth depth, Brightness brightness) {
@@ -544,7 +554,7 @@ abstract final class ClayDiscCache {
     required WarangNeutrals neutrals,
     required double pixelRatio,
   }) {
-    final key = Object.hash(
+    final key = (
       diameter,
       fill,
       tone?.key,
@@ -582,9 +592,14 @@ abstract final class ClayDiscCache {
     final image = picture.toImageSync(side, side);
     picture.dispose();
     _images[key] = image;
-    // Old images are dropped, not disposed: a pin on screen may still draw
-    // one until it rebuilds.
-    if (_images.length > 64) _images.remove(_images.keys.first);
+    if (_images.length > 64) {
+      final evicted = _images.remove(_images.keys.first);
+      if (evicted != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          evicted.dispose();
+        });
+      }
+    }
     return image;
   }
 }

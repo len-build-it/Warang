@@ -29,15 +29,18 @@ class WarangSpring {
 }
 
 class _SpringCurve extends Curve {
-  const _SpringCurve(this.spring, {required this.clamp});
+  _SpringCurve(this.spring, {required this.clamp})
+    : _seconds = spring.duration.inMicroseconds / 1e6,
+      _simulation = spring.simulate(0, 1);
 
   final WarangSpring spring;
   final bool clamp;
+  final double _seconds;
+  final SpringSimulation _simulation;
 
   @override
   double transformInternal(double t) {
-    final seconds = spring.duration.inMicroseconds / 1e6;
-    final x = spring.simulate(0, 1).x(t * seconds);
+    final x = _simulation.x(t * _seconds);
     return clamp ? x.clamp(0.0, 1.0) : x;
   }
 }

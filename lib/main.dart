@@ -23,7 +23,6 @@ Future<void> main() async {
   final photoStore = PhotoStore(documentsDirectory: documents);
   final repository = WarangRepository(database, photoStore: photoStore);
   await repository.initialize();
-  await photoStore.sweepOrphans(database);
   final container = ProviderContainer(
     overrides: [repositoryProvider.overrideWithValue(repository)],
   );
@@ -31,6 +30,7 @@ Future<void> main() async {
     UncontrolledProviderScope(container: container, child: const WarangApp()),
   );
   WidgetsBinding.instance.addPostFrameCallback((_) {
+    unawaited(photoStore.sweepOrphans(database));
     unawaited(container.read(placeBookProvider.notifier).ensureReady());
   });
 }

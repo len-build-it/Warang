@@ -1,7 +1,7 @@
 # Verification: AUDIT-001 remediation
 
 Created: 2026-11-27T07:42:00+08:00
-Updated: 2026-11-27T07:49:00+08:00
+Updated: 2026-11-27T07:55:00+08:00
 
 | Requirement / phase | Check or scenario | Environment and conditions | Actual result | When run | Evidence / limitations |
 | --- | --- | --- | --- | --- | --- |
@@ -11,6 +11,9 @@ Updated: 2026-11-27T07:49:00+08:00
 | REM-REQ-001 / Phase 1 | Physical-device map tile loading on a freshly built signed release APK | Physical Android phone | Not run | Pending (Len) | Owned by Len. |
 | REM-REQ-002 / Phase 2 | `flutter analyze` | Windows, Flutter 3.44.7, Dart 3.12.2 | Passed under stated conditions: `No issues found!` | 2026-11-27T07:48:44+08:00 | Static analysis only. |
 | REM-REQ-002 / Phase 2 | `flutter test test/map_tile_store_test.dart test/map_pins_test.dart test/map_places_test.dart test/map_clusters_and_credit_test.dart test/map_navigation_test.dart` | Windows, Flutter 3.44.7, Dart 3.12.2 | Passed under stated conditions: 42 passed, 0 failed | 2026-11-27T07:48:44+08:00 | Covers fresh-hit zero-HTTP, 304 metadata refresh, timeout/malformed-row resilience, legacy `lastAccessedAt` upgrade, serialized LRU eviction, map pins, places, clusters, credit, and navigation. |
+| REM-REQ-003 / Phase 3 | `flutter analyze` | Windows, Flutter 3.44.7, Dart 3.12.2 | Passed under stated conditions: `No issues found!` | 2026-11-27T07:54:06+08:00 | Static analysis only. |
+| REM-REQ-003 / Phase 3 | `flutter test test/photo_store_test.dart test/place_book_test.dart test/capture_flow_test.dart test/clay_components_test.dart test/reduced_motion_test.dart` | Windows, Flutter 3.44.7, Dart 3.12.2 | Passed under stated conditions: 73 passed, 0 failed | 2026-11-27T07:54:06+08:00 | Covers background isolate `PlaceBook.openFile`, `schema_version` reinstall check, header-level >30 MP rejection, `Isolate.run` photo encoding, `ClayDiscCache` record keys and post-frame eviction disposal, and cached `SpringSimulation`. |
+| REM-REQ-003 / Phase 3 | Cold first-install 25.96 MB place book memory peak and 48 MP gallery avatar pick | Physical Android phone | Not run | Pending (Len) | Known limitation: `AssetBundle.load` returns the full `ByteData` with no streaming API in Flutter SDK, so the 25.96 MB first-install peak remains and needs a physical-device memory check by Len. |
 
 ## Phase 1 notes
 
