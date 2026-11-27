@@ -147,7 +147,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
         await _shrink.animateTo(1, curve: Curves.easeInCubic);
       }
       if (mounted) Navigator.of(context).pop(moment);
-    } catch (_) {
+    } on Exception catch (_) {
       if (!mounted) return;
       setState(() => _saving = false);
       showWarangSnackBar(

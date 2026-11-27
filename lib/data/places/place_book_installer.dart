@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -106,7 +107,7 @@ class PlaceBookInstaller {
       if (name == keepName) continue;
       try {
         await entity.delete();
-      } catch (_) {
+      } on Exception catch (_) {
         // Best-effort cleanup of superseded or interrupted copies.
       }
     }
@@ -149,7 +150,7 @@ class PlaceBookNotifier extends Notifier<PlaceBookState> {
   @override
   PlaceBookState build() {
     ref.onDispose(() {
-      _book?.close();
+      unawaited(_book?.close());
       _book = null;
     });
     return const PlaceBookState.preparing();
@@ -167,7 +168,10 @@ class PlaceBookNotifier extends Notifier<PlaceBookState> {
       final book = PlaceBook.openFile(file);
       _book = book;
       state = PlaceBookState.ready(book);
-    } catch (error) {
+    } on Exception catch (error) {
+      _started = false;
+      state = PlaceBookState.failed(error);
+    } on FlutterError catch (error) {
       _started = false;
       state = PlaceBookState.failed(error);
     }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'components.dart' show WarangIcon;
+import 'palette.dart';
 import 'typography.dart';
 import 'warang_icons.dart';
 
@@ -30,10 +31,8 @@ abstract final class WarangColors {
   static const darkLine = Color(0xFF34302A);
   static const darkShadowTint = Color(0xFF000000);
 
-  static const lightAccentText = Color(0xFF8A6412);
-  static const darkAccentText = Color(0xFFE8A020);
-  static const lightDotInactive = Color(0xFFC3C7BC);
-  static const darkDotInactive = Color(0xFF3A4035);
+  static final lightAccentText = WarangKeepsake.amber.lightText;
+  static final darkAccentText = WarangKeepsake.amber.darkText;
   static const lightMapLabel = Color(0xFF8A8F83);
   static const darkMapLabel = Color(0xFF767C6D);
   static const lightMapLabelWater = Color(0xFF93A2A4);
@@ -41,6 +40,12 @@ abstract final class WarangColors {
 
   static Color accentText(Brightness brightness) =>
       brightness == Brightness.dark ? darkAccentText : lightAccentText;
+
+  static Color error(Brightness brightness) =>
+      WarangKeepsake.gumamela.text(brightness);
+
+  static Color onError(Brightness brightness) =>
+      brightness == Brightness.dark ? darkGround : lightSurfaceRaised;
 }
 
 /// The FEAT-003 V1 neutral colours for one theme.
@@ -263,8 +268,8 @@ ThemeData buildWarangTheme(Brightness brightness) {
     onPrimary: WarangColors.accentInk,
     secondary: soft,
     onSecondary: surface,
-    error: const Color(0xFFB8493D),
-    onError: Colors.white,
+    error: WarangColors.error(brightness),
+    onError: WarangColors.onError(brightness),
     surface: surface,
     onSurface: ink,
     outline: neutrals.boundary,

@@ -224,10 +224,6 @@ void main() {
         }
         sw.stop();
         final avgMs = sw.elapsedMicroseconds / 20000.0;
-        debugPrint(
-          'BUNDLED_SEARCH_3LETTER_AVG_MS=${avgMs.toStringAsFixed(2)} '
-          '(results=${last.length})',
-        );
         expect(last, isNotEmpty);
         expect(avgMs, lessThan(150.0));
       },

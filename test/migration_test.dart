@@ -214,9 +214,7 @@ Future<void> _seedLegacyDatabase(File file, {required int version}) async {
 }
 
 void main() {
-  setUpAll(() {
-    sqfliteFfiInit();
-  });
+  setUpAll(sqfliteFfiInit);
 
   group('Schema 3 migration', () {
     test(

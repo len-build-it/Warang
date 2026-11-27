@@ -1,8 +1,8 @@
 # FEAT-003: Clay keepsake redesign
 
 Created: 2026-11-21T20:40:00+08:00
-Updated: 2026-11-21T20:42:00+08:00
-Revision: 1
+Updated: 2026-11-27T09:00:00+08:00
+Revision: 2
 Status: Approved - plan approved, not started
 
 ## Purpose and success
@@ -345,6 +345,8 @@ There is at most one primary button per screen or sheet.
 
 ### C11. Toggle
 
+Removed by AUDIT-001 D-1 on 2026-11-26 because no screen used a toggle control.
+
 - Track 52 by 32, radius `rPill`, `inset` depth, `boundary` outline when off.
 - Knob 26 diameter at `clay1`.
 - On: track becomes the amber fill, and a check mark appears in the knob, so state is not shown by colour alone.
@@ -449,7 +451,7 @@ Both themes are required for every screen.
 
 - Opened from the You sheet. Title "Settings" in `displayL` with a back button.
 - Groups are `surface` clay cards (`rCard`, `clay1`) with section labels in `meta` `inkSoft` sentence case.
-- Rows are 56 tall with `body` labels and `meta` values. Toggles use C11.
+- Rows are 56 tall with `body` labels and `meta` values. Settings rows have no toggles.
 - Theme stays a read-only row that says "Follows your phone", as today. Adding a manual theme choice is out of scope.
 - The footer line "Everything stays on this phone" sits beside a small sitting maya.
 
@@ -615,3 +617,6 @@ Assumptions:
 - Blocking for completion, not for starting: the layered maya artwork (D-2).
 - Approved: Len approved revision 1 with the recommended answers to D-1 to D-6 on 2026-11-21 at 20:37 (Asia/Manila) by choosing "Approve as recommended" on the project-thread decision card "Approve FEAT-003 revision 1 with the recommended answers to D-1 to D-6?".
 - After approval, the next step is `docs/plans/FEAT-003-implementation.md` with phases, for example: 1 contrast and tokens; 2 fonts and icons; 3 `ClaySurface`, motion, and haptics; 4 dock, avatar bubble, and You sheet; 5 map, pins, capture, and moment card; 6 trips, trip detail, and trip form with trip colours; 7 search, news, settings, and About; 8 the maya; 9 dark-mode and text-scale pass with golden evidence.
+
+
+External names: `rPill`, `rPhoto`, `BoxShadow`, `map_outlined`, `home_outlined`, `article_outlined`, `auto_stories_outlined`, `search_off_outlined`, `photo_camera_outlined`, `camera_alt_outlined`, `gps_fixed`, `near_me_outlined`, `arrow_back`, `edit_outlined`, `photo_outlined`, `image_outlined`, `landscape_outlined`, `date_range_outlined`, `wb_sunny_outlined`, `info_outline`, `chevron_right`, `explore_outlined`, `warang_drawer`

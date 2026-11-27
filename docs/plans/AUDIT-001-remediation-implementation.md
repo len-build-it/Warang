@@ -1,9 +1,9 @@
 # Implementation Plan: AUDIT-001 remediation (Ponytail and Clean Code)
 
 Created: 2026-11-24T21:40:00+08:00
-Updated: 2026-11-27T08:58:00+08:00
+Updated: 2026-11-27T09:06:00+08:00
 Revision: 2
-Status: In progress - Phase 4 complete
+Status: In progress - Phase 5 complete
 Feature spec and revision: None; this plan addresses the 51 findings in `docs/audits/AUDIT-001-code-quality-report.md` (revision 2, re-verified at `a8d3e68`) under requirements `REM-REQ-001` to `REM-REQ-006`, defined in this plan
 Approved baseline and architecture revisions: `docs/IMPLEMENTATION_PLAN.md` at `dc407c5` (T17 keeps `sqflite` for map tiles), `docs/REMEDIATION_IMPLEMENTATION_PLAN.md` at `dc407c5`, FEAT-001 to FEAT-004 revision 1 as listed in `docs/SPEC_INDEX.md`
 Len's chat approval: 2026-11-26T23:32:00+08:00 chat, plan revision 2: "Approve, run without stops"; D-1: "Delete it and amend FEAT-003"; D-2 and D-3: "Yes, as recommended" (recorded in `HANDOFF.md`)
@@ -49,7 +49,7 @@ Len decided all three decisions on 2026-11-26:
 - `D-3` (`AUD-012` and `AUD-051`): fix `scripts/build-and-archive.sh` and `scripts/build-and-archive.ps1` in place while keeping `scripts/` untracked (preserving the existing untracked-path rule).
 
 New names: `APP_VERSION`, `requireKey`, `lastAccessedAt`, `_evicting`, `_httpClient`, `_cameraDebounce`, `_cachedTileProvider`, `checkLocationAccess`, `galleryPickerProvider`, `editMomentDetails`, `placeMoment`, `revision`, `_saving`, `clockProvider`, `_refreshGeneration`, `moment_polaroid.dart`
-External names: `INTERNET`, `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`, `aapt2`, `apksigner`, `ConvertTo-Json`, `String.fromEnvironment`, `HttpClient`, `connectionTimeout`, `Isolate.run`, `startDecode`, `findDecoderForData`, `createInBackground`, `cacheWidth`, `errorBuilder`, `whenCompleteOrCancel`, `TickerFuture`, `SpringSimulation`, `unawaited`, `py_compile`, `os.replace`, `unnecessary_null_checks`, `unnecessary_lambdas`, `use_if_null_to_convert_nulls_to_bools`, `avoid_redundant_argument_values`, `discarded_futures`, `avoid_catches_without_on_clauses`, `check_claims.py`, `requireNotNull`, `getProperty`, `schema_version`, `maxHeight`, `fromEnvironment`, `dart-define`, `LASTEXITCODE`, `FileSystemException`, `DatabaseException`, `PlatformException`, `HttpException`, `TypeError`, `table_info`
+External names: `INTERNET`, `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`, `aapt2`, `apksigner`, `ConvertTo-Json`, `String.fromEnvironment`, `HttpClient`, `connectionTimeout`, `Isolate.run`, `startDecode`, `findDecoderForData`, `createInBackground`, `cacheWidth`, `errorBuilder`, `whenCompleteOrCancel`, `TickerFuture`, `SpringSimulation`, `unawaited`, `py_compile`, `os.replace`, `unnecessary_null_checks`, `unnecessary_lambdas`, `use_if_null_to_convert_nulls_to_bools`, `avoid_redundant_argument_values`, `discarded_futures`, `avoid_catches_without_on_clauses`, `check_claims.py`, `requireNotNull`, `getProperty`, `schema_version`, `maxHeight`, `fromEnvironment`, `dart-define`, `LASTEXITCODE`, `FileSystemException`, `DatabaseException`, `PlatformException`, `HttpException`, `TypeError`, `table_info`, `WarangToggle`, `upsertImportedTrip`, `NewsAdSlot`, `NewsListEntry`, `lightDotInactive`, `darkDotInactive`, `helperText`, `tailAlignment`, `tailDown`
 
 ### Framework citations
 
@@ -131,7 +131,7 @@ Current code anchors:
     lib/main.dart:29:     overrides: [repositoryProvider.overrideWithValue(repository)],
     lib/features/map/warang_map.dart:255:                 _scheduleSaveCamera(camera.center, camera.zoom);
     lib/features/map/warang_map.dart:266:                 tileProvider: _cachedTileProvider,
-    lib/features/map/warang_map.dart:588:   Future<void> _refreshLocation({required bool moveToUser}) async {
+    lib/features/map/warang_map.dart:592:   Future<void> _refreshLocation({required bool moveToUser}) async {
 
 The tile database is opened without a `version` or `onUpgrade`, and its tables are created in `onOpen` with `CREATE TABLE IF NOT EXISTS` (`lib/features/map/map_tile_store.dart:79-125`).
 Adding a column to that statement never reaches existing installs, so `lastAccessedAt` needs an explicit in-place upgrade.
@@ -218,7 +218,7 @@ Current code anchors:
     lib/data/repository.dart:139:   Future<void> setAvatar(File source) async {
     lib/data/repository.dart:468:         final decoded = jsonDecode(raw);
     lib/features/maya/maya_companion.dart:280:     _drag.animateWith(WarangMotion.release.simulate(1, 0)).whenCompleteOrCancel(
-    lib/features/places/place_picker_sheet.dart:142:         final nearby = await book.nearby(widget.near!, 150, limit: 8);
+    lib/features/places/place_picker_sheet.dart:142:         final nearby = await book.nearby(widget.near!, 150);
     lib/features/search/search_tab_screen.dart:139:     if (widget.query != _query || widget.repository.revision != _revision) {
     lib/data/db/database.dart:65:       if (from < 2) {
 
@@ -252,48 +252,44 @@ Current code anchors:
 ## Phase 5: Dead code, YAGNI cleanup, and small code-hygiene fixes
 
 Requirements: `REM-REQ-005` (`AUD-023`, `AUD-024`, `AUD-025`, `AUD-026`, `AUD-027`, `AUD-028`, `AUD-036`, `AUD-038`, `AUD-041`, `AUD-043`, `AUD-047`, `AUD-048`, `AUD-050`; `AUD-029` kept per D-1)
-State: Approved - not started
+State: Complete
 
 Current code anchors:
 
-    lib/data/repository.dart:687:   Future<void> upsertImportedTrip(
-    lib/app/theme/clay_components.dart:1147: class WarangToggle extends StatelessWidget {
-    test/clay_components_test.dart:289:       testWidgets('toggles show state with a check and semantics ($variant)', (
-    lib/features/news_tab/news_tab_screen.dart:11: sealed class NewsListEntry {
-    lib/features/news_tab/news_tab_screen.dart:56: final class NewsAdSlot extends NewsListEntry {
-    lib/app/theme/tokens.dart:35:   static const lightDotInactive = Color(0xFFC3C7BC);
-    lib/data/db/database.dart:36:   static const _categoryNameCaseSql = '''
+    lib/features/news_tab/news_tab_screen.dart:11: final class NewsArticle {
+    lib/app/theme/tokens.dart:34:   static final lightAccentText = WarangKeepsake.amber.lightText;
+    lib/data/db/database.dart:38:   static final _categoryNameCaseSql = _buildCategoryNameCaseSql();
     lib/data/db/database.dart:140:     beforeOpen: (details) async {
-    lib/core/trip_rules.dart:38: bool coversDay(DateTime start, DateTime end, DateTime at) {
+    lib/core/trip_rules.dart:41: bool coversDay(DateTime start, DateTime end, DateTime at) {
 
 ### Tasks
 
-- [ ] Delete `WarangRepository.upsertImportedTrip` (`lib/data/repository.dart:555-629`) (`AUD-024`).
-- [ ] Delete `NewsAdSlot` and `NewsListEntry` (`lib/features/news_tab/news_tab_screen.dart:11-43,131`), type the list as `List<NewsArticle>`, and update `test/news_tab_test.dart:34` (`AUD-028`).
-- [ ] Delete unused `WarangColors.lightDotInactive` and `darkDotInactive`, the unnamed `WarangButton()` constructor, `WarangField.helperText`, `WarangSpeechBubble.tailAlignment`/`tailDown`, and `WarangSettingsRow.onTap` (`AUD-027`).
-- [ ] Per D-1: delete `WarangToggle` (`lib/app/theme/clay_components.dart:1147-1249`) and its test (`test/clay_components_test.dart:289-326`, the whole `testWidgets` block) (`AUD-023`); keep `MayaPose.footTap` (`lib/features/maya/maya_companion.dart:20`) (`AUD-029`).
-- [ ] Per D-1, amend `docs/features/FEAT-003-clay-keepsake-redesign.md` to revision 2: under `### C11. Toggle` (line 346) add a note that C11 was removed by AUDIT-001 D-1 on 2026-11-26 because nothing used it; change "Toggles use C11." (line 452) to say Settings rows have no toggles; update its `Updated:` and `Revision:` lines and its row in `docs/SPEC_INDEX.md` (`AUD-023`).
-- [ ] Per D-2: remove `assets/Logo2.png` and `design/ui-update/baseline/` from Git, keeping `assets/Logo.png` and `design/warang-canvas.html` (`AUD-026`).
-- [ ] Apply only readable mechanical fixes (`unnecessary_null_checks`, `unnecessary_lambdas`, `use_if_null_to_convert_nulls_to_bools`, and hand-picked redundant defaults outside `DateTime(...)` literals) without running a blanket `dart fix --apply` (`AUD-025`).
-- [ ] Wrap intentional fire-and-forget futures with `unawaited(...)` (`AUD-036`) and narrow untyped `catch` blocks to `on Exception` (`AUD-038`).
-- [ ] Generate `_categoryNameCaseSql` (`lib/data/db/database.dart:36-54`) from `PlaceCategories.all` (`lib/core/place_categories.dart:146`), changing it from `static const` to `static final`, and add a unit test asserting every category key and label is represented (`AUD-041`).
-- [ ] Align `WarangColors.lightAccentText`/`darkAccentText` and `ColorScheme.error`/`onError` (`lib/app/theme/tokens.dart:33-34,266-267`) with `WarangKeepsake` tokens while keeping `test/contrast_test.dart` passing (`AUD-043`).
-- [ ] Remove diagnostic `print` and `debugPrint` calls in `test/stamps_test.dart:230-231` and `test/place_book_test.dart:194` (`AUD-047`).
-- [ ] Move `_createPlacesIndex()` and `_createSearchIndex()` out of `beforeOpen` (`lib/data/db/database.dart:138-142`) into `onCreate` and `onUpgrade` only (`AUD-048`).
-- [ ] Normalize `coversDay` (`lib/core/trip_rules.dart:38-42`) with `.toLocal()` and `DateTime(y, m, d)` / `DateTime(y, m, d + 1)` matching `lib/core/stamps.dart:114` (`AUD-050`).
+- [x] Delete `WarangRepository.upsertImportedTrip` (`lib/data/repository.dart:555-629`) (`AUD-024`).
+- [x] Delete `NewsAdSlot` and `NewsListEntry` (`lib/features/news_tab/news_tab_screen.dart:11-43,131`), type the list as `List<NewsArticle>`, and update `test/news_tab_test.dart:34` (`AUD-028`).
+- [x] Delete unused `WarangColors.lightDotInactive` and `darkDotInactive`, the unnamed `WarangButton()` constructor, `WarangField.helperText`, `WarangSpeechBubble.tailAlignment`/`tailDown`, and `WarangSettingsRow.onTap` (`AUD-027`).
+- [x] Per D-1: delete `WarangToggle` (`lib/app/theme/clay_components.dart:1147-1249`) and its test (`test/clay_components_test.dart:289-326`, the whole `testWidgets` block) (`AUD-023`); keep `MayaPose.footTap` (`lib/features/maya/maya_companion.dart:20`) (`AUD-029`).
+- [x] Per D-1, amend `docs/features/FEAT-003-clay-keepsake-redesign.md` to revision 2: under `### C11. Toggle` (line 346) add a note that C11 was removed by AUDIT-001 D-1 on 2026-11-26 because nothing used it; change "Toggles use C11." (line 452) to say Settings rows have no toggles; update its `Updated:` and `Revision:` lines and its row in `docs/SPEC_INDEX.md` (`AUD-023`).
+- [x] Per D-2: remove `assets/Logo2.png` and `design/ui-update/baseline/` from Git, keeping `assets/Logo.png` and `design/warang-canvas.html` (`AUD-026`).
+- [x] Apply only readable mechanical fixes (`unnecessary_null_checks`, `unnecessary_lambdas`, `use_if_null_to_convert_nulls_to_bools`, and hand-picked redundant defaults outside `DateTime(...)` literals) without running a blanket `dart fix --apply` (`AUD-025`).
+- [x] Wrap intentional fire-and-forget futures with `unawaited(...)` (`AUD-036`) and narrow untyped `catch` blocks to `on Exception` (`AUD-038`).
+- [x] Generate `_categoryNameCaseSql` (`lib/data/db/database.dart:36-54`) from `PlaceCategories.all` (`lib/core/place_categories.dart:146`), changing it from `static const` to `static final`, and add a unit test asserting every category key and label is represented (`AUD-041`).
+- [x] Align `WarangColors.lightAccentText`/`darkAccentText` and `ColorScheme.error`/`onError` (`lib/app/theme/tokens.dart:33-34,266-267`) with `WarangKeepsake` tokens while keeping `test/contrast_test.dart` passing (`AUD-043`).
+- [x] Remove diagnostic `print` and `debugPrint` calls in `test/stamps_test.dart:230-231` and `test/place_book_test.dart:194` (`AUD-047`).
+- [x] Move `_createPlacesIndex()` and `_createSearchIndex()` out of `beforeOpen` (`lib/data/db/database.dart:138-142`) into `onCreate` and `onUpgrade` only (`AUD-048`).
+- [x] Normalize `coversDay` (`lib/core/trip_rules.dart:38-42`) with `.toLocal()` and `DateTime(y, m, d)` / `DateTime(y, m, d + 1)` matching `lib/core/stamps.dart:114` (`AUD-050`).
 
 ### Verification
 
-- [ ] `flutter analyze` prints `No issues found!`.
-- [ ] Full `flutter test` passes (including `test/contrast_test.dart`, `test/theme_tokens_test.dart`, `test/core_rules_test.dart`, `test/migration_test.dart`).
-- [ ] `python .agents/skills/implementation-plan/scripts/check_claims.py docs/plans/AUDIT-001-remediation-implementation.md docs/evidence/AUDIT-001-remediation-verification.md docs/features/FEAT-003-clay-keepsake-redesign.md docs/SPEC_INDEX.md HANDOFF.md` prints `0 problems`.
-- [ ] Probe or temporary test sources are saved under the evidence folder before they are deleted.
+- [x] `flutter analyze` prints `No issues found!`.
+- [x] Full `flutter test` passes (including `test/contrast_test.dart`, `test/theme_tokens_test.dart`, `test/core_rules_test.dart`, `test/migration_test.dart`).
+- [x] `python .agents/skills/implementation-plan/scripts/check_claims.py docs/plans/AUDIT-001-remediation-implementation.md docs/evidence/AUDIT-001-remediation-verification.md docs/features/FEAT-003-clay-keepsake-redesign.md docs/SPEC_INDEX.md HANDOFF.md` prints `0 problems`.
+- [x] Probe or temporary test sources are saved under the evidence folder before they are deleted.
 
 ### Review and checkpoint
 
-- [ ] Verify net line reduction and zero unintended UI change.
-- [ ] Update plan, evidence, and `HANDOFF.md`; stage only Phase 5 paths (including the FEAT-003 amendment) and verify `git diff --cached --stat`.
-- [ ] Commit with `refactor(cleanup): AUDIT-001 phase 5 - dead code, yagni, and hygiene` and verify Git exit code.
+- [x] Verify net line reduction and zero unintended UI change.
+- [x] Update plan, evidence, and `HANDOFF.md`; stage only Phase 5 paths (including the FEAT-003 amendment) and verify `git diff --cached --stat`.
+- [x] Commit with `refactor(cleanup): AUDIT-001 phase 5 - dead code, yagni, and hygiene` and verify Git exit code.
 
 ## Phase 6: Targeted Clean Code extractions, deterministic tests, and tooling hygiene
 

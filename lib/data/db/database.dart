@@ -2,8 +2,10 @@ import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 
 import '../../core/ids.dart';
+import '../../core/place_categories.dart';
 import '../../core/trip_rules.dart';
 import 'daos.dart';
 import 'tables.dart';
@@ -33,25 +35,23 @@ class WarangDatabase extends _$WarangDatabase {
   @override
   int get schemaVersion => 3;
 
-  static const _categoryNameCaseSql = '''
-    CASE p.category_key
-      WHEN 'cafe' THEN 'Cafe'
-      WHEN 'food' THEN 'Food'
-      WHEN 'sweets' THEN 'Sweets and bakery'
-      WHEN 'nightlife' THEN 'Nightlife'
-      WHEN 'beach' THEN 'Beach'
-      WHEN 'island' THEN 'Island'
-      WHEN 'nature' THEN 'Mountains and falls'
-      WHEN 'park' THEN 'Parks and views'
-      WHEN 'church' THEN 'Churches'
-      WHEN 'heritage' THEN 'Heritage and museums'
-      WHEN 'market' THEN 'Markets and malls'
-      WHEN 'stay' THEN 'Stays'
-      WHEN 'transit' THEN 'On the way'
-      WHEN 'town' THEN 'Towns and cities'
-      ELSE coalesce(p.category_key, '')
-    END
-  ''';
+  static final _categoryNameCaseSql = _buildCategoryNameCaseSql();
+
+  @visibleForTesting
+  static String get categoryNameCaseSql => _categoryNameCaseSql;
+
+  static String _buildCategoryNameCaseSql() {
+    String sqlLiteral(String value) => value.replaceAll("'", "''");
+    final buffer = StringBuffer('CASE p.category_key\n');
+    for (final category in PlaceCategories.all) {
+      buffer.writeln(
+        "      WHEN '${sqlLiteral(category.key)}' "
+        "THEN '${sqlLiteral(category.name)}'",
+      );
+    }
+    buffer.write("      ELSE coalesce(p.category_key, '')\n    END");
+    return buffer.toString();
+  }
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -139,8 +139,6 @@ class WarangDatabase extends _$WarangDatabase {
     },
     beforeOpen: (details) async {
       await customStatement('PRAGMA foreign_keys = ON');
-      await _createPlacesIndex();
-      await _createSearchIndex();
     },
   );
 

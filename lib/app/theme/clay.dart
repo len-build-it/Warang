@@ -764,7 +764,7 @@ class _ClayPressableState extends State<ClayPressable>
       ),
     );
     if (widget.tooltip != null) {
-      result = Tooltip(message: widget.tooltip!, child: result);
+      result = Tooltip(message: widget.tooltip, child: result);
     }
     return result;
   }

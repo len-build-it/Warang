@@ -138,7 +138,7 @@ class _TripFormScreenState extends ConsumerState<TripFormScreen> {
         );
       }
       if (mounted) Navigator.of(context).pop(title);
-    } catch (_) {
+    } on Exception catch (_) {
       if (!mounted) return;
       setState(() => _saving = false);
       showWarangSnackBar(

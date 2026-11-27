@@ -1,6 +1,6 @@
 // FEAT-003 shared clay components: C4 buttons, C5 fields, C6 stamps,
-// C7 chips, C8 polaroids, C9 sheets, C11 toggles, C12 toasts, and C13
-// speech bubbles. Every one honours reduced motion (V6 rule 2).
+// C7 chips, C8 polaroids, C9 sheets, C12 toasts, and C13 speech bubbles.
+// Every one honours reduced motion (V6 rule 2).
 import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' show PathMetric;
@@ -22,15 +22,6 @@ enum WarangButtonVariant { primary, secondary, quiet, danger }
 /// C4 buttons. There is at most one primary button per screen or sheet,
 /// and no button ever uses white text.
 class WarangButton extends StatelessWidget {
-  const WarangButton({
-    super.key,
-    required this.label,
-    this.onPressed,
-    this.variant = WarangButtonVariant.primary,
-    this.icon,
-    this.expand = true,
-  }) : besidePrimary = false;
-
   const WarangButton.primary({
     super.key,
     required this.label,
@@ -179,7 +170,6 @@ class WarangField extends StatefulWidget {
     this.hintStyle,
     this.style,
     this.errorText,
-    this.helperText,
     this.multiline = false,
     this.minLines,
     this.maxLines,
@@ -201,9 +191,6 @@ class WarangField extends StatefulWidget {
   final TextStyle? hintStyle;
   final TextStyle? style;
   final String? errorText;
-
-  /// A short note under the field, in `meta` `inkFaint`.
-  final String? helperText;
 
   /// 104 tall instead of 56.
   final bool multiline;
@@ -364,12 +351,6 @@ class _WarangFieldState extends State<WarangField> {
             style: WarangType.meta.copyWith(
               color: WarangKeepsake.gumamela.text(brightness),
             ),
-          ),
-        ] else if (widget.helperText != null) ...[
-          const SizedBox(height: 6),
-          Text(
-            widget.helperText!,
-            style: WarangType.meta.copyWith(color: neutrals.inkFaint),
           ),
         ],
       ],
@@ -1140,114 +1121,6 @@ class WarangSheetFrame extends StatelessWidget {
   }
 }
 
-// ------------------------------------------------------------------ C11
-
-/// C11 toggle: an inset pill track and a clay knob. On fills the track with
-/// amber and shows a check in the knob, so state is not colour alone.
-class WarangToggle extends StatelessWidget {
-  const WarangToggle({
-    super.key,
-    required this.value,
-    required this.onChanged,
-    required this.semanticLabel,
-  });
-
-  final bool value;
-  final ValueChanged<bool>? onChanged;
-  final String semanticLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    final neutrals = WarangNeutrals.of(context);
-    final reduced = WarangMotion.reduced(context);
-    final enabled = onChanged != null;
-    return Semantics(
-      toggled: value,
-      enabled: enabled,
-      label: semanticLabel,
-      button: true,
-      excludeSemantics: true,
-      onTap: enabled ? () => onChanged!(!value) : null,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: enabled
-            ? () {
-                WarangHaptic.selection.play();
-                onChanged!(!value);
-              }
-            : null,
-        child: SizedBox(
-          width: 52,
-          height: 48,
-          child: Center(
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(end: value ? 1 : 0),
-              duration: reduced
-                  ? WarangMotion.fade
-                  : WarangMotion.slide.duration,
-              curve: reduced ? Curves.linear : WarangMotion.slide.curve,
-              builder: (context, t, _) {
-                final position = t.clamp(0.0, 1.0);
-                // The knob stretches up to 1.25 times while it travels.
-                final stretch = reduced
-                    ? 1.0
-                    : 1 + .25 * math.sin(math.pi * position);
-                final knobWidth = 26 * stretch;
-                return RepaintBoundary(
-                  child: ClaySurface(
-                    depth: ClayDepth.inset,
-                    color: Color.lerp(
-                      neutrals.surface,
-                      WarangKeepsake.amber.fill,
-                      position,
-                    ),
-                    outline: value
-                        ? null
-                        : BorderSide(color: neutrals.boundary),
-                    borderRadius: BorderRadius.circular(WarangRadius.pill),
-                    child: SizedBox(
-                      width: 52,
-                      height: 32,
-                      child: Stack(
-                        children: [
-                          Positioned(
-                            left: 3 + (52 - 6 - knobWidth) * t,
-                            top: 3,
-                            child: ClaySurface(
-                              depth: ClayDepth.clay1,
-                              color: neutrals.surfaceRaised,
-                              borderRadius: BorderRadius.circular(
-                                WarangRadius.pill,
-                              ),
-                              child: SizedBox(
-                                width: knobWidth,
-                                height: 26,
-                                child: value
-                                    ? Center(
-                                        child: WarangIcon(
-                                          WarangGlyphs.check,
-                                          size: 16,
-                                          color: neutrals.ink,
-                                        ),
-                                      )
-                                    : null,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 // ------------------------------------------------------------------ C12
 
 /// The C12 toast body: a `surface` pill at `clay2`, 56 tall, with the
@@ -1320,20 +1193,12 @@ class WarangSpeechBubble extends StatefulWidget {
   const WarangSpeechBubble({
     super.key,
     required this.text,
-    this.tailAlignment = 0,
-    this.tailDown = true,
     this.persistent = false,
     this.visibleFor = const Duration(seconds: 2),
     this.onHidden,
   });
 
   final String text;
-
-  /// Where the tail sits along the bubble, from -1 (left) to 1 (right).
-  final double tailAlignment;
-
-  /// The tail points down toward the speaker when true, up when false.
-  final bool tailDown;
   final bool persistent;
   final Duration visibleFor;
   final VoidCallback? onHidden;
@@ -1359,7 +1224,7 @@ class _WarangSpeechBubbleState extends State<WarangSpeechBubble>
     if (WarangMotion.reduced(context)) {
       _pop.value = 1;
     } else {
-      _pop.animateWith(WarangMotion.pop.simulate(0, 1));
+      unawaited(_pop.animateWith(WarangMotion.pop.simulate(0, 1)));
     }
     if (!widget.persistent) {
       _timer = Timer(widget.visibleFor, () {
@@ -1380,14 +1245,12 @@ class _WarangSpeechBubbleState extends State<WarangSpeechBubble>
     final neutrals = WarangNeutrals.of(context);
     final reduced = WarangMotion.reduced(context);
     final tail = Align(
-      alignment: Alignment(widget.tailAlignment, 0),
       child: CustomPaint(
         size: const Size(16, 9),
-        painter: _TailPainter(neutrals.surfaceRaised, down: widget.tailDown),
+        painter: _TailPainter(neutrals.surfaceRaised),
       ),
     );
     final bubble = ClaySurface(
-      depth: ClayDepth.clay1,
       color: neutrals.surfaceRaised,
       borderRadius: BorderRadius.circular(WarangRadius.pill),
       child: Padding(
@@ -1416,17 +1279,14 @@ class _WarangSpeechBubbleState extends State<WarangSpeechBubble>
                   ? Opacity(opacity: _pop.value.clamp(0.0, 1.0), child: child)
                   : Transform.scale(
                       scale: (.6 + .4 * _pop.value).clamp(0.0, 1.2),
-                      alignment: Alignment(
-                        widget.tailAlignment,
-                        widget.tailDown ? 1 : -1,
-                      ),
+                      alignment: Alignment.bottomCenter,
                       child: child,
                     ),
               child: IntrinsicWidth(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: widget.tailDown ? [bubble, tail] : [tail, bubble],
+                  children: [bubble, tail],
                 ),
               ),
             ),
@@ -1438,45 +1298,27 @@ class _WarangSpeechBubbleState extends State<WarangSpeechBubble>
 }
 
 class _TailPainter extends CustomPainter {
-  _TailPainter(this.color, {required this.down});
+  _TailPainter(this.color);
 
   final Color color;
-  final bool down;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final path = down
-        ? (Path()
-            ..moveTo(0, 0)
-            ..lineTo(size.width, 0)
-            ..quadraticBezierTo(
-              size.width / 2 + 1,
-              size.height * .6,
-              size.width / 2,
-              size.height,
-            )
-            ..quadraticBezierTo(size.width / 2 - 1, size.height * .6, 0, 0))
-        : (Path()
-            ..moveTo(0, size.height)
-            ..lineTo(size.width, size.height)
-            ..quadraticBezierTo(
-              size.width / 2 + 1,
-              size.height * .4,
-              size.width / 2,
-              0,
-            )
-            ..quadraticBezierTo(
-              size.width / 2 - 1,
-              size.height * .4,
-              0,
-              size.height,
-            ));
+    final path = Path()
+      ..moveTo(0, 0)
+      ..lineTo(size.width, 0)
+      ..quadraticBezierTo(
+        size.width / 2 + 1,
+        size.height * .6,
+        size.width / 2,
+        size.height,
+      )
+      ..quadraticBezierTo(size.width / 2 - 1, size.height * .6, 0, 0);
     canvas.drawPath(path, Paint()..color = color);
   }
 
   @override
-  bool shouldRepaint(covariant _TailPainter old) =>
-      old.color != color || old.down != down;
+  bool shouldRepaint(covariant _TailPainter old) => old.color != color;
 }
 
 /// A small clay disc showing a place category's glyph in its keepsake tone

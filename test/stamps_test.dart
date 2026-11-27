@@ -227,10 +227,6 @@ void main() {
       );
       watch.stop();
       expect(result, hasLength(12));
-      // ignore: avoid_print
-      print(
-        'C-3 10,000-moment stamp calculation: ${watch.elapsedMilliseconds} ms (${watch.elapsedMicroseconds} us)',
-      );
       expect(watch.elapsedMilliseconds, lessThan(16));
     });
   });

@@ -124,7 +124,7 @@ class _TripDetailView extends StatelessWidget {
         ],
       ),
     );
-    if (confirmed == true) {
+    if (confirmed ?? false) {
       WarangHaptic.medium.play();
       await repository.deleteTrip(trip.id);
     }

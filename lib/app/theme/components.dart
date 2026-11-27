@@ -521,45 +521,40 @@ class WarangSettingsRow extends StatelessWidget {
     required this.label,
     this.value,
     this.trailing,
-    this.onTap,
   });
   final String label;
   final String? value;
   final Widget? trailing;
-  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final neutrals = WarangNeutrals.of(context);
-    return InkWell(
-      onTap: onTap,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: 56),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          child: Row(
-            children: [
-              Expanded(
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 56),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: WarangType.body.copyWith(color: neutrals.ink),
+              ),
+            ),
+            // Label and value share the row, so at large text sizes both
+            // wrap instead of one crushing the other.
+            if (value != null) ...[
+              const SizedBox(width: 12),
+              Flexible(
                 child: Text(
-                  label,
-                  style: WarangType.body.copyWith(color: neutrals.ink),
+                  value!,
+                  textAlign: TextAlign.end,
+                  style: WarangType.meta.copyWith(color: neutrals.inkSoft),
                 ),
               ),
-              // Label and value share the row, so at large text sizes both
-              // wrap instead of one crushing the other.
-              if (value != null) ...[
-                const SizedBox(width: 12),
-                Flexible(
-                  child: Text(
-                    value!,
-                    textAlign: TextAlign.end,
-                    style: WarangType.meta.copyWith(color: neutrals.inkSoft),
-                  ),
-                ),
-              ],
-              if (trailing != null) ...[const SizedBox(width: 10), trailing!],
             ],
-          ),
+            if (trailing != null) ...[const SizedBox(width: 10), trailing!],
+          ],
         ),
       ),
     );

@@ -183,7 +183,7 @@ class WarangMapSurfaceState extends State<WarangMapSurface>
     };
     _photos.removeWhere((path, _) => !activePaths.contains(path));
     if (widget.markedPlace != oldWidget.markedPlace) {
-      _checkMarkedPlaceTile();
+      unawaited(_checkMarkedPlaceTile());
     }
   }
 
@@ -210,7 +210,7 @@ class WarangMapSurfaceState extends State<WarangMapSurface>
       _landing.add(landingId);
     }
     if (widget.markedPlace != null) {
-      _checkMarkedPlaceTile();
+      unawaited(_checkMarkedPlaceTile());
     }
   }
 
@@ -475,7 +475,9 @@ class WarangMapSurfaceState extends State<WarangMapSurface>
     controller
       ..removeListener(tick)
       ..addListener(tick);
-    controller.forward().whenComplete(() => controller.removeListener(tick));
+    unawaited(
+      controller.forward().whenComplete(() => controller.removeListener(tick)),
+    );
   }
 
   Marker _placeMarker(BookPlace place) {
@@ -631,7 +633,7 @@ class WarangMapSurfaceState extends State<WarangMapSurface>
       if (!mounted) return;
       setState(() => _position = position);
       if (moveToUser) _mapController.move(center, 14);
-    } catch (_) {
+    } on Exception catch (_) {
       // Location is an enhancement; a denial or unavailable fix never blocks
       // the map or the rest of the offline-first app.
     }
@@ -784,19 +786,23 @@ class _LandingPinState extends State<LandingPin> with TickerProviderStateMixin {
     _started = true;
     _reduced = WarangMotion.reduced(context);
     if (_reduced) {
-      _drop
-          .animateTo(1, duration: WarangMotion.fade, curve: Curves.linear)
-          .whenComplete(() => widget.onLanded?.call());
+      unawaited(
+        _drop
+            .animateTo(1, duration: WarangMotion.fade)
+            .whenComplete(() => widget.onLanded?.call()),
+      );
       return;
     }
-    _drop
-        .animateWith(WarangMotion.pop.simulate(0, 1))
-        .whenComplete(() => widget.onLanded?.call());
+    unawaited(
+      _drop
+          .animateWith(WarangMotion.pop.simulate(0, 1))
+          .whenComplete(() => widget.onLanded?.call()),
+    );
     // The pin first touches its spot about a third of the way through.
     _touchdown = Timer(WarangMotion.pop.duration * .35, () {
       if (!mounted) return;
-      WarangHaptic.light.play();
-      _splat.forward();
+      unawaited(WarangHaptic.light.play());
+      unawaited(_splat.forward());
     });
   }
 

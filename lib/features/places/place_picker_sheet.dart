@@ -97,7 +97,7 @@ class _PlacePickerSheetState extends ConsumerState<PlacePickerSheet> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _focus.requestFocus();
-      _runQuery();
+      unawaited(_runQuery());
     });
   }
 
@@ -139,7 +139,7 @@ class _PlacePickerSheetState extends ConsumerState<PlacePickerSheet> {
         _queryFailed = false;
       });
       try {
-        final nearby = await book.nearby(widget.near!, 150, limit: 8);
+        final nearby = await book.nearby(widget.near!, 150);
         if (!mounted || gen != _generation) return;
         setState(() {
           _nearby = nearby;
@@ -176,7 +176,7 @@ class _PlacePickerSheetState extends ConsumerState<PlacePickerSheet> {
       _queryFailed = false;
     });
     try {
-      final found = await book.search(query, near: widget.near, limit: 30);
+      final found = await book.search(query, near: widget.near);
       if (!mounted || gen != _generation) return;
       setState(() => _results = found);
     } on Object catch (_) {
@@ -204,7 +204,7 @@ class _PlacePickerSheetState extends ConsumerState<PlacePickerSheet> {
   Widget build(BuildContext context) {
     ref.listen<PlaceBookState>(placeBookProvider, (previous, next) {
       if (previous?.status != PlaceBookStatus.ready && next.isReady) {
-        _runQuery();
+        unawaited(_runQuery());
       }
     });
 

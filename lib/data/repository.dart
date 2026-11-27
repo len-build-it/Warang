@@ -490,7 +490,7 @@ class WarangRepository extends ChangeNotifier {
     } else {
       try {
         titles = await StampTitles.load();
-      } catch (_) {
+      } on Exception catch (_) {
         titles = const {};
       }
     }
@@ -543,7 +543,9 @@ class WarangRepository extends ChangeNotifier {
       TripsCompanion.insert(
         id: newId(),
         title: title.trim(),
-        place: Value(place?.trim().isEmpty == true ? null : place?.trim()),
+        place: Value(
+          (place?.trim().isEmpty ?? false) ? null : place?.trim(),
+        ),
         startDate: Value(start),
         endDate: Value(end),
         colorKey: Value(colour),
@@ -681,82 +683,6 @@ class WarangRepository extends ChangeNotifier {
         updatedAt: Value(DateTime.now()),
       ),
     );
-    await _refreshAll();
-  }
-
-  Future<void> upsertImportedTrip(
-    Trip trip,
-    List<Moment> importedMoments,
-  ) async {
-    final now = DateTime.now();
-    await database.transaction(() async {
-      final tripValues = TripsCompanion(
-        id: Value(trip.id),
-        title: Value(trip.title),
-        place: Value(trip.place),
-        description: Value(trip.description),
-        startDate: Value(trip.startDate),
-        endDate: Value(trip.endDate),
-        coverMomentId: Value(trip.coverMomentId),
-        isEveryday: Value(trip.isEveryday),
-        tagsJson: Value(trip.tagsJson),
-        colorKey: Value(trip.colorKey),
-        createdAt: Value(trip.createdAt ?? now),
-        updatedAt: Value(now),
-      );
-      if (await database.tripsDao.byId(trip.id) == null) {
-        await database.tripsDao.insertTrip(tripValues);
-      } else {
-        await database.tripsDao.updateTrip(trip.id, tripValues);
-      }
-      for (final moment in importedMoments) {
-        final existing = await database.momentsDao.byId(moment.id);
-        final cleanLabel = moment.placeLabel?.trim();
-        final placeId = (cleanLabel != null && cleanLabel.isNotEmpty)
-            ? await _ensureUserPlace(
-                cleanLabel,
-                now,
-                categoryKey: moment.placeCategory,
-              )
-            : null;
-        final values = MomentsCompanion(
-          id: Value(moment.id),
-          tripId: Value(moment.tripId),
-          placeId: Value(placeId),
-          caption: Value(moment.caption),
-          capturedAt: Value(moment.capturedAt),
-          latitude: Value(moment.latitude),
-          longitude: Value(moment.longitude),
-          accuracyM: Value(moment.accuracyM),
-          sortIndex: Value(moment.sortIndex),
-          createdAt: Value(moment.createdAt ?? now),
-          updatedAt: Value(now),
-        );
-        if (existing == null) {
-          await database.momentsDao.insertMoment(values);
-        } else {
-          await database.momentsDao.updateMoment(moment.id, values);
-        }
-        if (moment.relPath != null &&
-            await database.photosDao.firstForMoment(moment.id) == null) {
-          await database.photosDao.insertPhoto(
-            PhotosCompanion.insert(
-              id: newId(),
-              momentId: moment.id,
-              relPath: PhotoStore.validateRelativePath(moment.relPath!),
-              thumbRelPath: PhotoStore.validateRelativePath(
-                moment.thumbRelPath ?? moment.relPath!,
-              ),
-              width: moment.width,
-              height: moment.height,
-              bytes: moment.bytes,
-              createdAt: now,
-              updatedAt: now,
-            ),
-          );
-        }
-      }
-    });
     await _refreshAll();
   }
 

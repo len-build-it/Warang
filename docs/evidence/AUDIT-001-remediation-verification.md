@@ -1,7 +1,7 @@
 # Verification: AUDIT-001 remediation
 
 Created: 2026-11-27T07:42:00+08:00
-Updated: 2026-11-27T08:58:00+08:00
+Updated: 2026-11-27T09:06:00+08:00
 
 | Requirement / phase | Check or scenario | Environment and conditions | Actual result | When run | Evidence / limitations |
 | --- | --- | --- | --- | --- | --- |
@@ -16,6 +16,8 @@ Updated: 2026-11-27T08:58:00+08:00
 | REM-REQ-003 / Phase 3 | Cold first-install 25.96 MB place book memory peak and 48 MP gallery avatar pick | Physical Android phone | Not run | Pending (Len) | Known limitation: `AssetBundle.load` returns the full `ByteData` with no streaming API in Flutter SDK, so the 25.96 MB first-install peak remains and needs a physical-device memory check by Len. |
 | REM-REQ-004 / Phase 4 | `flutter analyze` | Windows, Flutter 3.44.7, Dart 3.12.2 | Passed under stated conditions: `No issues found!` | 2026-11-27T08:57:20+08:00 | Static analysis only. |
 | REM-REQ-004 / Phase 4 | Full `flutter test` | Windows, Flutter 3.44.7, Dart 3.12.2 | Passed under stated conditions: 349 passed, 0 failed | 2026-11-27T08:57:20+08:00 | Includes new `test/phase4_regression_test.dart` (9 tests) and v1-to-v2 transaction test in `test/migration_test.dart`. |
+| REM-REQ-005 / Phase 5 | `flutter analyze` | Windows, Flutter 3.44.7, Dart 3.12.2 | Passed under stated conditions: `No issues found!` | 2026-11-27T09:05:56+08:00 | Static analysis only. |
+| REM-REQ-005 / Phase 5 | Full `flutter test` | Windows, Flutter 3.44.7, Dart 3.12.2 | Passed under stated conditions: 347 passed, 0 failed | 2026-11-27T09:05:56+08:00 | Reflects removal of 4 toggle widget test variants per D-1 and addition of 2 Phase 5 unit tests (`categoryNameCaseSql` and `coversDay` UTC/local normalization). |
 
 ## Phase 1 notes
 

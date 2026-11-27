@@ -31,7 +31,7 @@ void main() {
   testWidgets('while loading, a message instead of a lone spinner', (
     tester,
   ) async {
-    final pending = Completer<List<NewsListEntry>>();
+    final pending = Completer<List<NewsArticle>>();
     await tester.pumpWidget(app(NewsTabScreen(entries: pending.future)));
     await tester.pump();
     expect(find.text('Unpacking the postcards'), findsOneWidget);

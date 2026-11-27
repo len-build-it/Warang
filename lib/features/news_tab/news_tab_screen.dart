@@ -8,11 +8,7 @@ import '../../app/theme/tokens.dart';
 import '../../core/formatting.dart';
 import '../maya/maya_companion.dart';
 
-sealed class NewsListEntry {
-  const NewsListEntry();
-}
-
-final class NewsArticle extends NewsListEntry {
+final class NewsArticle {
   const NewsArticle({
     required this.title,
     required this.body,
@@ -51,12 +47,6 @@ final class NewsArticle extends NewsListEntry {
   }
 }
 
-/// Structural seam for a future curated entry. It is intentionally unused in
-/// this phase and renders no content when a future caller supplies one.
-final class NewsAdSlot extends NewsListEntry {
-  const NewsAdSlot();
-}
-
 /// The News tab (S10): each bundled note is a postcard. Content is bundled
 /// and offline; nothing is fetched.
 class NewsTabScreen extends StatefulWidget {
@@ -64,20 +54,20 @@ class NewsTabScreen extends StatefulWidget {
 
   /// The notes to show; the bundled ones when null. Tests use this to show
   /// the loading and empty states.
-  final Future<List<NewsListEntry>>? entries;
+  final Future<List<NewsArticle>>? entries;
 
   @override
   State<NewsTabScreen> createState() => _NewsTabScreenState();
 }
 
 class _NewsTabScreenState extends State<NewsTabScreen> {
-  late Future<List<NewsListEntry>> _entries = widget.entries ?? _loadEntries();
+  late Future<List<NewsArticle>> _entries = widget.entries ?? _loadEntries();
 
-  Future<List<NewsListEntry>> _loadEntries() async {
+  Future<List<NewsArticle>> _loadEntries() async {
     final raw = await rootBundle.loadString('assets/data/news_items.json');
     final decoded = jsonDecode(raw);
     if (decoded is! List) return const [];
-    final articles = <NewsListEntry>[];
+    final articles = <NewsArticle>[];
     for (final item in decoded) {
       if (item is Map<String, Object?>) {
         try {
@@ -104,11 +94,11 @@ class _NewsTabScreenState extends State<NewsTabScreen> {
     return Scaffold(
       body: SafeArea(
         bottom: false,
-        child: FutureBuilder<List<NewsListEntry>>(
+        child: FutureBuilder<List<NewsArticle>>(
           future: _entries,
           builder: (context, snapshot) {
             final loading = snapshot.connectionState != ConnectionState.done;
-            final entries = snapshot.data ?? const <NewsListEntry>[];
+            final entries = snapshot.data ?? const <NewsArticle>[];
             return RefreshIndicator(
               onRefresh: _refresh,
               color: WarangColors.accentText(Theme.of(context).brightness),
@@ -145,14 +135,11 @@ class _NewsTabScreenState extends State<NewsTabScreen> {
                       line: 'New notes arrive with app updates.',
                     )
                   else
-                    for (final (index, entry) in entries.indexed)
-                      switch (entry) {
-                        NewsArticle article => Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: _Postcard(article: article, index: index),
-                        ),
-                        NewsAdSlot _ => const SizedBox.shrink(),
-                      },
+                    for (final (index, article) in entries.indexed)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: _Postcard(article: article, index: index),
+                      ),
                 ],
               ),
             );

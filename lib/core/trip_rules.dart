@@ -29,16 +29,21 @@ String? tripColorKey(Trip trip) {
   return tripColorKeys[hash % tripColorKeys.length];
 }
 
-DateTime _day(DateTime value) => DateTime(value.year, value.month, value.day);
+DateTime _day(DateTime value) {
+  final local = value.toLocal();
+  return DateTime(local.year, local.month, local.day);
+}
 
 /// True when [at] falls on any calendar day from [start] through [end].
 ///
 /// Both ends are whole days: a trip ending on the 19th still receives a photo
 /// taken at 23:59 on the 19th.
 bool coversDay(DateTime start, DateTime end, DateTime at) {
+  final localAt = at.toLocal();
   final from = _day(start);
-  final until = _day(end).add(const Duration(days: 1));
-  return !at.isBefore(from) && at.isBefore(until);
+  final endDay = _day(end);
+  final until = DateTime(endDay.year, endDay.month, endDay.day + 1);
+  return !localAt.isBefore(from) && localAt.isBefore(until);
 }
 
 /// The dated trip that a capture at [at] belongs to, or null for Everyday.

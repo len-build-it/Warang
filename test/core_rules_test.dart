@@ -2,7 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:warang/core/formatting.dart';
 import 'package:warang/core/memory_stats.dart';
 import 'package:warang/core/models.dart';
+import 'package:warang/core/place_categories.dart';
 import 'package:warang/core/trip_rules.dart';
+import 'package:warang/data/db/database.dart';
 
 Trip _trip(
   String id, {
@@ -146,6 +148,33 @@ void main() {
     test('uses hemispheres and three decimals', () {
       expect(formatCoordinates(11.96864, 121.91804), '11.969°N · 121.918°E');
       expect(formatCoordinates(-33.8688, -70.6693), '33.869°S · 70.669°W');
+    });
+  });
+
+  group('AUDIT-001 Phase 5 hygiene checks', () {
+    test('categoryNameCaseSql covers every PlaceCategories.all key and label', () {
+      final sql = WarangDatabase.categoryNameCaseSql;
+      for (final category in PlaceCategories.all) {
+        expect(sql, contains("WHEN '${category.key}'"));
+        expect(sql, contains("THEN '${category.name.replaceAll("'", "''")}'"));
+      }
+    });
+
+    test('coversDay normalizes UTC timestamps to local calendar days', () {
+      final localDay = DateTime(2026, 6, 15, 23, 30);
+      final utcSameInstant = localDay.toUtc();
+      expect(
+        coversDay(DateTime(2026, 6, 15), DateTime(2026, 6, 15), utcSameInstant),
+        isTrue,
+      );
+      expect(
+        coversDay(
+          DateTime(2026, 6, 15),
+          DateTime(2026, 6, 15),
+          DateTime(2026, 6, 16),
+        ),
+        isFalse,
+      );
     });
   });
 }

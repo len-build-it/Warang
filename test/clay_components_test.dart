@@ -286,45 +286,6 @@ void main() {
         },
       );
 
-      testWidgets('toggles show state with a check and semantics ($variant)', (
-        tester,
-      ) async {
-        var value = false;
-        final handle = tester.ensureSemantics();
-        await tester.pumpWidget(
-          _host(
-            StatefulBuilder(
-              builder: (context, setState) => WarangToggle(
-                value: value,
-                semanticLabel: 'Save map areas',
-                onChanged: (next) => setState(() => value = next),
-              ),
-            ),
-            brightness: brightness,
-            reduced: reduced,
-          ),
-        );
-        expect(tester.getSize(find.byType(WarangToggle)), const Size(52, 48));
-        expect(find.byType(WarangIcon), findsNothing);
-        await tester.tap(find.byType(WarangToggle));
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 140));
-        if (!reduced) {
-          // Mid-travel, the knob stretches wider than it rests.
-          final knob = tester.getSize(find.byType(ClaySurface).last);
-          expect(knob.width, greaterThan(26));
-        }
-        await tester.pumpAndSettle();
-        expect(value, isTrue);
-        expect(find.byType(WarangIcon), findsOneWidget);
-        expect(tester.getSize(find.byType(ClaySurface).last).width, 26);
-        expect(
-          tester.getSemantics(find.byType(WarangToggle)),
-          isSemantics(isToggled: true, hasToggledState: true),
-        );
-        handle.dispose();
-      });
-
       testWidgets('toast offers undo inside the pill ($variant)', (
         tester,
       ) async {
