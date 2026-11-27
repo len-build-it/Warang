@@ -125,7 +125,7 @@ class MomentSearchResults extends StatefulWidget {
 class _MomentSearchResultsState extends State<MomentSearchResults> {
   late Future<List<Moment>> _results;
   late String _query;
-  late int _momentCount;
+  late int _revision;
 
   @override
   void initState() {
@@ -136,15 +136,14 @@ class _MomentSearchResultsState extends State<MomentSearchResults> {
   @override
   void didUpdateWidget(covariant MomentSearchResults oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.query != _query ||
-        widget.repository.moments.length != _momentCount) {
+    if (widget.query != _query || widget.repository.revision != _revision) {
       _search();
     }
   }
 
   void _search() {
     _query = widget.query;
-    _momentCount = widget.repository.moments.length;
+    _revision = widget.repository.revision;
     _results = widget.repository.searchAsync(_query);
   }
 

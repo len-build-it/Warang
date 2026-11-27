@@ -104,38 +104,27 @@ class _MomentEditSheetState extends State<MomentEditSheet> {
     if (_saving) return;
     setState(() => _saving = true);
     try {
-      await widget.repository.updateMoment(
+      final existingCategory = widget.moment.placeId == null
+          ? null
+          : widget.repository.placeById(widget.moment.placeId!)?.categoryKey;
+      final updateCategory =
+          !_clearedPlace &&
+          (_pickedBookPlace != null ||
+              _pickedUserName != null ||
+              existingCategory != _categoryKey);
+      await widget.repository.editMomentDetails(
         widget.moment.id,
         caption: _caption.text,
         tripId: _tripId,
+        clearPlace: _clearedPlace,
+        bookPlace: _pickedBookPlace,
+        userPlaceName: _pickedUserName,
+        initialPlaceId: widget.moment.placeId,
+        categoryKey: _categoryKey,
+        updateCategory: updateCategory,
       );
-      String? targetPlaceId = widget.moment.placeId;
-      if (_clearedPlace) {
-        await widget.repository.clearPlace(widget.moment.id);
-        targetPlaceId = null;
-      } else if (_pickedBookPlace != null) {
-        final place = await widget.repository.attachBookPlace(
-          widget.moment.id,
-          _pickedBookPlace!,
-        );
-        targetPlaceId = place.id;
-      } else if (_pickedUserName != null) {
-        final place = await widget.repository.attachUserPlace(
-          widget.moment.id,
-          _pickedUserName!,
-        );
-        targetPlaceId = place?.id;
-      }
-      if (targetPlaceId != null) {
-        final existingCategory = widget.repository
-            .placeById(targetPlaceId)
-            ?.categoryKey;
-        if (existingCategory != _categoryKey) {
-          await widget.repository.setPlaceCategory(targetPlaceId, _categoryKey);
-        }
-      }
       if (mounted) Navigator.of(context).pop(outcome);
-    } catch (_) {
+    } on Exception catch (_) {
       if (!mounted) return;
       setState(() => _saving = false);
       showWarangSnackBar(

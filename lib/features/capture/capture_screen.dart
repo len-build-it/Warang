@@ -231,8 +231,10 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
             ? Brightness.light
             : Brightness.dark,
       ),
-      child: Scaffold(
-        backgroundColor: theme.scaffoldBackgroundColor,
+      child: PopScope(
+        canPop: !_saving,
+        child: Scaffold(
+          backgroundColor: theme.scaffoldBackgroundColor,
         body: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -410,6 +412,7 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
               ),
             ],
           ),
+        ),
         ),
       ),
     );

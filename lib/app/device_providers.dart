@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 /// can substitute a fake camera, permission answer, or location fix.
 
 typedef CameraPicker = Future<XFile?> Function();
+typedef GalleryPicker = Future<XFile?> Function();
 typedef LocationPermissionCheck = Future<LocationPermission> Function();
 
 /// A single GPS fix with optional horizontal accuracy in metres.
@@ -53,6 +54,16 @@ final cameraPickerProvider = Provider<CameraPicker>((ref) {
     source: ImageSource.camera,
     maxWidth: 2000,
     imageQuality: 85,
+  );
+});
+
+final galleryPickerProvider = Provider<GalleryPicker>((ref) {
+  final picker = ImagePicker();
+  return () => picker.pickImage(
+    source: ImageSource.gallery,
+    maxWidth: 2000,
+    maxHeight: 2000,
+    imageQuality: 88,
   );
 });
 

@@ -70,13 +70,26 @@ abstract final class MayaLines {
   static Future<Map<String, List<String>>>? _lines;
 
   static Future<Map<String, List<String>>> load(AssetBundle bundle) =>
-      _lines ??= bundle.loadString('assets/data/maya_lines.json').then((raw) {
-        final decoded = jsonDecode(raw) as Map<String, dynamic>;
-        return {
-          for (final entry in decoded.entries)
-            entry.key: (entry.value as List<dynamic>).cast<String>(),
-        };
-      });
+      _lines ??= bundle
+          .loadString('assets/data/maya_lines.json')
+          .then((raw) {
+            final decoded = jsonDecode(raw);
+            if (decoded is! Map<String, Object?>) {
+              return const <String, List<String>>{};
+            }
+            return <String, List<String>>{
+              for (final entry in decoded.entries)
+                if (entry.value case final List<Object?> items)
+                  entry.key: [
+                    for (final item in items)
+                      if (item is String) item,
+                  ],
+            };
+          })
+          .catchError((Object error, StackTrace stackTrace) {
+            _lines = null;
+            Error.throwWithStackTrace(error, stackTrace);
+          });
 
   @visibleForTesting
   static void reset() => _lines = null;
@@ -238,7 +251,16 @@ class MayaCompanionState extends State<MayaCompanion>
     });
   }
 
+  bool _dragging = false;
+
+  void _onDragStart(DragStartDetails _) {
+    _dragging = true;
+    _drag.stop();
+  }
+
   void _onDragUpdate(DragUpdateDetails details) {
+    _dragging = true;
+    if (_drag.isAnimating) _drag.stop();
     // Resistance: the maya follows at half speed and no further than 24.
     final next = _offset + details.delta * .5;
     final length = next.distance;
@@ -246,6 +268,7 @@ class MayaCompanionState extends State<MayaCompanion>
   }
 
   void _onDragEnd(DragEndDetails _) {
+    _dragging = false;
     final from = _offset;
     if (_reduced) {
       setState(() => _offset = Offset.zero);
@@ -254,10 +277,12 @@ class MayaCompanionState extends State<MayaCompanion>
     _drag.value = 1;
     void back() => setState(() => _offset = from * _drag.value);
     _drag.addListener(back);
-    _drag.animateWith(WarangMotion.release.simulate(1, 0)).whenComplete(() {
-      _drag.removeListener(back);
-      if (mounted) setState(() => _offset = Offset.zero);
-    });
+    _drag.animateWith(WarangMotion.release.simulate(1, 0)).whenCompleteOrCancel(
+      () {
+        _drag.removeListener(back);
+        if (mounted && !_dragging) setState(() => _offset = Offset.zero);
+      },
+    );
   }
 
   /// Clears line [count] once its bubble fades, but never a newer line
@@ -313,6 +338,7 @@ class MayaCompanionState extends State<MayaCompanion>
         onTap: _onTap,
         onLongPressStart: _onLongPressStart,
         onLongPressEnd: _onLongPressEnd,
+        onPanStart: _onDragStart,
         onPanUpdate: _onDragUpdate,
         onPanEnd: _onDragEnd,
         child: SizedBox.square(

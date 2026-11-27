@@ -30,11 +30,18 @@ const List<({int tier, int visits, int places})> stampTierThresholds = [
 /// Parses the bundled `assets/data/stamps.json` document into a map of
 /// category key -> list of four tier titles.
 Map<String, List<String>> parseStampTitles(String rawJson) {
-  final decoded = jsonDecode(rawJson) as Map<String, dynamic>;
-  return {
-    for (final entry in decoded.entries)
-      entry.key: (entry.value as List<dynamic>).cast<String>(),
-  };
+  final decoded = jsonDecode(rawJson);
+  if (decoded is! Map<String, Object?>) return const {};
+  final result = <String, List<String>>{};
+  for (final entry in decoded.entries) {
+    if (entry.value case final List<Object?> items) {
+      result[entry.key] = [
+        for (final item in items)
+          if (item is String) item,
+      ];
+    }
+  }
+  return result;
 }
 
 /// Visits to one place inside a category stamp.

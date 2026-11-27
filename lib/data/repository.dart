@@ -36,6 +36,16 @@ class WarangRepository extends ChangeNotifier {
   StreamSubscription<List<PlaceRow>>? _placesSubscription;
   StreamSubscription<List<MomentRow>>? _momentsSubscription;
   bool _isDisposed = false;
+  int _revision = 0;
+
+  /// Monotonically incremented whenever repository state changes.
+  int get revision => _revision;
+
+  @override
+  void notifyListeners() {
+    _revision++;
+    super.notifyListeners();
+  }
 
   Future<void> initialize() async {
     await database.seedDefaults();
@@ -127,15 +137,37 @@ class WarangRepository extends ChangeNotifier {
   }
 
   Future<void> setAvatar(File source) async {
+    final previousAvatar = _profile.avatarRelPath;
     final relativePath = await photoStore.importAvatar(source);
-    await database.profilesDao.updateProfile(
-      _profile.id,
-      ProfilesCompanion(
-        avatarRelPath: Value(relativePath),
-        updatedAt: Value(DateTime.now()),
-      ),
-    );
+    try {
+      await database.profilesDao.updateProfile(
+        _profile.id,
+        ProfilesCompanion(
+          avatarRelPath: Value(relativePath),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
+    } catch (_) {
+      await _deleteAvatarBestEffort(relativePath);
+      rethrow;
+    }
     await _refreshAll();
+    if (previousAvatar != null &&
+        previousAvatar.isNotEmpty &&
+        previousAvatar != relativePath) {
+      await _deleteAvatarBestEffort(previousAvatar);
+    }
+  }
+
+  Future<void> _deleteAvatarBestEffort(String relativePath) async {
+    try {
+      final file = await photoStore.resolve(relativePath);
+      if (await file.exists()) await file.delete();
+    } on FileSystemException {
+      // Best-effort cleanup of superseded or uncommitted avatar files.
+    } on ArgumentError {
+      // Ignore malformed stored paths during cleanup.
+    }
   }
 
   Future<Moment> addMoment({
@@ -262,6 +294,92 @@ class WarangRepository extends ChangeNotifier {
     await _refreshAll();
   }
 
+  /// Updates caption, trip, place, and place category for [momentId] in one
+  /// transaction so partial edits never persist on failure.
+  Future<void> editMomentDetails(
+    String momentId, {
+    String? caption,
+    String? tripId,
+    bool clearPlace = false,
+    BookPlace? bookPlace,
+    String? userPlaceName,
+    String? initialPlaceId,
+    String? categoryKey,
+    bool updateCategory = false,
+  }) async {
+    final now = DateTime.now();
+    final normalizedCaption = caption?.trim();
+    await database.transaction(() async {
+      String? targetPlaceId = initialPlaceId;
+      Value<String?> placeIdValue = const Value.absent();
+      if (clearPlace) {
+        placeIdValue = const Value(null);
+        targetPlaceId = null;
+      } else if (bookPlace != null) {
+        targetPlaceId = await _ensureBookPlace(bookPlace, now);
+        placeIdValue = Value(targetPlaceId);
+      } else if (userPlaceName != null) {
+        final trimmed = userPlaceName.trim();
+        if (trimmed.isEmpty) {
+          placeIdValue = const Value(null);
+          targetPlaceId = null;
+        } else {
+          targetPlaceId = await _ensureUserPlace(trimmed, now);
+          placeIdValue = Value(targetPlaceId);
+        }
+      }
+      await database.momentsDao.updateMoment(
+        momentId,
+        MomentsCompanion(
+          caption: caption == null
+              ? const Value.absent()
+              : Value(normalizedCaption!.isEmpty ? null : normalizedCaption),
+          tripId: tripId == null ? const Value.absent() : Value(tripId),
+          placeId: placeIdValue,
+          updatedAt: Value(now),
+        ),
+      );
+      if (updateCategory && targetPlaceId != null) {
+        await database.placesDao.updatePlace(
+          targetPlaceId,
+          PlacesCompanion(
+            categoryKey: Value(categoryKey),
+            updatedAt: Value(now),
+          ),
+        );
+      }
+    });
+    await _refreshAll();
+  }
+
+  /// Sets [momentId]'s map coordinates and optional book place in one
+  /// transaction.
+  Future<void> placeMoment(
+    String momentId,
+    double latitude,
+    double longitude, {
+    BookPlace? place,
+  }) async {
+    final now = DateTime.now();
+    await database.transaction(() async {
+      Value<String?> placeIdValue = const Value.absent();
+      if (place != null) {
+        final placeId = await _ensureBookPlace(place, now);
+        placeIdValue = Value(placeId);
+      }
+      await database.momentsDao.updateMoment(
+        momentId,
+        MomentsCompanion(
+          latitude: Value(latitude),
+          longitude: Value(longitude),
+          placeId: placeIdValue,
+          updatedAt: Value(now),
+        ),
+      );
+    });
+    await _refreshAll();
+  }
+
   /// Sets or clears the category for [placeId], updating every moment there.
   Future<void> setPlaceCategory(String placeId, String? categoryKey) async {
     await database.placesDao.updatePlace(
@@ -344,9 +462,19 @@ class WarangRepository extends ChangeNotifier {
     Map<String, List<String>>? stampTitles,
   }) async {
     final raw = await database.appMetaDao.readValue(_milestonesKey);
-    final shown = raw == null
-        ? <String>[]
-        : (jsonDecode(raw) as List<dynamic>).cast<String>();
+    final shown = <String>[];
+    if (raw != null) {
+      try {
+        final decoded = jsonDecode(raw);
+        if (decoded is List) {
+          for (final item in decoded) {
+            if (item is String) shown.add(item);
+          }
+        }
+      } on FormatException {
+        // Corrupt milestone JSON resets to an empty set.
+      }
+    }
     final shownSet = shown.toSet();
     final claimed = <Milestone>[];
     final newKeys = <String>[];

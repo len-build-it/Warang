@@ -87,6 +87,7 @@ class _PlacePickerSheetState extends ConsumerState<PlacePickerSheet> {
   List<BookPlace> _nearby = const [];
   List<BookPlace> _results = const [];
   bool _loading = false;
+  bool _queryFailed = false;
   int _generation = 0;
 
   @override
@@ -128,18 +129,34 @@ class _PlacePickerSheetState extends ConsumerState<PlacePickerSheet> {
             _nearby = const [];
             _results = const [];
             _loading = false;
+            _queryFailed = false;
           });
         }
         return;
       }
-      setState(() => _loading = true);
-      final nearby = await book.nearby(widget.near!, 150, limit: 8);
-      if (!mounted || gen != _generation) return;
       setState(() {
-        _nearby = nearby;
-        _results = const [];
-        _loading = false;
+        _loading = true;
+        _queryFailed = false;
       });
+      try {
+        final nearby = await book.nearby(widget.near!, 150, limit: 8);
+        if (!mounted || gen != _generation) return;
+        setState(() {
+          _nearby = nearby;
+          _results = const [];
+        });
+      } on Object catch (_) {
+        if (!mounted || gen != _generation) return;
+        setState(() {
+          _nearby = const [];
+          _results = const [];
+          _queryFailed = true;
+        });
+      } finally {
+        if (mounted && gen == _generation) {
+          setState(() => _loading = false);
+        }
+      }
       return;
     }
 
@@ -148,18 +165,31 @@ class _PlacePickerSheetState extends ConsumerState<PlacePickerSheet> {
         setState(() {
           _results = const [];
           _loading = false;
+          _queryFailed = false;
         });
       }
       return;
     }
 
-    setState(() => _loading = true);
-    final found = await book.search(query, near: widget.near, limit: 30);
-    if (!mounted || gen != _generation) return;
     setState(() {
-      _results = found;
-      _loading = false;
+      _loading = true;
+      _queryFailed = false;
     });
+    try {
+      final found = await book.search(query, near: widget.near, limit: 30);
+      if (!mounted || gen != _generation) return;
+      setState(() => _results = found);
+    } on Object catch (_) {
+      if (!mounted || gen != _generation) return;
+      setState(() {
+        _results = const [];
+        _queryFailed = true;
+      });
+    } finally {
+      if (mounted && gen == _generation) {
+        setState(() => _loading = false);
+      }
+    }
   }
 
   List<Place> _matchingUserPlaces(String query) {
@@ -255,6 +285,8 @@ class _PlacePickerSheetState extends ConsumerState<PlacePickerSheet> {
             child: Center(child: CircularProgressIndicator()),
           ),
         );
+      } else if (_queryFailed) {
+        items.add(_FailedNotice(neutrals: neutrals, onRetry: _runQuery));
       } else if (widget.showNearbyWhenEmpty && _nearby.isNotEmpty) {
         items.add(_SectionHeader('Nearby', neutrals: neutrals));
         for (final place in _nearby) {
@@ -309,6 +341,8 @@ class _PlacePickerSheetState extends ConsumerState<PlacePickerSheet> {
             child: Center(child: CircularProgressIndicator()),
           ),
         );
+      } else if (_queryFailed) {
+        items.add(_FailedNotice(neutrals: neutrals, onRetry: _runQuery));
       } else if (_results.isNotEmpty) {
         items.add(_SectionHeader('Places', neutrals: neutrals));
         for (final place in _results) {

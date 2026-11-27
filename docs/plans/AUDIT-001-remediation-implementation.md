@@ -1,9 +1,9 @@
 # Implementation Plan: AUDIT-001 remediation (Ponytail and Clean Code)
 
 Created: 2026-11-24T21:40:00+08:00
-Updated: 2026-11-27T07:55:00+08:00
+Updated: 2026-11-27T08:58:00+08:00
 Revision: 2
-Status: In progress - Phase 3 complete
+Status: In progress - Phase 4 complete
 Feature spec and revision: None; this plan addresses the 51 findings in `docs/audits/AUDIT-001-code-quality-report.md` (revision 2, re-verified at `a8d3e68`) under requirements `REM-REQ-001` to `REM-REQ-006`, defined in this plan
 Approved baseline and architecture revisions: `docs/IMPLEMENTATION_PLAN.md` at `dc407c5` (T17 keeps `sqflite` for map tiles), `docs/REMEDIATION_IMPLEMENTATION_PLAN.md` at `dc407c5`, FEAT-001 to FEAT-004 revision 1 as listed in `docs/SPEC_INDEX.md`
 Len's chat approval: 2026-11-26T23:32:00+08:00 chat, plan revision 2: "Approve, run without stops"; D-1: "Delete it and amend FEAT-003"; D-2 and D-3: "Yes, as recommended" (recorded in `HANDOFF.md`)
@@ -171,10 +171,10 @@ Current code anchors:
     lib/data/places/place_book.dart:80:   factory PlaceBook.openFile(File file) {
     lib/data/places/place_book_installer.dart:67:     final byteData = await _bundle.load(spec.assetKey);
     lib/data/files/photo_store.dart:119:   Future<PhotoSweepResult> sweepOrphans(WarangDatabase database) async {
-    lib/data/files/photo_store.dart:269: img.Image _decodeChecked(Uint8List bytes) {
-    lib/app/shell/you_sheet.dart:349:   final picked = await ImagePicker().pickImage(
+    lib/data/files/photo_store.dart:282: img.Image _decodeChecked(Uint8List bytes) {
+    lib/app/shell/you_sheet.dart:348: Future<void> pickProfilePhoto(
     lib/features/capture/capture_screen.dart:214:           : Image.file(
-    lib/features/travel_mode/travel_mode_screen.dart:1160:           if (file == null) return placeholder;
+    lib/features/travel_mode/travel_mode_screen.dart:1178:           if (file == null) return placeholder;
     lib/app/theme/clay.dart:557:     final key = (
     lib/app/theme/motion.dart:24:   Curve get curve => _SpringCurve(this, clamp: false);
 
@@ -205,49 +205,49 @@ Current code anchors:
 ## Phase 4: Save integrity, transactions, and UI state safety
 
 Requirements: `REM-REQ-004` (`AUD-005`, `AUD-006`, `AUD-008`, `AUD-009`, `AUD-010`, `AUD-011`, `AUD-014`, `AUD-016`, `AUD-017`, `AUD-018`)
-State: Approved - not started
+State: Complete
 
 Current code anchors:
 
-    lib/features/capture/capture_screen.dart:234:       child: Scaffold(
-    lib/features/home_tab/trip_form_screen.dart:98:     if (picked != null) setState(() => _dates = picked);
-    lib/features/home_tab/trip_form_screen.dart:196:     return PopScope(
-    lib/features/home_tab/trip_form_screen.dart:209:           leading: CloseButton(onPressed: () => Navigator.of(context).pop()),
-    lib/features/travel_mode/moment_edit_sheet.dart:107:       await widget.repository.updateMoment(
-    lib/features/travel_mode/travel_mode_screen.dart:192:   Future<void> _confirmPlacement() async {
-    lib/data/repository.dart:129:   Future<void> setAvatar(File source) async {
-    lib/data/repository.dart:349:         : (jsonDecode(raw) as List<dynamic>).cast<String>();
-    lib/features/maya/maya_companion.dart:257:     _drag.animateWith(WarangMotion.release.simulate(1, 0)).whenComplete(() {
-    lib/features/places/place_picker_sheet.dart:136:       final nearby = await book.nearby(widget.near!, 150, limit: 8);
-    lib/features/search/search_tab_screen.dart:139:     if (widget.query != _query ||
+    lib/features/capture/capture_screen.dart:234:       child: PopScope(
+    lib/features/home_tab/trip_form_screen.dart:98:     if (!mounted) return;
+    lib/features/home_tab/trip_form_screen.dart:197:     return PopScope(
+    lib/features/home_tab/trip_form_screen.dart:210:           leading: CloseButton(
+    lib/features/travel_mode/moment_edit_sheet.dart:115:       await widget.repository.editMomentDetails(
+    lib/features/travel_mode/travel_mode_screen.dart:194:   Future<void> _confirmPlacement() async {
+    lib/data/repository.dart:139:   Future<void> setAvatar(File source) async {
+    lib/data/repository.dart:468:         final decoded = jsonDecode(raw);
+    lib/features/maya/maya_companion.dart:280:     _drag.animateWith(WarangMotion.release.simulate(1, 0)).whenCompleteOrCancel(
+    lib/features/places/place_picker_sheet.dart:142:         final nearby = await book.nearby(widget.near!, 150, limit: 8);
+    lib/features/search/search_tab_screen.dart:139:     if (widget.query != _query || widget.repository.revision != _revision) {
     lib/data/db/database.dart:65:       if (from < 2) {
 
 ### Tasks
 
-- [ ] Wrap `CaptureScreen` (`capture_screen.dart:231`) in `PopScope(canPop: !_saving)`; in `TripFormScreen` (`trip_form_screen.dart:196-209`), set `canPop: !_saving && _step == 0`, skip `_step--` while `_saving`, and pass `onPressed: _saving ? null : () => Navigator.of(context).pop()` to `CloseButton` (`AUD-005`).
-- [ ] Add transactional `WarangRepository.editMomentDetails(...)` and `WarangRepository.placeMoment(...)` wrapping multi-step writes in `database.transaction(() async { ... })`; call them from `MomentEditSheet._save` (`moment_edit_sheet.dart:107-136`) and `TravelModeScreen._confirmPlacement` (`travel_mode_screen.dart:192-203`, adding a `_saving` guard and error snackbar) (`AUD-006`).
-- [ ] Guard `jsonDecode` in `WarangRepository._claimMilestones` (`repository.dart:345`) with `try/catch` resetting corrupt JSON to an empty set, and validate JSON shapes with pattern matching in `stamps.dart:33`, `maya_companion.dart:74`, and `news_tab_screen.dart:31` (`AUD-008`).
-- [ ] Add `if (!mounted) return;` in `TripFormScreen._pickDates` (`trip_form_screen.dart:98`); in `MayaCompanion` (`maya_companion.dart:241-261`), stop `_drag` on drag start/update and replace `whenComplete` with `whenCompleteOrCancel` so `back` is always removed (`AUD-009`).
-- [ ] Clear cached failed futures (`_lines = null` in `MayaLines.load`, `maya_companion.dart:70-79`; `_loading = null` in `StampTitles.load`, `lib/features/stamps/stamp_titles.dart:10-26`) on error (`AUD-010`).
-- [ ] In `WarangRepository.setAvatar` (`repository.dart:129-139`), delete the new avatar file if `updateProfile` throws, delete the superseded avatar file after commit, and include `warang/profile/` in `PhotoStore.sweepOrphans` (`AUD-011`).
-- [ ] Wrap `book.nearby` (`place_picker_sheet.dart:136`) and `book.search` (`:157`) in `try/catch/finally` to clear `_loading = false` and show an inline error state (`AUD-014`).
-- [ ] Add a monotonic `revision` getter on `WarangRepository` incremented on every `notifyListeners()`, and trigger `_search()` in `MomentSearchResults.didUpdateWidget` (`search_tab_screen.dart:139`) whenever `query` or `revision` changes (`AUD-016`).
-- [ ] Wrap `if (from < 2)` (`lib/data/db/database.dart:65-68`) in `await transaction(() async { ... })` and add an isolated v1-to-v2 test in `test/migration_test.dart` (`AUD-017`).
-- [ ] Add `galleryPickerProvider` next to `cameraPickerProvider` in `lib/app/device_providers.dart`, inject it into `pickProfilePhoto` (`you_sheet.dart:347`), wrap `setAvatar` in `try/catch`, and show `showWarangSnackBar` on failure (`AUD-018`).
-- [ ] Add permanent regression tests covering mid-save Back blocking, transactional moment edit rollback, corrupt `milestonesShown` recovery, repeated Maya drag listener cleanup, `MayaLines.load` retry after failure, superseded avatar cleanup, `PlacePickerSheet` error spinner clear, live search refresh after edit, and `pickProfilePhoto` error snackbar.
+- [x] Wrap `CaptureScreen` (`capture_screen.dart:231`) in `PopScope(canPop: !_saving)`; in `TripFormScreen` (`trip_form_screen.dart:196-209`), set `canPop: !_saving && _step == 0`, skip `_step--` while `_saving`, and pass `onPressed: _saving ? null : () => Navigator.of(context).pop()` to `CloseButton` (`AUD-005`).
+- [x] Add transactional `WarangRepository.editMomentDetails(...)` and `WarangRepository.placeMoment(...)` wrapping multi-step writes in `database.transaction(() async { ... })`; call them from `MomentEditSheet._save` (`moment_edit_sheet.dart:107-136`) and `TravelModeScreen._confirmPlacement` (`travel_mode_screen.dart:192-203`, adding a `_saving` guard and error snackbar) (`AUD-006`).
+- [x] Guard `jsonDecode` in `WarangRepository._claimMilestones` (`repository.dart:345`) with `try/catch` resetting corrupt JSON to an empty set, and validate JSON shapes with pattern matching in `stamps.dart:33`, `maya_companion.dart:74`, and `news_tab_screen.dart:31` (`AUD-008`).
+- [x] Add `if (!mounted) return;` in `TripFormScreen._pickDates` (`trip_form_screen.dart:98`); in `MayaCompanion` (`maya_companion.dart:241-261`), stop `_drag` on drag start/update and replace `whenComplete` with `whenCompleteOrCancel` so `back` is always removed (`AUD-009`).
+- [x] Clear cached failed futures (`_lines = null` in `MayaLines.load`, `maya_companion.dart:70-79`; `_loading = null` in `StampTitles.load`, `lib/features/stamps/stamp_titles.dart:10-26`) on error (`AUD-010`).
+- [x] In `WarangRepository.setAvatar` (`repository.dart:129-139`), delete the new avatar file if `updateProfile` throws, delete the superseded avatar file after commit, and include `warang/profile/` in `PhotoStore.sweepOrphans` (`AUD-011`).
+- [x] Wrap `book.nearby` (`place_picker_sheet.dart:136`) and `book.search` (`:157`) in `try/catch/finally` to clear `_loading = false` and show an inline error state (`AUD-014`).
+- [x] Add a monotonic `revision` getter on `WarangRepository` incremented on every `notifyListeners()`, and trigger `_search()` in `MomentSearchResults.didUpdateWidget` (`search_tab_screen.dart:139`) whenever `query` or `revision` changes (`AUD-016`).
+- [x] Wrap `if (from < 2)` (`lib/data/db/database.dart:65-68`) in `await transaction(() async { ... })` and add an isolated v1-to-v2 test in `test/migration_test.dart` (`AUD-017`).
+- [x] Add `galleryPickerProvider` next to `cameraPickerProvider` in `lib/app/device_providers.dart`, inject it into `pickProfilePhoto` (`you_sheet.dart:347`), wrap `setAvatar` in `try/catch`, and show `showWarangSnackBar` on failure (`AUD-018`).
+- [x] Add permanent regression tests covering mid-save Back blocking, transactional moment edit rollback, corrupt `milestonesShown` recovery, repeated Maya drag listener cleanup, `MayaLines.load` retry after failure, superseded avatar cleanup, `PlacePickerSheet` error spinner clear, live search refresh after edit, and `pickProfilePhoto` error snackbar.
 
 ### Verification
 
-- [ ] `flutter analyze` prints `No issues found!`.
-- [ ] Full `flutter test` passes (all existing 329 tests plus new Phase 4 regression tests).
-- [ ] `python .agents/skills/implementation-plan/scripts/check_claims.py docs/plans/AUDIT-001-remediation-implementation.md docs/evidence/AUDIT-001-remediation-verification.md HANDOFF.md` prints `0 problems`.
-- [ ] Probe or temporary test sources are saved under the evidence folder before they are deleted.
+- [x] `flutter analyze` prints `No issues found!`.
+- [x] Full `flutter test` passes (all existing 329 tests plus new Phase 4 regression tests).
+- [x] `python .agents/skills/implementation-plan/scripts/check_claims.py docs/plans/AUDIT-001-remediation-implementation.md docs/evidence/AUDIT-001-remediation-verification.md HANDOFF.md` prints `0 problems`.
+- [x] Probe or temporary test sources are saved under the evidence folder before they are deleted.
 
 ### Review and checkpoint
 
-- [ ] Review all touched save paths for clean rollback and mounted guards.
-- [ ] Update plan, evidence, and `HANDOFF.md`; stage only Phase 4 paths and verify `git diff --cached --stat`.
-- [ ] Commit with `fix(data): AUDIT-001 phase 4 - transactions, save guards, and state safety` and verify Git exit code.
+- [x] Review all touched save paths for clean rollback and mounted guards.
+- [x] Update plan, evidence, and `HANDOFF.md`; stage only Phase 4 paths and verify `git diff --cached --stat`.
+- [x] Commit with `fix(data): AUDIT-001 phase 4 - transactions, save guards, and state safety` and verify Git exit code.
 
 ## Phase 5: Dead code, YAGNI cleanup, and small code-hygiene fixes
 
@@ -256,14 +256,14 @@ State: Approved - not started
 
 Current code anchors:
 
-    lib/data/repository.dart:559:   Future<void> upsertImportedTrip(
+    lib/data/repository.dart:687:   Future<void> upsertImportedTrip(
     lib/app/theme/clay_components.dart:1147: class WarangToggle extends StatelessWidget {
     test/clay_components_test.dart:289:       testWidgets('toggles show state with a check and semantics ($variant)', (
     lib/features/news_tab/news_tab_screen.dart:11: sealed class NewsListEntry {
-    lib/features/news_tab/news_tab_screen.dart:41: final class NewsAdSlot extends NewsListEntry {
+    lib/features/news_tab/news_tab_screen.dart:56: final class NewsAdSlot extends NewsListEntry {
     lib/app/theme/tokens.dart:35:   static const lightDotInactive = Color(0xFFC3C7BC);
     lib/data/db/database.dart:36:   static const _categoryNameCaseSql = '''
-    lib/data/db/database.dart:138:     beforeOpen: (details) async {
+    lib/data/db/database.dart:140:     beforeOpen: (details) async {
     lib/core/trip_rules.dart:38: bool coversDay(DateTime start, DateTime end, DateTime at) {
 
 ### Tasks
@@ -302,9 +302,9 @@ State: Approved - not started
 
 Current code anchors:
 
-    lib/data/repository.dart:47:     _profileSubscription = database.profilesDao.watchActive().listen((row) {
+    lib/data/repository.dart:57:     _profileSubscription = database.profilesDao.watchActive().listen((row) {
     lib/data/places/place_book.dart:180:       rows = await _db
-    lib/features/travel_mode/travel_mode_screen.dart:1160:           if (file == null) return placeholder;
+    lib/features/travel_mode/travel_mode_screen.dart:1178:           if (file == null) return placeholder;
     tool/place_book/build_place_book.py:325:         except Exception:
     tool/place_book/build_place_book.py:423:         out_path.unlink()
     tool/place_book/build_place_book.py:427:         schema_sql = schema_sql.replace(",\n  prefix = '2 3'", "")

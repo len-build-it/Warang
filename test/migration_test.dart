@@ -304,6 +304,39 @@ void main() {
       final aklan = repo.trips.firstWhere((t) => t.id == 'trip-aklan');
       expect(aklan.colorKey, isNotNull);
     });
+
+    test('v1-to-v2 upgrade assigns trip colorKey inside a transaction', () async {
+      final tempDir = await Directory.systemTemp.createTemp('warang_mig_v1v2_');
+      final dbFile = File(p.join(tempDir.path, 'warang.sqlite'));
+      await _seedLegacyDatabase(dbFile, version: 1);
+
+      // Verify schema 1 has no color_key column on trips before upgrade.
+      final beforeDb = await databaseFactoryFfi.openDatabase(
+        dbFile.path,
+        options: OpenDatabaseOptions(singleInstance: false),
+      );
+      final beforeCols = await beforeDb.rawQuery('PRAGMA table_info(trips)');
+      expect(beforeCols.any((c) => c['name'] == 'color_key'), isFalse);
+      await beforeDb.close();
+
+      final db = WarangDatabase.open(dbFile);
+      addTearDown(() async {
+        await db.close();
+        if (await tempDir.exists()) {
+          await tempDir.delete(recursive: true);
+        }
+      });
+
+      final trips = await db.tripsDao.getActive();
+      final aklan = trips.firstWhere((t) => t.id == 'trip-aklan');
+      expect(aklan.colorKey, isNotNull);
+      expect(aklan.colorKey, isNotEmpty);
+      final afterCols = await db.customSelect('PRAGMA table_info(trips)').get();
+      expect(
+        afterCols.any((row) => row.read<String>('name') == 'color_key'),
+        isTrue,
+      );
+    });
   });
 
   group('Places repository and search triggers', () {

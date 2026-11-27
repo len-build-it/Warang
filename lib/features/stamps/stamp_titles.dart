@@ -19,11 +19,17 @@ abstract final class StampTitles {
     if (bundle != null) {
       return bundle.loadString(assetPath).then(parseStampTitles);
     }
-    return _loading ??= rootBundle.loadString(assetPath).then((raw) {
-      final parsed = parseStampTitles(raw);
-      _cached = parsed;
-      return parsed;
-    });
+    return _loading ??= rootBundle
+        .loadString(assetPath)
+        .then((raw) {
+          final parsed = parseStampTitles(raw);
+          _cached = parsed;
+          return parsed;
+        })
+        .catchError((Object error, StackTrace stackTrace) {
+          _loading = null;
+          Error.throwWithStackTrace(error, stackTrace);
+        });
   }
 
   @visibleForTesting

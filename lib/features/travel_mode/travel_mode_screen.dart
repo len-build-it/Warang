@@ -189,17 +189,35 @@ class TravelModeScreenState extends ConsumerState<TravelModeScreen> {
     }
   }
 
+  bool _saving = false;
+
   Future<void> _confirmPlacement() async {
+    if (_saving) return;
     final id = ref.read(placingMomentProvider);
     final center = _mapKey.currentState?.center;
     if (id == null || center == null) return;
+    setState(() => _saving = true);
     final repository = ref.read(repositoryProvider);
     final pendingPlace = _pendingPlacementPlace;
-    await repository.setMomentLocation(id, center.latitude, center.longitude);
-    if (pendingPlace != null) {
-      await repository.attachBookPlace(id, pendingPlace);
+    try {
+      await repository.placeMoment(
+        id,
+        center.latitude,
+        center.longitude,
+        place: pendingPlace,
+      );
+      if (mounted) _endPlacement();
+    } on Exception catch (_) {
+      if (mounted) {
+        showWarangSnackBar(
+          context,
+          "Couldn't save this location. Try again.",
+          aboveNavigation: false,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
-    if (mounted) _endPlacement();
   }
 
   Future<void> _openMapPlaceSearch() async {

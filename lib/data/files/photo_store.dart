@@ -152,12 +152,25 @@ class PhotoStore {
       referenced.add(validateRelativePath(row.relPath));
       referenced.add(validateRelativePath(row.thumbRelPath));
     }
+    final activeProfile = await database.profilesDao.getActive();
+    final avatarPath = activeProfile?.avatarRelPath;
+    if (avatarPath != null && avatarPath.isNotEmpty) {
+      try {
+        referenced.add(validateRelativePath(avatarPath));
+      } on ArgumentError {
+        // Ignore malformed avatar path during orphan sweep.
+      }
+    }
 
     var deletedFiles = 0;
     final root = await _root;
-    final photosRoot = Directory(p.join(root.path, 'warang', 'photos'));
-    if (await photosRoot.exists()) {
-      await for (final entity in photosRoot.list(
+    final sweepRoots = [
+      Directory(p.join(root.path, 'warang', 'photos')),
+      Directory(p.join(root.path, 'warang', 'profile')),
+    ];
+    for (final sweepRoot in sweepRoots) {
+      if (!await sweepRoot.exists()) continue;
+      await for (final entity in sweepRoot.list(
         recursive: true,
         followLinks: false,
       )) {
@@ -272,6 +285,8 @@ img.Image _decodeChecked(Uint8List bytes) {
     info = img.findDecoderForData(bytes)?.startDecode(bytes);
   } on Exception {
     throw const FormatException('Unsupported image file');
+  } on RangeError {
+    throw const FormatException('Unsupported image file');
   }
   if (info != null && info.width * info.height > _maxImagePixels) {
     throw const FormatException('Image dimensions are too large');
@@ -280,6 +295,8 @@ img.Image _decodeChecked(Uint8List bytes) {
   try {
     decoded = img.decodeImage(bytes);
   } on Exception {
+    throw const FormatException('Unsupported image file');
+  } on RangeError {
     throw const FormatException('Unsupported image file');
   }
   if (decoded == null) throw const FormatException('Unsupported image file');

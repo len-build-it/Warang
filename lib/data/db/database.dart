@@ -63,8 +63,10 @@ class WarangDatabase extends _$WarangDatabase {
     onUpgrade: (m, from, to) async {
       if (from < 1) await m.createAll();
       if (from < 2) {
-        await m.addColumn(trips, trips.colorKey);
-        await _colourExistingTrips();
+        await transaction(() async {
+          await m.addColumn(trips, trips.colorKey);
+          await _colourExistingTrips();
+        });
       }
       if (from < 3) {
         await transaction(() async {

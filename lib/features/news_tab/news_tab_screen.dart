@@ -27,13 +27,28 @@ final class NewsArticle extends NewsListEntry {
   final WarangGlyph icon;
   final DateTime date;
 
-  factory NewsArticle.fromJson(Map<String, dynamic> json) => NewsArticle(
-    title: json['title'] as String,
-    body: json['body'] as String,
-    category: json['category'] as String? ?? 'News',
-    icon: _iconFor(json['icon'] as String?),
-    date: DateTime.parse(json['date'] as String),
-  );
+  factory NewsArticle.fromJson(Map<String, Object?> json) {
+    if (json case {
+      'title': final String title,
+      'body': final String body,
+      'date': final String dateText,
+    }) {
+      final parsedDate = DateTime.tryParse(dateText);
+      if (parsedDate == null) {
+        throw FormatException('Invalid news article date: $dateText');
+      }
+      return NewsArticle(
+        title: title,
+        body: body,
+        category: json['category'] is String
+            ? json['category']! as String
+            : 'News',
+        icon: _iconFor(json['icon'] is String ? json['icon']! as String : null),
+        date: parsedDate,
+      );
+    }
+    throw const FormatException('Malformed news article entry');
+  }
 }
 
 /// Structural seam for a future curated entry. It is intentionally unused in
@@ -60,11 +75,19 @@ class _NewsTabScreenState extends State<NewsTabScreen> {
 
   Future<List<NewsListEntry>> _loadEntries() async {
     final raw = await rootBundle.loadString('assets/data/news_items.json');
-    final decoded = jsonDecode(raw) as List<dynamic>;
-    return decoded
-        .whereType<Map<String, dynamic>>()
-        .map(NewsArticle.fromJson)
-        .toList(growable: false);
+    final decoded = jsonDecode(raw);
+    if (decoded is! List) return const [];
+    final articles = <NewsListEntry>[];
+    for (final item in decoded) {
+      if (item is Map<String, Object?>) {
+        try {
+          articles.add(NewsArticle.fromJson(item));
+        } on FormatException {
+          // Skip malformed entries rather than crashing the feed.
+        }
+      }
+    }
+    return articles;
   }
 
   Future<void> _refresh() async {

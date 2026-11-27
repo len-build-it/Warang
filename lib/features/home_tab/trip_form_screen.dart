@@ -95,6 +95,7 @@ class _TripFormScreenState extends ConsumerState<TripFormScreen> {
       initialDateRange: _dates,
       helpText: 'Trip dates',
     );
+    if (!mounted) return;
     if (picked != null) setState(() => _dates = picked);
   }
 
@@ -195,9 +196,9 @@ class _TripFormScreenState extends ConsumerState<TripFormScreen> {
         : 'Create';
     return PopScope(
       // Back steps back through the questions before it leaves.
-      canPop: _step == 0,
+      canPop: !_saving && _step == 0,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) setState(() => _step--);
+        if (!didPop && !_saving && _step > 0) setState(() => _step--);
       },
       child: Scaffold(
         backgroundColor: neutrals.surface,
@@ -206,7 +207,9 @@ class _TripFormScreenState extends ConsumerState<TripFormScreen> {
           backgroundColor: neutrals.surface,
           scrolledUnderElevation: 0,
           // Close leaves from any question; only Back steps back.
-          leading: CloseButton(onPressed: () => Navigator.of(context).pop()),
+          leading: CloseButton(
+            onPressed: _saving ? null : () => Navigator.of(context).pop(),
+          ),
         ),
         body: SafeArea(
           top: false,

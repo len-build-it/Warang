@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/memory_stats.dart';
 import '../../core/models.dart';
@@ -12,6 +12,7 @@ import '../../data/files/photo_store.dart';
 import '../../data/repository.dart';
 import '../../features/stamps/stamp_page_sheet.dart';
 import '../../features/stamps/stamp_titles.dart';
+import '../device_providers.dart';
 import '../theme/components.dart';
 import '../theme/tokens.dart';
 
@@ -128,7 +129,7 @@ class _YouSheetState extends State<YouSheet> {
                   photoStore: repository.photoStore,
                   colour: WarangKeepsake.forUser(repository.trips).fill,
                   size: 72,
-                  onTap: () => pickProfilePhoto(repository),
+                  onTap: () => pickProfilePhoto(context, repository),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -345,14 +346,29 @@ class _YouRow extends StatelessWidget {
 }
 
 /// Lets the user pick a new profile photo from the gallery.
-Future<void> pickProfilePhoto(WarangRepository repository) async {
-  final picked = await ImagePicker().pickImage(
-    source: ImageSource.gallery,
-    maxWidth: 2000,
-    maxHeight: 2000,
-    imageQuality: 88,
-  );
-  if (picked != null) await repository.setAvatar(File(picked.path));
+Future<void> pickProfilePhoto(
+  BuildContext context,
+  WarangRepository repository, {
+  GalleryPicker? picker,
+}) async {
+  final GalleryPicker pick =
+      picker ??
+      ProviderScope.containerOf(
+        context,
+        listen: false,
+      ).read(galleryPickerProvider);
+  try {
+    final picked = await pick();
+    if (picked == null) return;
+    await repository.setAvatar(File(picked.path));
+  } on Exception catch (_) {
+    if (!context.mounted) return;
+    showWarangSnackBar(
+      context,
+      "Couldn't update profile photo. Try again.",
+      aboveNavigation: false,
+    );
+  }
 }
 
 /// Asks for a new display name and saves a non-empty answer.
