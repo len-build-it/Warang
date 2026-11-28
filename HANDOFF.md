@@ -1,8 +1,8 @@
 # Current handoff
 
 Created: 2026-10-16T22:55:00+08:00
-Updated: 2026-11-27T09:06:00+08:00
-State: AUDIT-001 remediation Phases 1-5 complete, Phase 6 in progress; AUDIT-001 Phases 0-4 complete and report revision 2 re-verified by Gemini (51 findings, 0 app files changed); FEAT-004 Phases 0-8 complete, physical-device checks pending; FEAT-003 Phases 1-10 complete, physical-device checks and D-2 art pending; FEAT-001 and FEAT-002 physical-device checks pending
+Updated: 2026-11-27T23:47:00+08:00
+State: AUDIT-001 remediation Phases 1-5 complete and pushed, Phase 6 WIP committed and pushed with flutter test pending; AUDIT-001 Phases 0-4 complete and report revision 2 re-verified by Gemini (51 findings, 0 app files changed); FEAT-004 Phases 0-8 complete, physical-device checks pending; FEAT-003 Phases 1-10 complete, physical-device checks and D-2 art pending; FEAT-001 and FEAT-002 physical-device checks pending
 Feature: AUDIT-001 remediation (plan revision 2, approved); AUDIT-001 code quality audit report (plan revision 1, complete; report revision 2); FEAT-004 places, place search, and category stamps (spec and plan revision 1, approved); FEAT-003 clay keepsake redesign (spec and plan revision 1)
 
 ## Read first
@@ -42,6 +42,7 @@ Reread these files and inspect actual Git status before acting; prior chat memor
 | AUDIT-001 remediation plan, continuous execution | Revision 2, committed as `docs(plan): AUDIT-001 remediation plan revision 2` | 2026-11-26T23:32:00+08:00 Claude Code decision card: "Approve, run without stops" on "Do you approve it (revision 2, with the fixes I'm about to make) for Gemini to run?" |
 | AUDIT-001 remediation D-1 (delete `WarangToggle`, amend FEAT-003 C11 to revision 2, keep `MayaPose.footTap`) | Plan revision 2 | 2026-11-26T23:32:00+08:00 Claude Code decision card: "Delete it and amend FEAT-003" |
 | AUDIT-001 remediation D-2 and D-3 as recommended | Plan revision 2 | 2026-11-26T23:32:00+08:00 Claude Code decision card: "Yes, as recommended" |
+| AUDIT-001 remediation Phase 6 WIP commit and GitHub push | Phase 6 WIP on `master` | 2026-11-27T23:45:13+08:00 chat: "stop the tests, need you to commit the changes to the master branch and push it to github for now" |
 
 Allowed phases (AUDIT-001 remediation): Phases 1-6 of plan revision 2 continuously without approval stops, with every gate passing in every phase, then stop before Independent verification; never push and never add a dependency.
 This approval replaces directive 3 ("mandatory hard stops") in `AGENTS.md` for this plan only.
@@ -77,8 +78,8 @@ Gemini re-verified revision 2 on 2026-11-24 against the code, local build output
 Top five AUDIT-001 findings to fix first (revision 2): `AUD-001` (release APKs omit `android.permission.INTERNET`), `AUD-002` (fresh map tiles revalidate on every view with no HTTP timeout), `AUD-004` (photo processing on the UI isolate, with unbounded avatar picks), `AUD-005` (Back and Close mid-save on capture and the trip form), `AUD-006` (multi-step moment edits outside one transaction).
 Preserve the existing untracked paths: `.agents/skills/*`, `.agents/templates/`, `.claude/`, `CLAUDE.md`, `docs/evidence/FEAT-001/claude-review/`, `releases/`, and `scripts/`.
 AUDIT-001 remediation plan revision 1 was drafted on 2026-11-24 and reviewed by Claude Code on 2026-11-26; revision 2 fixes the review findings (tile database upgrade for the new last-access column, no chunked place book copy, FEAT-003 C11 amendment, toggle test range 289-326, About version test, probe-source step, sourced execution mode).
-AUDIT-001 remediation Phase 1 complete in `fix(android): AUDIT-001 phase 1 - release manifest, gradle, and version` (`36138c8`); Phase 2 complete in `fix(map): AUDIT-001 phase 2 - tile cache, surface state, and location helper` (`1330e50`); Phase 3 complete in `perf(media): AUDIT-001 phase 3 - off-isolate media, place book, and image hygiene` (`4d5dfad`); Phase 4 complete in `fix(data): AUDIT-001 phase 4 - transactions, save guards, and state safety` (`db53772`); Phase 5 complete in `refactor(cleanup): AUDIT-001 phase 5 - dead code, yagni, and hygiene` (full `flutter test`: 347 passed, `flutter analyze` clean, FEAT-003 amended to revision 2 per D-1, `assets/Logo2.png` and `design/ui-update/baseline/` removed per D-2).
-Remediation Phase 6 is in progress.
+AUDIT-001 remediation Phase 1 complete in `fix(android): AUDIT-001 phase 1 - release manifest, gradle, and version` (`36138c8`); Phase 2 complete in `fix(map): AUDIT-001 phase 2 - tile cache, surface state, and location helper` (`1330e50`); Phase 3 complete in `perf(media): AUDIT-001 phase 3 - off-isolate media, place book, and image hygiene` (`4d5dfad`); Phase 4 complete in `fix(data): AUDIT-001 phase 4 - transactions, save guards, and state safety` (`db53772`); Phase 5 complete in `refactor(cleanup): AUDIT-001 phase 5 - dead code, yagni, and hygiene` (`1d733f4`; full `flutter test`: 347 passed, `flutter analyze` clean, FEAT-003 amended to revision 2 per D-1, `assets/Logo2.png` and `design/ui-update/baseline/` removed per D-2).
+Remediation Phase 6 code edits are committed as WIP in `wip(core): AUDIT-001 phase 6 - clean extractions, deterministic tests, and tooling (tests pending)` and pushed to `origin/master` per Len's 2026-11-27T23:45:13+08:00 instruction (Python syntax compilation and `flutter analyze` passed; `flutter test` stopped before completion and remains pending).
 
 ## Checks and evidence
 
@@ -99,7 +100,7 @@ FEAT-001 evidence: [docs/evidence/FEAT-001-verification.md](docs/evidence/FEAT-0
 
 ## Next action
 
-000. **AUDIT-001 remediation (primary):** Gemini executes [docs/plans/AUDIT-001-remediation-implementation.md](docs/plans/AUDIT-001-remediation-implementation.md) revision 2, Phases 1-6, continuously, then sets the next action to its Independent verification phase for a different agent or fresh session.
+000. **AUDIT-001 remediation (primary):** Finish Phase 6 verification of [docs/plans/AUDIT-001-remediation-implementation.md](docs/plans/AUDIT-001-remediation-implementation.md) revision 2 (run `flutter test test/utility_screens_test.dart`, full `flutter test`, and `check_claims.py`, then check off Phase 6 in the plan and record final evidence), then hand off to a different agent or fresh session for the Independent verification phase.
 00. **FEAT-004:** Phases 0-8 complete (`docs(plan): FEAT-004 phase 8 - polish and documents`). Waiting on Len for the 5-item physical-device checklist in [docs/evidence/FEAT-004-verification.md](docs/evidence/FEAT-004-verification.md) (and optional push of Phase 7-8 commits to GitHub).
 0. **FEAT-003:** implemented through Phase 10. Waiting on Len for physical-device checks (REQ-023 steps are in the evidence log) and the layered maya art (D-2).
 1. **Claude UI screenshot capture (requested 2026-11-21):** capture fresh UI screenshots from the current codebase (`ba0c56a`) using [tool/ux_screenshots_test.dart](tool/ux_screenshots_test.dart).

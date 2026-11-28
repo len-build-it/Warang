@@ -64,6 +64,7 @@ void main() {
     overrides: [
       repositoryProvider.overrideWithValue(repository),
       mapTileStoreProvider.overrideWithValue(tileStore),
+      clockProvider.overrideWithValue(() => DateTime(2026, 6, 15, 10, 30)),
       locationReaderProvider.overrideWithValue(locate ?? () async => null),
       cameraPickerProvider.overrideWithValue(() async => XFile(photo.path)),
     ],
@@ -135,7 +136,7 @@ void main() {
   });
 
   testWidgets('trip line names the dated trip covering today', (tester) async {
-    final today = DateTime.now();
+    final today = DateTime(2026, 6, 15);
     await tester.runAsync(
       () => repository.addTrip(
         'Boracay',

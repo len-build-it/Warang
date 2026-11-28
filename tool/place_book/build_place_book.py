@@ -9,6 +9,7 @@ import json
 import math
 import os
 import pathlib
+import re
 import sqlite3
 import sys
 from collections import defaultdict
@@ -262,6 +263,7 @@ class PlaceCollector(osmium.SimpleHandler):
         self.strict_food = strict_food
         self.places: Dict[str, Tuple[str, str, str, float, float, int]] = {}
         self.area_way_ids: set[int] = set()
+        self.skipped_areas: int = 0
         self.boundaries: Dict[int, List[BoundaryPolygon]] = defaultdict(list)
 
     def _add_place(
@@ -322,7 +324,8 @@ class PlaceCollector(osmium.SimpleHandler):
                     ic = ring_to_coords(inner)
                     if len(ic) >= 3:
                         inners.append(ic)
-        except Exception:
+        except (RuntimeError, ValueError):
+            self.skipped_areas += 1
             return
 
         if not outers:
@@ -419,14 +422,18 @@ def build_place_book(
         )
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    if out_path.exists():
-        out_path.unlink()
+    tmp_path = out_path.with_suffix(".sqlite.tmp")
+    if tmp_path.exists():
+        tmp_path.unlink()
 
     schema_sql = SCHEMA_PATH.read_text(encoding="utf-8")
     if drop_fts_prefix:
-        schema_sql = schema_sql.replace(",\n  prefix = '2 3'", "")
+        schema_sql = re.sub(r",\s*prefix\s*=\s*'[^']*'", "", schema_sql)
 
-    conn = sqlite3.connect(str(out_path))
+    if collector.skipped_areas:
+        print(f"skipped-areas: {collector.skipped_areas}")
+
+    conn = sqlite3.connect(str(tmp_path))
     try:
         conn.executescript(schema_sql)
         rows = []
@@ -472,6 +479,7 @@ def build_place_book(
     finally:
         conn.close()
 
+    os.replace(tmp_path, out_path)
     print(
         f"Built {out_path} ({out_path.stat().st_size:,} bytes) "
         f"with {len(rows):,} places."

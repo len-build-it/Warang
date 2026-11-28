@@ -20,10 +20,12 @@ tool/place_book/.venv/Scripts/python.exe -m pip install -r tool/place_book/requi
 
 ## Build command
 
-Download the latest Philippines extract (also ignored by Git via `*.osm.pbf`):
+Download the latest Philippines extract and verify its Geofabrik `.md5` checksum (also ignored by Git via `*.osm.pbf`):
 
 ```bash
 curl -fSL -o tool/place_book/philippines-latest.osm.pbf https://download.geofabrik.de/asia/philippines-latest.osm.pbf
+curl -fSL -o tool/place_book/philippines-latest.osm.pbf.md5 https://download.geofabrik.de/asia/philippines-latest.osm.pbf.md5
+(cd tool/place_book && md5sum -c philippines-latest.osm.pbf.md5)
 ```
 
 Build the bundled SQLite file:

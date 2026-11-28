@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/app.dart';
+import '../../app/app_state.dart';
 import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
 import '../../core/formatting.dart';
@@ -87,11 +88,12 @@ class _TripFormScreenState extends ConsumerState<TripFormScreen> {
   }
 
   Future<void> _pickDates() async {
-    final now = DateTime.now();
+    final now = ref.read(clockProvider)();
     final picked = await showDateRangePicker(
       context: context,
       firstDate: DateTime(2000),
       lastDate: DateTime(now.year + 5, 12, 31),
+      currentDate: now,
       initialDateRange: _dates,
       helpText: 'Trip dates',
     );

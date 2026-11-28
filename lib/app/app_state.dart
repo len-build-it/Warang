@@ -6,6 +6,9 @@ import '../data/files/photo_store.dart';
 import '../features/map/map_tile_store.dart';
 import 'app.dart';
 
+/// Injectable wall clock; tests override this with a fixed timestamp.
+final clockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
+
 /// The photo store wired in the composition root, shared by every screen.
 final photoStoreProvider = Provider<PhotoStore>(
   (ref) => ref.watch(repositoryProvider).photoStore,

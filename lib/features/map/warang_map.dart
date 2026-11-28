@@ -770,7 +770,7 @@ class _LandingPinState extends State<LandingPin> with TickerProviderStateMixin {
   );
   late final AnimationController _splat = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 300),
+    duration: WarangMotion.release.duration,
   );
   Timer? _touchdown;
   bool _started = false;

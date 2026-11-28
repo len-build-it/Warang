@@ -37,6 +37,9 @@ class WarangRepository extends ChangeNotifier {
   StreamSubscription<List<MomentRow>>? _momentsSubscription;
   bool _isDisposed = false;
   int _revision = 0;
+  int _refreshGeneration = 0;
+  Future<void>? _refreshingAll;
+  bool _refreshQueued = false;
 
   /// Monotonically incremented whenever repository state changes.
   int get revision => _revision;
@@ -722,16 +725,39 @@ class WarangRepository extends ChangeNotifier {
 
   Future<void> _refreshAll() async {
     if (_isDisposed) return;
-    final profile = await database.profilesDao.getActive();
-    if (_isDisposed) return;
-    if (profile == null) throw StateError('Active profile is missing');
-    _profile = _profileFromRow(profile);
-    _trips = (await database.tripsDao.getActive())
-        .map(_tripFromRow)
-        .toList(growable: false);
-    _setPlaces(await database.placesDao.getActive());
-    await _refreshMoments(await database.momentsDao.getActive(), notify: false);
-    notifyListeners();
+    if (_refreshingAll != null) {
+      _refreshQueued = true;
+      return _refreshingAll;
+    }
+    final task = _runRefreshAll();
+    _refreshingAll = task;
+    try {
+      await task;
+    } finally {
+      if (identical(_refreshingAll, task)) {
+        _refreshingAll = null;
+      }
+    }
+  }
+
+  Future<void> _runRefreshAll() async {
+    do {
+      _refreshQueued = false;
+      if (_isDisposed) return;
+      final profile = await database.profilesDao.getActive();
+      if (_isDisposed) return;
+      if (profile == null) throw StateError('Active profile is missing');
+      _profile = _profileFromRow(profile);
+      _trips = (await database.tripsDao.getActive())
+          .map(_tripFromRow)
+          .toList(growable: false);
+      _setPlaces(await database.placesDao.getActive());
+      await _refreshMoments(
+        await database.momentsDao.getActive(),
+        notify: false,
+      );
+      if (!_isDisposed) notifyListeners();
+    } while (_refreshQueued && !_isDisposed);
   }
 
   void _remapMomentPlaces() {
@@ -772,10 +798,13 @@ class WarangRepository extends ChangeNotifier {
     bool notify = true,
   }) async {
     if (_isDisposed) return;
-    _moments = (await Future.wait(
+    final gen = ++_refreshGeneration;
+    final refreshed = (await Future.wait(
       rows.map(_momentFromRow),
     )).toList(growable: false);
-    if (notify && !_isDisposed) notifyListeners();
+    if (_isDisposed || gen != _refreshGeneration) return;
+    _moments = refreshed;
+    if (notify) notifyListeners();
   }
 
   Future<Moment> _momentFromRow(MomentRow row) async {

@@ -113,6 +113,7 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen> {
                               trip: trip,
                               moments: momentsOf(trip),
                               photoStore: photoStore,
+                              now: ref.watch(clockProvider)(),
                               // Cards lean alternately, as on a real shelf.
                               tiltDegrees: index.isEven ? -1.5 : 1.5,
                               onTap: () => _openTrip(trip),
@@ -126,7 +127,7 @@ class _HomeTabScreenState extends ConsumerState<HomeTabScreen> {
                                 size: 56,
                                 place: MayaPlace.shelf,
                                 pose: contextPose(
-                                  now: DateTime.now(),
+                                  now: ref.watch(clockProvider)(),
                                   trips: trips,
                                   moments: moments,
                                 ),
@@ -300,6 +301,7 @@ class TripShelfCard extends StatelessWidget {
     required this.moments,
     required this.photoStore,
     required this.onTap,
+    this.now,
     this.tiltDegrees = 0,
   });
 
@@ -307,6 +309,7 @@ class TripShelfCard extends StatelessWidget {
   final List<Moment> moments;
   final PhotoStore photoStore;
   final VoidCallback onTap;
+  final DateTime? now;
   final double tiltDegrees;
 
   @override
@@ -319,7 +322,7 @@ class TripShelfCard extends StatelessWidget {
     final when = start == null || end == null
         ? 'No dates'
         : formatTripRange(start, end);
-    final planned = start != null && start.isAfter(DateTime.now());
+    final planned = start != null && start.isAfter(now ?? DateTime.now());
     final place = trip.place?.trim();
     final detail = tone.text(brightness);
     return Transform.rotate(

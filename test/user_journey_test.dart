@@ -78,6 +78,7 @@ void main() {
         overrides: [
           repositoryProvider.overrideWithValue(repository),
           mapTileStoreProvider.overrideWithValue(tileStore),
+          clockProvider.overrideWithValue(() => DateTime(2026, 6, 15, 10, 30)),
           cameraPickerProvider.overrideWithValue(() async => XFile(photo.path)),
           // No GPS fix: the capture must still save.
           locationReaderProvider.overrideWithValue(() async => null),
@@ -165,7 +166,7 @@ void main() {
     await tester.binding.handlePopRoute();
     await settle(tester);
     expect(find.byType(MomentCard), findsNothing);
-    final today = DateTime.now();
+    final today = DateTime(2026, 6, 15);
     await tester.runAsync(
       () => repository.addTrip(
         'Boracay long weekend',

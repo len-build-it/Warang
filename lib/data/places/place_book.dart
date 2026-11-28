@@ -175,47 +175,40 @@ class PlaceBook {
     if (ftsQuery == null) return const [];
     await _ensureQueryOnly();
 
-    final List<QueryRow> rows;
-    if (near != null) {
-      rows = await _db
-          .customSelect(
-            '''SELECT p.osm_ref, p.name, p.alt_names, p.category,
-                      p.lat, p.lon, p.town, p.province, p.weight
-               FROM places_fts
-               JOIN places p ON p.id = places_fts.rowid
-               WHERE places_fts MATCH ?
-               ORDER BY ROUND(bm25(places_fts, 10.0, 5.0, 2.0, 1.0), 1) ASC,
-                        ((p.lat - ?) * (p.lat - ?) + (p.lon - ?) * (p.lon - ?)) ASC,
-                        p.weight DESC,
-                        p.name ASC
-               LIMIT ?''',
-            variables: [
-              Variable.withString(ftsQuery),
-              Variable.withReal(near.latitude),
-              Variable.withReal(near.latitude),
-              Variable.withReal(near.longitude),
-              Variable.withReal(near.longitude),
-              Variable.withInt(limit),
-            ],
-          )
-          .get();
-    } else {
-      rows = await _db
-          .customSelect(
-            '''SELECT p.osm_ref, p.name, p.alt_names, p.category,
-                      p.lat, p.lon, p.town, p.province, p.weight
-               FROM places_fts
-               JOIN places p ON p.id = places_fts.rowid
-               WHERE places_fts MATCH ?
-               ORDER BY ROUND(bm25(places_fts, 10.0, 5.0, 2.0, 1.0), 1) ASC,
-                        p.weight DESC,
-                        p.name ASC
-               LIMIT ?''',
-            variables: [Variable.withString(ftsQuery), Variable.withInt(limit)],
-          )
-          .get();
-    }
+    final rows = await _queryFtsPlaces(ftsQuery, near: near, limit: limit);
     return rows.map(_placeFromRow).toList();
+  }
+
+  Future<List<QueryRow>> _queryFtsPlaces(
+    String ftsQuery, {
+    LatLng? near,
+    required int limit,
+  }) {
+    final distanceOrder = near == null
+        ? ''
+        : '((p.lat - ?) * (p.lat - ?) + (p.lon - ?) * (p.lon - ?)) ASC,\n'
+              '                        ';
+    final variables = <Variable>[
+      Variable.withString(ftsQuery),
+      if (near != null) ...[
+        Variable.withReal(near.latitude),
+        Variable.withReal(near.latitude),
+        Variable.withReal(near.longitude),
+        Variable.withReal(near.longitude),
+      ],
+      Variable.withInt(limit),
+    ];
+    return _db
+        .customSelect('''SELECT p.osm_ref, p.name, p.alt_names, p.category,
+                      p.lat, p.lon, p.town, p.province, p.weight
+               FROM places_fts
+               JOIN places p ON p.id = places_fts.rowid
+               WHERE places_fts MATCH ?
+               ORDER BY ROUND(bm25(places_fts, 10.0, 5.0, 2.0, 1.0), 1) ASC,
+                        ${distanceOrder}p.weight DESC,
+                        p.name ASC
+               LIMIT ?''', variables: variables)
+        .get();
   }
 
   /// Returns places within [radiusMetres] of [point], sorted nearest first.

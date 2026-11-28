@@ -113,7 +113,7 @@ class _PlacePickerSheetState extends ConsumerState<PlacePickerSheet> {
   void _onChanged() {
     setState(() {});
     _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 150), _runQuery);
+    _debounce = Timer(WarangMotion.fade, _runQuery);
   }
 
   Future<void> _runQuery() async {
@@ -422,18 +422,22 @@ class _SectionHeader extends StatelessWidget {
   );
 }
 
-class _BookPlaceRow extends StatelessWidget {
-  const _BookPlaceRow({required this.place, required this.onTap});
+class _PlaceRow extends StatelessWidget {
+  const _PlaceRow({
+    required this.leading,
+    required this.title,
+    this.subtitle,
+    required this.onTap,
+  });
 
-  final BookPlace place;
+  final Widget leading;
+  final String title;
+  final String? subtitle;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final neutrals = WarangNeutrals.of(context);
-    final category =
-        PlaceCategories.byKey(place.category) ?? PlaceCategories.town;
-    final subtitle = place.locationSubtitle;
     return InkWell(
       onTap: onTap,
       child: ConstrainedBox(
@@ -442,22 +446,22 @@ class _BookPlaceRow extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           child: Row(
             children: [
-              CategoryDisc(category: category, size: 40),
+              leading,
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      place.name,
+                      title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: WarangType.titleS.copyWith(color: neutrals.ink),
                     ),
-                    if (subtitle.isNotEmpty) ...[
+                    if (subtitle != null && subtitle!.isNotEmpty) ...[
                       const SizedBox(height: 2),
                       Text(
-                        subtitle,
+                        subtitle!,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: WarangType.meta.copyWith(
@@ -476,6 +480,25 @@ class _BookPlaceRow extends StatelessWidget {
   }
 }
 
+class _BookPlaceRow extends StatelessWidget {
+  const _BookPlaceRow({required this.place, required this.onTap});
+
+  final BookPlace place;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final category =
+        PlaceCategories.byKey(place.category) ?? PlaceCategories.town;
+    return _PlaceRow(
+      leading: CategoryDisc(category: category, size: 40),
+      title: place.name,
+      subtitle: place.locationSubtitle,
+      onTap: onTap,
+    );
+  }
+}
+
 class _UserPlaceRow extends StatelessWidget {
   const _UserPlaceRow({required this.place, required this.onTap});
 
@@ -486,53 +509,23 @@ class _UserPlaceRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final neutrals = WarangNeutrals.of(context);
     final category = PlaceCategories.byKey(place.categoryKey);
-    return InkWell(
-      onTap: onTap,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: 56),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-          child: Row(
-            children: [
-              if (category != null)
-                CategoryDisc(category: category, size: 40)
-              else
-                SizedBox.square(
-                  dimension: 40,
-                  child: ClaySurface(
-                    depth: ClayDepth.clay1,
-                    circle: true,
-                    color: neutrals.surfaceRaised,
-                    child: const Center(
-                      child: WarangIcon(WarangGlyphs.pin, size: 20),
-                    ),
-                  ),
-                ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      place.name,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: WarangType.titleS.copyWith(color: neutrals.ink),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      category?.name ?? 'Your place',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: WarangType.meta.copyWith(color: neutrals.inkFaint),
-                    ),
-                  ],
+    return _PlaceRow(
+      leading: category != null
+          ? CategoryDisc(category: category, size: 40)
+          : SizedBox.square(
+              dimension: 40,
+              child: ClaySurface(
+                depth: ClayDepth.clay1,
+                circle: true,
+                color: neutrals.surfaceRaised,
+                child: const Center(
+                  child: WarangIcon(WarangGlyphs.pin, size: 20),
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
+      title: place.name,
+      subtitle: category?.name ?? 'Your place',
+      onTap: onTap,
     );
   }
 }

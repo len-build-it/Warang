@@ -249,35 +249,13 @@ class WarangDatabase extends _$WarangDatabase {
     ''');
     await customStatement('''
       CREATE TRIGGER IF NOT EXISTS moments_search_ai AFTER INSERT ON moments BEGIN
-        INSERT INTO warang_search(entity_type, entity_id, title, place, caption)
-        VALUES (
-          'moment',
-          new.id,
-          '',
-          coalesce((
-            SELECT trim(p.name || ' ' || $_categoryNameCaseSql)
-            FROM places p
-            WHERE p.id = new.place_id AND p.deleted_at IS NULL
-          ), ''),
-          coalesce(new.caption, '')
-        );
+        ${_momentSearchInsertSql()}
       END
     ''');
     await customStatement('''
       CREATE TRIGGER IF NOT EXISTS moments_search_au AFTER UPDATE ON moments BEGIN
         DELETE FROM warang_search WHERE entity_type = 'moment' AND entity_id = old.id;
-        INSERT INTO warang_search(entity_type, entity_id, title, place, caption)
-        VALUES (
-          'moment',
-          new.id,
-          '',
-          coalesce((
-            SELECT trim(p.name || ' ' || $_categoryNameCaseSql)
-            FROM places p
-            WHERE p.id = new.place_id AND p.deleted_at IS NULL
-          ), ''),
-          coalesce(new.caption, '')
-        );
+        ${_momentSearchInsertSql()}
       END
     ''');
     await customStatement('''
@@ -318,6 +296,20 @@ class WarangDatabase extends _$WarangDatabase {
       END
     ''');
   }
+
+  static String _momentSearchInsertSql() => '''
+        INSERT INTO warang_search(entity_type, entity_id, title, place, caption)
+        VALUES (
+          'moment',
+          new.id,
+          '',
+          coalesce((
+            SELECT trim(p.name || ' ' || $_categoryNameCaseSql)
+            FROM places p
+            WHERE p.id = new.place_id AND p.deleted_at IS NULL
+          ), ''),
+          coalesce(new.caption, '')
+        );''';
 
   Future<void> _rebuildSearchIndex() async {
     await customStatement('DELETE FROM warang_search');

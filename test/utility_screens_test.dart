@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -19,6 +20,18 @@ import 'package:warang/features/map/map_tile_store.dart';
 import 'package:warang/features/search/search_tab_screen.dart';
 import 'package:warang/features/settings/about_screen.dart';
 import 'package:warang/features/settings/settings_screen.dart';
+
+class _TrackingMapTileStore extends MapTileStore {
+  _TrackingMapTileStore({super.databasePath});
+
+  final Completer<void> cleared = Completer<void>();
+
+  @override
+  Future<void> clear() async {
+    await super.clear();
+    if (!cleared.isCompleted) cleared.complete();
+  }
+}
 
 void main() {
   late WarangDatabase database;
@@ -64,6 +77,18 @@ void main() {
     ),
   );
 
+  Future<void> pumpUntilFound(
+    WidgetTester tester,
+    Finder finder, {
+    int maxTicks = 40,
+  }) async {
+    for (var i = 0; i < maxTicks; i++) {
+      await tester.runAsync(() => Future<void>.microtask(() {}));
+      await tester.pump();
+      if (finder.evaluate().isNotEmpty) return;
+    }
+  }
+
   testWidgets(
     'MomentSearchResults shows explicit empty state on unmatched query',
     (tester) async {
@@ -79,10 +104,10 @@ void main() {
           ),
         ),
       );
-      await tester.runAsync(() async {
-        await Future.delayed(const Duration(milliseconds: 100));
-      });
-      await tester.pump();
+      await pumpUntilFound(
+        tester,
+        find.text('Nothing here yet, try another word'),
+      );
 
       expect(find.text('Nothing here yet, try another word'), findsOneWidget);
       await tester.pumpWidget(const SizedBox());
@@ -112,10 +137,7 @@ void main() {
           ),
         ),
       );
-      await tester.runAsync(() async {
-        await Future.delayed(const Duration(milliseconds: 100));
-      });
-      await tester.pump();
+      await pumpUntilFound(tester, find.text('Sunset over Boracay'));
 
       expect(find.text('Sunset over Boracay'), findsOneWidget);
       expect(find.text('Station 1 · 15 Apr 2026'), findsOneWidget);
@@ -149,9 +171,7 @@ void main() {
           ),
         ),
       );
-      await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 100)),
-      );
+      await pumpUntilFound(tester, find.byType(Opacity));
       for (var frame = 0; frame < 6; frame++) {
         await tester.pump(const Duration(milliseconds: 16));
       }
@@ -197,12 +217,8 @@ void main() {
         ),
       ),
     );
-    for (var i = 0; i < 5; i++) {
-      await tester.runAsync(
-        () => Future<void>.delayed(const Duration(milliseconds: 50)),
-      );
-      await tester.pump();
-    }
+    await tester.runAsync(() => photoStore.storageBytes());
+    await pumpUntilFound(tester, find.text('2.0 KB'));
 
     expect(find.text('2.0 KB'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
@@ -211,11 +227,24 @@ void main() {
   testWidgets(
     'SettingsScreen provides back navigation AppBar, non-tappable info, and Clear action with SnackBar',
     (tester) async {
-      await tester.pumpWidget(app(const SettingsScreen()));
-      await tester.runAsync(() async {
-        await Future.delayed(const Duration(milliseconds: 100));
-      });
-      await tester.pump();
+      final trackingStore = _TrackingMapTileStore(
+        databasePath: sqflite.inMemoryDatabasePath,
+      );
+      addTearDown(trackingStore.close);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            repositoryProvider.overrideWithValue(repository),
+            mapTileStoreProvider.overrideWithValue(trackingStore),
+          ],
+          child: MaterialApp(
+            theme: buildWarangTheme(Brightness.light),
+            darkTheme: buildWarangTheme(Brightness.dark),
+            home: const SettingsScreen(),
+          ),
+        ),
+      );
+      await pumpUntilFound(tester, find.text('Settings'));
 
       expect(find.text('Settings'), findsOneWidget);
       expect(find.text('You'), findsOneWidget);
@@ -247,9 +276,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       await tester.tap(find.text('Clear map areas'));
       await tester.pump();
-      await tester.runAsync(() async {
-        await Future.delayed(const Duration(milliseconds: 150));
-      });
+      await tester.runAsync(() => trackingStore.cleared.future);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 200));
 
@@ -345,19 +372,24 @@ void main() {
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 400));
       }
+      final created = Completer<void>();
+      void onRepoChange() {
+        if (!created.isCompleted &&
+            repository.trips.any((t) => t.title == 'Visayas Expedition')) {
+          created.complete();
+        }
+      }
+
+      repository.addListener(onRepoChange);
+      addTearDown(() => repository.removeListener(onRepoChange));
+
       final createButton = find.widgetWithText(WarangButton, 'Create');
       expect(createButton, findsOneWidget);
       await tester.tap(createButton);
-      await tester.pump();
-      for (var i = 0; i < 20; i++) {
-        await tester.runAsync(
-          () => Future.delayed(const Duration(milliseconds: 50)),
-        );
-        await tester.pump();
-        if (repository.trips.any((t) => t.title == 'Visayas Expedition')) {
-          break;
-        }
+      for (var i = 0; i < 20 && !created.isCompleted; i++) {
+        await tester.pump(const Duration(milliseconds: 20));
       }
+      await tester.pump();
       // Animate SnackBar entrance
       await tester.pump(const Duration(milliseconds: 300));
 

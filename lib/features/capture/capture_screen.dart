@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../app/app.dart';
+import '../../app/app_state.dart';
 import '../../app/device_providers.dart';
 import '../../app/theme/components.dart';
 import '../../app/theme/tokens.dart';
@@ -40,9 +41,9 @@ class _CaptureScreenState extends ConsumerState<CaptureScreen>
   final _captionController = TextEditingController();
   late final _shrink = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 320),
+    duration: WarangMotion.slide.duration,
   );
-  final _capturedAt = DateTime.now();
+  late final DateTime _capturedAt = ref.read(clockProvider)();
   XFile? _photo;
   LocationFix? _position;
   var _location = _LocationState.unavailable;

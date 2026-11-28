@@ -67,6 +67,7 @@ void main() {
         overrides: [
           repositoryProvider.overrideWithValue(repository),
           mapTileStoreProvider.overrideWithValue(tileStore),
+          clockProvider.overrideWithValue(() => DateTime(2026, 6, 15, 10, 30)),
         ],
         child: MaterialApp(
           theme: buildWarangTheme(Brightness.light),
@@ -84,7 +85,7 @@ void main() {
     // The test font draws every glyph one em wide, which overflows the date
     // picker's own header at phone width; real fonts fit.
     await pumpHome(tester, width: 600);
-    final now = DateTime.now();
+    final now = DateTime(2026, 6, 15);
 
     await tester.tap(find.text('New trip'));
     await settle(tester);
